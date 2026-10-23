@@ -39,13 +39,34 @@ O Recast gera NavMesh em qualquer superfície plana, inclusive mesas, balcões e
 - O retângulo da escada (X de -480 a -134, Y de 262 a 473) fica **de fora** dos volumes. Por isso os volumes são 4 caixas por andar em volta dele.
 - Se aparecer outra área elevada que precise ser andável (rampa, palco), abra um buraco nos volumes ali.
 
-## Manequins de estand-in (pasta `Characters/`)
-SkeletalMeshActors em pose idle (`MM_Idle`). Lembre que a frente da malha é +Y, então o yaw do ator é a direção do olhar + 90.
-| Ator | Malha | Posição | Olha para |
-|---|---|---|---|
-| `Customer_Counter` | SKM_Quinn_Simple | (-420, 170, 10), yaw 90 | o atendente (-X) |
-| `Customer_Cafe` | SKM_Manny_Simple | (620, -70, 330), yaw 0 | a mesa grande (+Y) |
-| `Customer_Browsing` | SKM_Manny_Simple | (300, 250, 10), yaw -90 | a porta (+X) |
+## Clientes: `BP_Customer` (`/Game/Library/Characters/`, pasta `Gameplay/NPCs`)
+Os manequins parados de antes (`Customer_Counter/Cafe/Browsing`) foram **apagados**. Hoje há só um cliente, `Customer_01`, colocado em (960, 290, 100), yaw 180, logo do lado de dentro da porta.
+- **Porta falsa por enquanto:** a porta está fundida na malha `SM_WallwDoor01` e não abre. O cliente surge do lado de dentro e some no `NPC_Exit`. `PlayBell()` é um gancho vazio para o som do sininho, porque o projeto não tem nenhum som ainda.
+- **Configuração:**
+  - Pai `Character`, malha `SKM_Quinn_Simple` com `AnimClass = ABP_Unarmed` (idle/andar pela velocidade), offset Z -89 e yaw -90.
+  - `AIController` com `AutoPossessAI = PlacedInWorldOrSpawned`.
+  - `bUseControllerRotationYaw = false` e `bOrientRotationToMovement = true`, porque senão o `SetActorRotation` é ignorado. `MaxWalkSpeed` é 150.
+  - **`NavMovementProperties.bUseAccelerationForPaths = true`** (no CDO **e** na instância `Customer_01`). Sem isso, o NPC desliza em pose idle: o `ABP_Unarmed` só ativa a caminhada (`ShouldMove`) com aceleração ≠ 0, e o movimento por IA não gera aceleração por padrão.
+- **Variáveis:**
+  - `State`: 0 esperando, 1 indo ao balcão, 2 no balcão, 3 pedido entregue ao jogador, 4 indo embora.
+  - `RequestedTitles` e `RequestedAuthors` (arrays de string), `CarriedBooks` e `StartDelay` (2 s).
+  - Instance-editable: `CounterPoint = NPC_Counter`, `ExitPoint = NPC_Exit`, `CounterZone = Zone_Counter`.
+- **BeginPlay:** `BuildRequest()` sorteia de 1 a 3 **títulos distintos** entre os `BP_Book` da cena que têm título no catálogo. Depois vem o Delay `StartDelay`, `PlayBell` e `SimpleMoveToLocation(CounterPoint)`, com State 1.
+- **Tick:**
+  - State 1 e a menos de 60 cm (2D) do `CounterPoint`: passa para State 2. Ele para em cerca de (-382, 175).
+  - States 2 e 3: gira suavemente para yaw 180, olhando para o atendente.
+  - State 4 e a menos de 60 cm do `ExitPoint`: destrói os `CarriedBooks` e se destrói.
+- **`Interact() → (Result int, Message text)`.** Quem cuida da UI é o personagem. O cliente não conhece o `BP_LibraryCharacter`.
+  - State 2: vai para State 3 e devolve `1` + `BuildListText()`, com uma linha por livro: `- Título  (Autor)`.
+  - State 3: chama `CheckDelivery()`.
+    - Certo: `TakeBooks()`, State 4, `SimpleMoveToLocation(ExitPoint)` e devolve `3`.
+    - Errado: devolve `2` + "Hmm... não é bem isso que eu pedi."
+  - Fora isso, devolve `0`.
+- **`CheckDelivery()`:** pega `CounterZone.GetBooksInZone()`.
+  - Se a quantidade for diferente da pedida, a entrega está errada.
+  - Senão, para cada livro, procura o título numa cópia de `RequestedTitles` e remove (multiconjunto). Se algum título não bater, a entrega está errada.
+  - A comparação é **por título**, e não por malha: `SM_Book_02` e `SM_Book_07` são os dois "Diary of Ms. Rose".
+- **`TakeBooks()`:** desliga a colisão de cada livro do balcão e faz `AttachActorToComponent(Mesh, "hand_r", SnapToTarget, KeepWorld)`, com +4,5 cm em Z por livro. Os livros ficam presos à mão e vão embora com o cliente. **Não há reposição na estante.**
 
 ## Game setup
 - World Settings → GameMode Override = `/Game/Library/Blueprints/BP_LibraryGameMode`, que é filho de `BP_FirstPersonGameMode`. Controller: `BP_FirstPersonPlayerController`.
@@ -85,6 +106,7 @@ SkeletalMeshActors em pose idle (`MM_Idle`). Lembre que a frente da malha é +Y,
 - **`GetCounterStack(HitLocation, Books[]) → (Placements[], StackCenter, StackHalfSize, Valid)`:** calcula a pilha inteira para o balcão. Usa o mesmo raio vertical para achar a superfície e empilha `Books[0]` embaixo, somando `2*HalfSize.x` de cada livro (variável local `Acc`). Devolve também a caixa da pilha, para o fantasma.
 - **Orientação do livro:** a **capa é a face -X local**, a lombada é -Y (o pivô fica na frente-baixo, do lado da lombada) e o topo é +Z.
 - `SetHighlight(On)`.
+- **`GetBooksInZone() → Books (Array Actor)`:** `BoxOverlapActorsWithOrientation` no centro da zona, com caixa `Extent + (2, 2, 30)` (para pegar pilhas), `[PhysicsBody]` e classe BP_Book. Livros na mão ou em movimento estão sem colisão, então só entram os que estão parados na zona. Quem usa é o `BP_Customer` para ler o balcão.
 - **Zonas na cena:**
   - `Zone_History_R350 … R565`: 7 zonas, centro (-702,36, 352, z+15), yaw 90, Extent (72, 9, 15).
   - `Zone_Counter`: centro (-505, 176.5, 140.4), yaw 0, Extent (31, 58.5, 6). Cobre o tampo inteiro do `CheckoutBlock_2` em X. Se a zona for estreita, a mira de quem está atrás do balcão passa por baixo dela. A `BookStack_121` foi apagada.
@@ -107,6 +129,35 @@ SkeletalMeshActors em pose idle (`MM_Idle`). Lembre que a frente da malha é +Y,
   - `Drop()`: liga a colisão e a física, zera as velocidades e passa para State 3.
   - `PlaceAt(Target, PhysicsOnArrive)`: guarda o `TargetTransform` e passa para State 2. Hoje sempre recebe `false`.
   - `GetBookExtents() → (Center, HalfSize)`: vem do bounding box da malha, no espaço local do livro.
+- **Catálogo (título e autor):** os mapas `BookTitles` e `BookAuthors` (Map string→string) ficam nos **defaults do CDO** do BP_Book. A chave é o **nome da malha** (`SM_Book_07`).
+  - `GetBookInfo() → (Title, Author, Known)` lê `GetObjectName(Mesh.StaticMesh)` nos mapas.
+  - Os títulos foram transcritos das lombadas na estante. Os autores vêm da lombada quando dá para ler; os outros são inventados.
+  - `SM_Book_06` (lombada escura, sem título) fica **fora** do catálogo de propósito e nunca é pedida.
+  - Plano B: não dá para criar struct/DataTable pelo MCP (não há tool para UserDefinedStruct). As variáveis antigas `BookTitle`/`Genre` existem, mas não são usadas.
+
+  | Malha | Título | Autor |
+  |---|---|---|
+  | 01 | A Universal Guide to Creating Book Covers | Bernhard R. Painter |
+  | 02, 07 | Diary of Ms. Rose | Eleanor Whitby* |
+  | 03 | L'homme qui vivait au loin | Beaujolie |
+  | 04 | Summer's End | Arthur Heinlein |
+  | 05 | Classic Poems, Volume I | J. A. Stover |
+  | 08 | Open Office Design | Johnny Matthews |
+  | 09 | Lost Souls | Gregg Tielms |
+  | 10 | Colorblind | Kevin Reich |
+  | 11 | Cities | Hanna Lindqvist* |
+  | 12 | Chrysanthemums | Xiaobing Zhao |
+  | 13 | Theoretical Calculus | Dr. Albert Faraday |
+  | 14 | Data Structures and Programming | John M. Matthews |
+  | 15 | First Contact | Patric J. Picard |
+  | 17 | Analytic Geometry | Dr. C. Marie Mathews |
+  | 20 | The Illusion of Democracy | Thomas Varga* |
+  | 21 | Treasures of Al-Saban | Samira Haddad* |
+  | 22 | Space Walk | Alex Leonov |
+  | 26 | The Lake Murders | Ingrid Holm* |
+  | 29 | Cats and Their Humans | Freya Malcolm |
+
+  \* autor inventado. Para adicionar uma malha nova, acrescente a chave nos dois mapas do CDO.
 - **Pose na mão:** é uma **pilha deitada, com a capa para cima e sempre horizontal no mundo**.
   - A base fica em `câmera + fwd*HoldForward(40) + right*HoldRight(14) + up*HoldUp(-22)`.
   - A rotação é `CombineRotators((pitch -90, yaw HoldYaw 10 + HeldIndex*HoldStackYaw 6), (0, yawDaCâmera, 0))`.
@@ -140,7 +191,15 @@ SkeletalMeshActors em pose idle (`MM_Idle`). Lembre que a frente da malha é +Y,
   - Se carrega livros, não está mirando num livro e há uma zona na mira: chama `GetPlacement` para o livro de cima, acende a zona e posiciona o fantasma.
   - Caso contrário, esconde o fantasma e apaga a zona.
 - **No preview, quando a zona é o balcão (ZoneType 1):** chama `GetCounterStack(HitLoc, HeldBooks)`, guarda `CurrentStack` e o fantasma vira a caixa da **pilha inteira**. Na estante, o fantasma continua sendo só o livro de cima.
-- **Tecla E → `Interact()`:**
+- **Tecla E → `OnInteractPressed()`** (é o que o `IA_Interact` Started chama):
+  - `TraceCustomer()`: SphereTraceForObjects com raio 10, `[ObjectTypeQuery3 = Pawn]` e `InteractDistance`, depois cast para BP_Customer. O próprio jogador é ignorado (IgnoreSelf).
+  - Se achou um cliente: `HandleCustomer(c)` chama `c.Interact()`, e o resultado decide o que fazer: 1 → `ShowRequest(Msg)`, 2 → `SetRequestStatus(Msg)`, 3 → `HideRequest()`.
+  - Se não achou: chama o `Interact()` dos livros, descrito abaixo e sem mudanças.
+- **Papelzinho `WBP_RequestList`** (`/Game/Library/UI/`):
+  - Estrutura: CanvasPanel → Border bege (`Paper`), ancorado à esquerda (x 40, 40% da altura) → VerticalBox com `Header` "Pedido:", `ListText` e `StatusText` (vermelho).
+  - Funções `SetList(NewText)` e `SetStatus(NewText)`.
+  - O personagem guarda o widget em `RequestWidget`. `ShowRequest` cria o widget na primeira vez (Sequence + IsValid), chama SetList e limpa o status. `HideRequest` faz RemoveFromParent e zera a variável.
+- **`Interact()` (livros):**
   - Mirando num livro e com menos de 3 na mão: **pega**. Soma a espessura dos livros já na mão (variável local `StackSum`), chama `PickUp(n, StackSum)` e adiciona o livro ao array.
   - Com livros na mão e preview válido no **balcão**: coloca **todos** (`PlaceAt(HeldBooks[i], CurrentStack[i])`) e depois faz `Clear`. O loop fica no then_0 de um Sequence e o Clear no then_1.
   - Com livros na mão e preview válido na **estante**: coloca o de cima.

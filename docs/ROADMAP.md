@@ -32,19 +32,31 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 - [ ] Destaque do livro sob a mira (outline ou ponto que muda de cor)
 - [ ] Empilhar no balcão mirando em cima de outro livro (hoje mirar num livro = pegar)
 - [ ] Converter outras estantes (livros unitários + zonas, script em lote igual ao da History)
-- [ ] Balcão → entregar o livro ao NPC (primeiro passo do ciclo de empréstimo)
+- [x] Balcão → entregar o livro ao NPC (primeiro passo do ciclo de empréstimo). Veja a Etapa 2.
 - [x] Migrar a tecla E para Enhanced Input (`IA_Interact`, `IMC_Library`)
 - [x] Agachar (C / B, alternar; a câmera desce 50 cm suavemente)
 - [x] Zoom para ler lombadas (botão direito / LT segurado, FOV 90 → 50)
 - [ ] **Animação de agachar** (Fab/Mixamo) no Animation Blueprint da FirstPersonMesh. Hoje a malha inteira desce 50 cm e os pés atravessam o chão (veja SCENE_MAP → Agachar)
 - [ ] Testar no controle (os mapeamentos já existem)
 - [ ] Talvez: reduzir a sensibilidade do mouse durante o zoom
-- [ ] DataTable de livros (`DT_Books`: título, autor, gênero, mesh)
+- [x] Catálogo de livros (título + autor por malha). Saiu como mapas no CDO do `BP_Book` (`GetBookInfo`), porque o MCP não cria struct/DataTable.
+- [ ] Talvez: migrar o catálogo para um `DT_Books` de verdade (struct criado à mão no editor) e adicionar gênero
 - [ ] Ficha ou computador no balcão (`WBP_Checkout`) para registrar empréstimo e devolução
 
 ## Etapa 2 — Clientes
-- [ ] `BP_Customer` (manequim + AIController): entra por `NPC_Spawn`, vai até `NPC_Counter`, pede um livro ou devolve, sai por `NPC_Exit`
-- [ ] Fila de clientes e diálogos simples
+- [x] Etapa 2a, empréstimo com um cliente:
+  - `BP_Customer` (Quinn + AIController + ABP_Unarmed) entra por `NPC_Spawn` e anda até `NPC_Counter`.
+  - E no cliente mostra o papel (`WBP_RequestList`) com 1 a 3 livros (título + autor).
+  - O jogador busca os livros e coloca no balcão. E de novo: se os livros estiverem certos, o cliente leva tudo e sai por `NPC_Exit`; se estiverem errados, aparece um aviso no papel.
+  - Os manequins parados foram removidos.
+  - Verificado por teste automático no PIE (pedido, entrega errada, entrega certa e saída).
+- [ ] Teste do usuário com teclado do ciclo de empréstimo
+- [ ] Porta que abre de verdade: hoje a folha está fundida na `SM_WallwDoor01`, e o NPC surge do lado de dentro
+- [ ] Som do sininho da porta (gancho `PlayBell` vazio, o projeto não tem sons)
+- [ ] Devolução de livros (cliente traz um livro, o jogador guarda na estante)
+- [ ] Ciclo de spawn (vários clientes, um depois do outro) e fila no balcão
+- [ ] Animação de entregar/receber os livros (hoje eles grudam na mão `hand_r`)
+- [ ] Diálogos simples
 
 ## Etapa 3 — Ciclo de dias
 - [ ] Abrir e fechar a loja, contagem de clientes, transição entre dias

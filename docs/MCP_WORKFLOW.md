@@ -64,6 +64,35 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - `set_properties` de propriedades de **componente de instância** (ex.: BoxExtent) pode voltar ao padrão do template quando o construction script roda. Para valores por instância, use uma **variável do ator** (instance editable) e aplique no construction script.
 - Física: um ator Movable com SimulatePhysics que nasce dentro de outro corpo é ejetado com uma velocidade absurda e atravessa o piso. Ignore o Pawn e zere as velocidades ao ligar a física.
 
+### Aprendizados da Etapa 2a (cliente)
+- **Assinaturas das tools que confundem:**
+  - `ObjectTools.set_properties` recebe `{"instance": ref, "values": "<JSON em string>"}`, e não um dict `properties`.
+  - `get_properties` recebe `{"instance": ref, "properties": [...]}`.
+  - `find_assets` exige `folder_path` e `name`.
+- **Não existe tool para criar UserDefinedStruct.** Sem struct, não dá para fazer um DataTable próprio. Alternativa usada: `add_variable(type_name='string', container_type='MAP')` (a chave do MAP é sempre string) e preencher no CDO com `set_properties` mandando um objeto JSON.
+- **Valores de Map/Array no CDO propagam** para as instâncias já colocadas no nível que não sobrescreveram o valor.
+- **`write_graph_dsl` que falha no meio deixa nós órfãos no grafo.** Uma segunda escrita **soma** nós, e não substitui. Depois de qualquer falha:
+  - Varra os grafos procurando nós impuros com o exec de entrada desligado.
+  - Ou apague tudo menos a entrada da função (`find_nodes` + `delete_node`) e escreva de novo.
+- **Parâmetros novos de função só aparecem nos nós `CallFunction|X` depois de `compile_blueprint`.** Escreva e compile primeiro as funções chamadas, e só então as que chamam.
+- O `switch int` do DSL só tem os pinos 0–2. Para mais casos, use `if`/`elif`.
+- `Math|Vector|vector+vector` **não** existe como type_id na escrita (ele só aparece no read-back). Use `(+ a b)` e `(* v s)`.
+- O read-back mostra chamadas de outra classe como `CallFunction|Interact`, o que é ambíguo. Confira o pino `self` com `get_node_infos`.
+- Separador de string com quebra de linha: escreva um marcador no DSL e depois faça `set_pin_value(pin, "\n")` no pino `Separator` do `JoinStringArray`.
+- `Utilities|FlowControl|Delay x` funciona como statement em sequência, dentro de eventos.
+- `Actor|GetAllActorsOfClass "<classe>_C"` devolve o array já tipado (dá para chamar funções do BP direto em cada elemento).
+- **Character + IA:**
+  - `AutoPossessAI = PlacedInWorldOrSpawned` e `AIController` (é o padrão do Character).
+  - `AI|Navigation|SimpleMovetoLocation :Controller (Pawn|GetController) :Goal loc`.
+  - Para girar com `SetActorRotation`, desligue `bUseControllerRotationYaw` no CDO.
+  - Subobjetos no CDO: `:CharacterMesh0` (`SkeletalMeshAsset`, `AnimClass`, `RelativeLocation/Rotation`) e `:CharMoveComp`.
+- **NPC deslizando sem animar:** o `ABP_Unarmed` (e o ABP do Third Person) calcula `ShouldMove = GroundSpeed > 0 && CurrentAcceleration != 0`. Movimento por IA só gera aceleração com `CharMoveComp.NavMovementProperties.bUseAccelerationForPaths = true` (no UE 5.8 isso fica dentro desse struct, e não solto no componente).
+  - ⚠️ Mudar um **struct** de componente no CDO **não propagou** para a instância já colocada no nível. Aplique também na instância (`<ator>.CharMoveComp`) e salve o mapa.
+  - Para depurar no PIE, leia o AnimInstance: `<ator>.CharacterMesh0.ABP_Unarmed_C_0`, propriedades `GroundSpeed`/`ShouldMove`. (`AnimScriptInstance` não é legível pelo get_properties.)
+- **Widget em PIE:** o widget criado fica em `/Engine/Transient.UnrealEdEngine_0:GameInstance_1.WBP_X_C_0`. Leia as variáveis dele (ex.: `ListText`) para pegar a referência do TextBlock e depois `get_properties(['Text'])`.
+- **Roteiro de teste sem mexer no personagem:** crie um ator temporário `BP_TestDriver` com o roteiro no BeginPlay (Delay → cast do player → SetControlRotation → chamadas). Coloque na cena, rode o PIE e consulte o estado. No fim, **apague o ator e o asset**. É mais seguro do que reescrever o BeginPlay do personagem.
+- `CaptureViewport` aceita `captureTransform` e fotografa de qualquer ponto **sem mover a câmera do editor**. Foi assim que lemos as lombadas dos livros.
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...

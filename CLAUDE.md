@@ -29,19 +29,24 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - Os atores de gameplay ficam na pasta `Gameplay/` do Outliner; as câmeras e a sequência originais ficam em `Cinematic/`.
 
 ## Onde paramos (atualize ao fim de cada sessão)
-Estado em 2026-10-23. Etapas 0, 1, 1b, 1c e 1d estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
+Estado em 2026-10-23. Etapas 0, 1, 1b, 1c, 1d e **2a (primeiro cliente, empréstimo)** estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
 - **Personagem `BP_LibraryCharacter`:**
   - Primeira pessoa, sem pulo, caminhada lenta.
   - Mira de ponto central.
   - Carrega até 3 livros (pilha deitada, capa para cima).
-  - **E** pega / guarda / solta; **C** agacha (alterna); **botão direito** segurado dá zoom.
+  - **E** (`OnInteractPressed`): mirando num cliente, fala com ele; senão pega / guarda / solta livros. **C** agacha (alterna); **botão direito** segurado dá zoom.
   - O input é Enhanced Input (`/Game/Library/Input/IMC_Library`), com controle já mapeado mas não testado.
 - **Livros `BP_Book`:**
   - Só a estante **History** (`BP_BookShelfs10`, topo da escada) tem livros unitários pegáveis (138). As outras estantes ainda são o cenário original do pacote.
   - Áreas amarelas `BP_PlaceZone`: 7 na History e 1 no balcão. No balcão, o E entrega a pilha inteira.
-- **NPCs:** por enquanto são só manequins parados (`Customer_*`), sem lógica.
+  - Cada livro tem título e autor pela malha (`GetBookInfo`, mapas no CDO do BP_Book).
+- **Cliente `BP_Customer`** (um só, `Customer_01`):
+  - Surge do lado de dentro da porta (a porta é falsa por enquanto) e anda até o balcão.
+  - E nele mostra o papel `WBP_RequestList` com 1 a 3 livros.
+  - Com os livros certos no balcão, o segundo E faz ele levar os livros e ir embora. Livro errado mostra um aviso.
+  - Sem ciclo de spawn, sem devolução e sem reposição na estante.
 - **Problema conhecido:** o agachar desce a FirstPersonMesh inteira, e os pés atravessam o chão. Falta uma animação de agachar (já está no ROADMAP).
-- **Próximo passo natural** (ROADMAP Etapa 1/2): o cliente pede ou devolve um livro no balcão, e livros/estantes ganham dados (`DT_Books`: título, gênero, estante).
+- **Próximos passos naturais** (ROADMAP Etapa 2): teste do usuário com teclado, porta que abre, devolução e ciclo de vários clientes.
 
 ## Como trabalhar bem aqui (aprendizados)
 - Leia o [docs/MCP_WORKFLOW.md](docs/MCP_WORKFLOW.md) **antes** de editar Blueprints pelo MCP. Ele tem várias armadilhas já resolvidas: nós puros reavaliados, `if` que encerra o fluxo, defaults do CDO que se perdem, pinos de array, eventos de input, perfis de colisão etc.
