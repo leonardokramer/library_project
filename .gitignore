@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------
+# Unreal Engine 5 — library_project
+# ---------------------------------------------------------------
+
+# Pastas geradas pela engine (recriadas ao abrir o projeto)
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Pacote da Fab "Stationer" (~2 GB). Não versionado: a licença da Fab não
+# permite redistribuir os assets, e o tamanho estoura a cota de LFS.
+# Para restaurar numa máquina nova, veja docs/SETUP.md.
+/Content/Stationer/
+
+# Arquivos de IDE / solução (projeto é só Blueprints, mas por garantia)
+.vs/
+.vscode/
+.idea/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+*.xcworkspace
+*.xcodeproj
+
+# Lixo de sistema e temporários
+*.tmp
+*.bak
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Ferramentas locais
+.gamemaker-mcp/
+.claude/settings.local.json

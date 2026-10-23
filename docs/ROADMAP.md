@@ -1,0 +1,61 @@
+# Roadmap
+
+Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que estiver pronto.
+
+## Etapa 0 — Base
+- [x] Mapear a cena L_Stationer ([SCENE_MAP.md](SCENE_MAP.md))
+- [x] Duplicar a cena para `/Game/Library/Maps/L_Library` e definir como mapa padrão
+- [x] PlayerStart atrás do balcão, NavMeshBoundsVolume e TargetPoints de NPC
+- [x] Importar o Feature Pack **First Person**
+- [x] `BP_LibraryGameMode` com o personagem de primeira pessoa, definido no World Settings de L_Library
+- [x] Manequins de estand-in no balcão, no café e entre as estantes
+- [x] PIE: o jogador nasce atrás do balcão em primeira pessoa
+- [x] Teste manual: andar, subir a escada, chegar ao café, ver a NavMesh (tecla P)
+- [x] NavMesh sem ilhas em cima dos móveis (NavModifierVolumes)
+- [x] `BP_LibraryCharacter`: sem pulo, caminhada lenta (200)
+- [ ] Talvez: balanço leve de cabeça (head bob) e passos com som. Isso ajuda muito no terror depois.
+- [ ] Decidir se removemos o crosshair e a arma do template (o personagem é um atendente)
+
+## Etapa 1 — Balcão (cozy)
+- [x] `BP_Book` (malha Movable, estado estante, mão ou voltando, deslize suave)
+- [x] Estante de teste History: 25 `BP_Book`, 13 livros removidos
+- [x] Interagir olhando + E (line trace a partir da câmera): pegar e devolver
+- [x] Pose do livro na mão (capa virada, canto inferior direito). Verificado pelo teste automático no PIE.
+- [x] Mira (ponto no centro, `WBP_Crosshair`)
+- [x] Etapa 1b: as fileiras fundidas da History foram trocadas por 113 livros unitários
+- [x] Soltar com física (cai no chão) e pegar de volta do chão
+- [x] Guardar na estante em qualquer espaço livre (encaixe ±6 cm), zonas `BP_PlaceZone` e fantasma amarelo
+- [x] Colocar no balcão (deitado, empilhando por raio vertical, sem física)
+- [x] Carregar até 3 livros (pilha em leque na mão)
+- [x] Etapa 1c: capa para cima no balcão e na mão (pilha deitada), e E no balcão entrega a pilha inteira
+- [ ] Teste do usuário com teclado do ciclo completo
+- [ ] Destaque do livro sob a mira (outline ou ponto que muda de cor)
+- [ ] Empilhar no balcão mirando em cima de outro livro (hoje mirar num livro = pegar)
+- [ ] Converter outras estantes (livros unitários + zonas, script em lote igual ao da History)
+- [ ] Balcão → entregar o livro ao NPC (primeiro passo do ciclo de empréstimo)
+- [x] Migrar a tecla E para Enhanced Input (`IA_Interact`, `IMC_Library`)
+- [x] Agachar (C / B, alternar; a câmera desce 50 cm suavemente)
+- [x] Zoom para ler lombadas (botão direito / LT segurado, FOV 90 → 50)
+- [ ] **Animação de agachar** (Fab/Mixamo) no Animation Blueprint da FirstPersonMesh. Hoje a malha inteira desce 50 cm e os pés atravessam o chão (veja SCENE_MAP → Agachar)
+- [ ] Testar no controle (os mapeamentos já existem)
+- [ ] Talvez: reduzir a sensibilidade do mouse durante o zoom
+- [ ] DataTable de livros (`DT_Books`: título, autor, gênero, mesh)
+- [ ] Ficha ou computador no balcão (`WBP_Checkout`) para registrar empréstimo e devolução
+
+## Etapa 2 — Clientes
+- [ ] `BP_Customer` (manequim + AIController): entra por `NPC_Spawn`, vai até `NPC_Counter`, pede um livro ou devolve, sai por `NPC_Exit`
+- [ ] Fila de clientes e diálogos simples
+
+## Etapa 3 — Ciclo de dias
+- [ ] Abrir e fechar a loja, contagem de clientes, transição entre dias
+- [ ] Ambiente sonoro cozy (chuva, café, música)
+
+## Etapa 4 — Inquietação (início do terror)
+- [ ] Anomalias pequenas entre os dias: livro fora do lugar, luz piscando, cliente repetido
+- [ ] Variações de mapa ou de iluminação (`L_Library_Night`?)
+
+## Etapa 5 — Loop no estilo P.T.
+- [ ] Corredor ou loja em loop, porta que leva de volta ao início, escalada do horror
+
+## Etapa 6 — Personagens finais
+- [ ] Trocar os manequins por MetaHumans
