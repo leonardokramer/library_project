@@ -34,7 +34,7 @@ Estado em 2026-10-24. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, emprésti
   - Primeira pessoa, sem pulo, caminhada lenta.
   - Mira de ponto central.
   - Carrega até 3 livros (pilha deitada, capa para cima).
-  - **E** (`OnInteractPressed`): mirando num livro ou numa área válida, cuida dos livros; mirando num cliente, fala com ele; mirando na **caixa registradora**, abre o sistema; senão solta livros. **C** agacha (alterna); **botão direito** segurado dá zoom.
+  - **E** (`OnInteractPressed`): mirando num livro ou numa área válida, cuida dos livros; mirando num cliente, fala com ele; mirando na **caixa registradora**, abre o sistema; senão solta livros. **Q** (segurado) abre os livros da mão em leque na frente da câmera para ler as capas (`SetInspectMode`/`UpdateInspect` no personagem, `GetInspectTransform` no `BP_Book`; os livros ficam no State 4 enquanto abertos); **C** agacha (alterna); **botão direito** segurado dá zoom.
   - O input é Enhanced Input (`/Game/Library/Input/IMC_Library`), com controle já mapeado mas não testado.
 - **Livros `BP_Book`:**
   - Só a estante **History** (`BP_BookShelfs10`, topo da escada) tem livros unitários pegáveis (138). As outras estantes ainda são o cenário original do pacote.

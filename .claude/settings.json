@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__unreal-mcp__describe_toolset",
+      "mcp__unreal-mcp__list_toolsets"
+    ]
+  }
+}
