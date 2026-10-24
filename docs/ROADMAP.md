@@ -41,7 +41,7 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 - [ ] Talvez: reduzir a sensibilidade do mouse durante o zoom
 - [x] Catálogo de livros (título + autor por malha). Saiu como mapas no CDO do `BP_Book` (`GetBookInfo`), porque o MCP não cria struct/DataTable.
 - [ ] Talvez: migrar o catálogo para um `DT_Books` de verdade (struct criado à mão no editor) e adicionar gênero
-- [ ] Ficha ou computador no balcão (`WBP_Checkout`) para registrar empréstimo e devolução
+- [x] Computador no balcão para registrar empréstimo. Saiu como `WBP_LibrarySystem` na caixa registradora (Etapa 2c). A devolução ainda falta.
 
 ## Etapa 2 — Clientes
 - [x] Etapa 2a, empréstimo com um cliente:
@@ -59,6 +59,21 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - Clientes não pedem títulos já pedidos por outro.
   - Verificado por teste automático no PIE.
 - [ ] Teste do usuário com teclado da fila
+- [x] Etapa 2c, sistema da livraria no computador:
+  - E mirando na caixa registradora abre `WBP_LibrarySystem` em tela cheia. O papel do pedido fica visível à esquerda.
+  - O papel agora tem **nome e documento** do cliente. Há um pool de 10 pessoas no `BP_LibrarySystem`, 5 já cadastradas.
+  - O sistema tem: acervo com cópias na estante e busca por título/autor, busca de usuário por nome ou documento, cadastro de usuário novo, até 3 livros lançados e confirmação.
+  - Ao confirmar, o sistema confere usuário = cliente do balcão, livros do balcão = lançamento e lançamento = pedido. Se algo não bate, aparece um aviso e nada é registrado. Se bate, a tela fecha e o cliente pega os livros e sai sozinho.
+  - O segundo E no cliente **não entrega mais**: só mostra o papel de novo.
+  - Sair do sistema guarda um **rascunho** (usuário + itens + aviso). Dá para corrigir o balcão e voltar.
+  - Clientes a cada 180–360 s (o primeiro em 5 s).
+  - Verificado por teste automático no PIE.
+- [ ] Teste do usuário com teclado/mouse do sistema
+- [ ] Sistema no controle: navegação por foco nos botões e **teclado virtual** do console. No console, o `EditableTextBox` com foco abre o teclado nativo da plataforma. A busca é opcional, porque a lista é navegável sem digitar.
+- [ ] Fechar o sistema com Esc / B (hoje é pelo botão "Sair do sistema"; no PIE, o Esc encerra o jogo)
+- [ ] Trocar a caixa registradora por um computador/monitor de verdade (asset da Fab) e mover o `BP_LibrarySystem` para lá
+- [ ] Talvez: histórico de empréstimos visível no sistema (os dados já ficam em `LoanDocs`/`LoanTitles`)
+- [ ] Salvar cadastro e empréstimos entre sessões (SaveGame)
 - [ ] Porta que abre de verdade: hoje a folha está fundida na `SM_WallwDoor01`, e o NPC surge e some do lado de dentro
 - [ ] Som do sininho da porta (gancho `PlayBell` vazio, o projeto não tem sons)
 - [ ] Devolução de livros (cliente traz um livro, o jogador guarda na estante)

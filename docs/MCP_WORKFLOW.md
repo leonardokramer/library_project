@@ -108,6 +108,32 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **NPC parando antes do alvo:** o `SimpleMoveToLocation` para por volta de 40 cm antes. Para encostar (ex.: no balcão), faça a aproximação fina: `AI|Navigation|StopMovement :self (Pawn|GetController)` + `Pawn|Input|AddMovementInput` a cada tick até ficar a menos de 6 cm, com timeout.
 - `CaptureViewport` aceita `captureTransform` e fotografa de qualquer ponto **sem mover a câmera do editor**. Foi assim que lemos as lombadas dos livros.
 
+### Aprendizados da Etapa 2c (sistema no computador, UI interativa)
+- **Botões e campos de texto funcionam pelo MCP:**
+  - `UMGToolSet.BindToEventProperty(widgetBlueprint, eventName "OnClicked", propertyName "BtnX", propertyClass "/Script/UMG.Button")` cria no EventGraph um nó `K2Node_ComponentBoundEvent` com type_id `AddEvent|OnClicked(BtnX)`.
+  - Depois, `create_node("CallFunction|MinhaFuncao")` e `connect_pins` do pino `then` do evento para o `execute`. Para EditableTextBox, use `OnTextChanged` com `propertyClass "/Script/UMG.EditableTextBox"`.
+  - O widget precisa ser variável (`ToggleWidgetAsVariable`) antes do bind.
+- **Linhas dinâmicas:** use um widget de linha (`WBP_Row`) com uma variável `Owner` tipada como o widget pai e uma função `Setup(...)`. O `OnClicked` dele chama `Owner.OnRowClicked(...)`. A referência circular WBP_Row ↔ WBP_LibrarySystem compila sem problema. Crie o pai (com a função vazia) e compile **antes** de criar o filho.
+- **Type_ids de UMG:**
+  - `Variables|<NomeDoWBP>|GetX` para os widgets-variável (com underscore, ex.: `Variables|WBP_Row|GetLabel`).
+  - `Widget|SetText(Text)` (TextBlock), `Widget|GetText(TextBox)` / `Widget|SetText(TextBox)` (EditableTextBox), `Widget|Panel|ClearChildren`, `Widget|Panel|AddChild :Content`, `Widget|SetVisibility :InVisibility "Collapsed"`, `Widget|SetIsEnabled :bInIsEnabled`, `Widget|RemovefromParent`.
+  - `UserInterface|CreateWidget :Class "<WBP>_C" :OwningPlayer pc` devolve a referência já tipada.
+  - `UserInterface|Viewport|AddtoViewport :ZOrder n`, `Input|SetInputModeUIOnly :PlayerController :InWidgetToFocus`, `Input|SetInputModeGameOnly` e `Class|PlayerController|SetShowMouseCursor :bShowMouseCursor`.
+- **Propriedades de widget via `set_properties`:**
+  - TextBlock: `Text` (string simples), `Font: {Size}`, `ColorAndOpacity: {SpecifiedColor: {R,G,B,A}}` e `WrapTextAt`.
+  - Border: `BrushColor` e `Padding`. EditableTextBox: `HintText`. Qualquer widget: `Visibility: "Collapsed"`.
+  - Slots de VerticalBox/HorizontalBox: `Size: {SizeRule: "Fill", Value}` e `Padding`.
+  - CanvasPanelSlot em tela cheia: `LayoutData` com Anchors 0..1 e Offsets 0.
+- **`==` entre strings não liga** ("Could not connect pin Out to A"). Use `Utilities|String|EqualExactly(String)`. Para "diferente", use `(not (EqualExactly a b))`. `select` funciona com strings.
+- **Parâmetros de `fn` são usados pelo nome:** `(fn F (Doc Titles) ... Doc ...)`. Parâmetros declarados com `add_function_param`/`add_object_function_param` antes.
+- **`compile_blueprint` sempre devolve `None`**, mesmo com erro. Confira com `LogsToolset.GetLogEntries(pattern "LogBlueprint: Error")`. Já o `CompileWidgetBlueprint` devolve `true`/`false`.
+- **"Unclosed parenthesis"** em DSL longo: conte os parênteses localmente (Python, ignorando o que está entre aspas) antes de mandar. O erro de parse não cria nós.
+- **Ler mapas do catálogo de outra classe:** existe `Class|GetClassDefaults`, mas é mais simples ler `Class|BPBook|GetBookTitles` de qualquer `BP_Book` da cena (as instâncias herdam o mapa do CDO) e usar `Utilities|Map|Keys` / `Utilities|Map|Find`.
+- **Trocar um nó de um grafo grande sem reescrever:** foi assim que o `PlayBell` do `TrySpawn` virou `OnSpawned`. Leia os pinos com `get_node_infos`, crie o nó novo, refaça as ligações de `execute`, `self` e `then` e apague o antigo.
+- **Roteiro de teste:** `SetControlRotation` seguido de um trace **no mesmo frame** ainda usa a câmera antiga. Ponha `Delay 0.5` entre a mira e o `OnInteractPressed`.
+- **`CaptureEditorImage` com `{}`** fotografa a janela do editor **com o PIE e a UI** (widgets aparecem). O base64 vem salvo em `tool-results/`. Decodifique com Python.
+- **Espera no Bash:** `sleep` solto é bloqueado. Use `run_in_background: true` (você é avisado quando termina) e, enquanto isso, consulte `GetLogEntries`.
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...

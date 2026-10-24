@@ -29,25 +29,32 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - Os atores de gameplay ficam na pasta `Gameplay/` do Outliner; as câmeras e a sequência originais ficam em `Cinematic/`.
 
 ## Onde paramos (atualize ao fim de cada sessão)
-Estado em 2026-10-23. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, empréstimo)** e **2b (spawn + fila)** estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
+Estado em 2026-10-24. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, empréstimo)**, **2b (spawn + fila)** e **2c (sistema no computador)** estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
 - **Personagem `BP_LibraryCharacter`:**
   - Primeira pessoa, sem pulo, caminhada lenta.
   - Mira de ponto central.
   - Carrega até 3 livros (pilha deitada, capa para cima).
-  - **E** (`OnInteractPressed`): mirando num cliente, fala com ele; senão pega / guarda / solta livros. **C** agacha (alterna); **botão direito** segurado dá zoom.
+  - **E** (`OnInteractPressed`): mirando num livro ou numa área válida, cuida dos livros; mirando num cliente, fala com ele; mirando na **caixa registradora**, abre o sistema; senão solta livros. **C** agacha (alterna); **botão direito** segurado dá zoom.
   - O input é Enhanced Input (`/Game/Library/Input/IMC_Library`), com controle já mapeado mas não testado.
 - **Livros `BP_Book`:**
   - Só a estante **History** (`BP_BookShelfs10`, topo da escada) tem livros unitários pegáveis (138). As outras estantes ainda são o cenário original do pacote.
   - Áreas amarelas `BP_PlaceZone`: 7 na History e 1 no balcão. No balcão, o E entrega a pilha inteira.
   - Cada livro tem título e autor pela malha (`GetBookInfo`, mapas no CDO do BP_Book).
 - **Clientes `BP_Customer`, criados pelo `CustomerSpawner`:**
-  - Chegam a cada 60–120 s, até 3 na loja (o primeiro em 3 s).
+  - Chegam a cada 180–360 s, até 3 na loja (o primeiro em 5 s).
   - Surgem do lado de dentro da porta (a porta é falsa por enquanto), entram em linha reta e fazem fila em frente ao balcão.
-  - Só o da frente responde. O E mostra o papel `WBP_RequestList` com 1 a 3 livros.
-  - Com os livros certos no balcão, o segundo E faz ele levar os livros, sair pela faixa lateral e sumir na porta, e a fila anda. Livro errado não faz nada.
+  - Cada um tem **nome e documento**, sorteados de um pool de 10 pessoas no `BP_LibrarySystem` (5 já cadastradas).
+  - Só o da frente responde. O E mostra o papel `WBP_RequestList` com nome, documento e 1 a 3 livros. O E **não entrega** mais os livros.
   - Sem devolução e sem reposição na estante.
+- **Sistema `BP_LibrarySystem` + `WBP_LibrarySystem`** (E na caixa registradora, tela cheia):
+  - Acervo com cópias e busca. Busca de usuário por nome ou documento, e cadastro de usuário novo.
+  - Lança até 3 livros e confirma. O sistema confere usuário, livros no balcão e pedido; se algo não bate, mostra um aviso e não registra nada.
+  - Com tudo certo, a tela fecha e o cliente leva os livros e sai sozinho.
+  - Sair guarda um rascunho, que volta ao reabrir.
+  - Ainda falta: Esc/B para fechar, teste no controle, SaveGame do cadastro e um computador de verdade no lugar da caixa registradora.
 - **Problema conhecido:** o agachar desce a FirstPersonMesh inteira, e os pés atravessam o chão. Falta uma animação de agachar (já está no ROADMAP).
-- **Próximos passos naturais** (ROADMAP Etapa 2): teste do usuário com teclado, porta que abre, sininho, devolução e reposição de estoque.
+- **Próximos passos naturais** (ROADMAP Etapa 2): teste do usuário com teclado do ciclo completo (papel → estante → balcão → sistema), Esc para fechar o sistema, porta que abre, sininho, devolução e reposição de estoque.
+- O `BP_TestDriver` (`/Game/Library/Debug/`) ficou com o roteiro de teste do sistema no EventGraph. Ele **não está na cena**. Reescreva o grafo antes de reutilizar.
 - ⚠️ Não apague assets pelo MCP logo depois de um PIE: isso já derrubou o editor (veja o MCP_WORKFLOW).
 
 ## Como trabalhar bem aqui (aprendizados)

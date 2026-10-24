@@ -34,6 +34,7 @@ Unidades em cm, coordenadas do mundo. +X aponta para a porta de entrada (lado le
 | `NPC_Counter` | (-438, 170, 20), yaw 180 | Posição 0 da fila, colada no balcão (a frente do balcão fica em X -472) |
 | `NPC_Exit` | (-380, 255, 20) | Começo da faixa de saída (Y≈250, paralela à fila) |
 | `CustomerSpawner` (`Gameplay/NPCs`) | (900, 207, 20) | Gera os clientes e controla a fila |
+| `LibrarySystem` (`Gameplay/`) | (-506, 256.5, 148), sobre a caixa registradora | "Computador": banco de usuários/empréstimos e a caixa de colisão que o E encontra |
 
 **Corredor de clientes:** os traces mostram livre o trecho de Y 170 a 290 entre o balcão e a porta. Há expositores baixos em Y 10–166 (ex.: `Bookshelf_6`); a escada começa em Y 292 e a `Column3` fica em (-460, 300). A fila fica em Y 170 e a saída em Y 250–255.
 
@@ -72,13 +73,13 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - State 1: troca o último ponto do caminho e, se já está indo para ele, refaz o `SimpleMove`.
   - States 2, 3 e 4: ignora.
 - **Tick:** os States 2, 3 e 5 giram suavemente para yaw 180.
+- **Identidade:** `CustomerName` e `CustomerDoc` (string), lidos por `GetIdentity() → (Name, Doc)`. São preenchidos em **`OnSpawned()`**, que o spawner chama logo depois do spawn: ela toca o `PlayBell` e chama `BP_LibrarySystem.PickPerson()` (via `GetActorOfClass`).
 - **`Interact() → (Result int, Message text)`.** Quem cuida da UI é o personagem. O cliente não conhece o `BP_LibraryCharacter`.
-  - State 2: vai para State 3 e devolve `1` + `BuildListText()`, com uma linha por livro: `- Título  (Autor)`.
-  - State 3: chama `CheckDelivery()`.
-    - Certo: `TakeBooks()`, `Leaving = true`, `StartPath(ExitPoints)`, `Spawner.OnCustomerServed(self)` e devolve `3`.
-    - **Errado: devolve `0`.** Não acontece nada e não aparece mensagem.
+  - **State 2 ou 3:** vai para State 3 e devolve `1` + `BuildListText()`. O texto é `Nome: X`, `Documento: Y`, uma linha em branco e depois uma linha por livro: `- Título  (Autor)`. Com o pedido já mostrado, o E só mostra o papel de novo.
+  - **O E não entrega mais os livros.** A entrega acontece só pelo sistema (`BP_LibrarySystem.ConfirmLoan` → `CompleteLoan()`).
   - Os outros States (inclusive quem está na fila) devolvem `0`.
-- **`CheckDelivery()`:** pega `CounterZone.GetBooksInZone()`.
+- **`CompleteLoan()`:** `TakeBooks()`, `Leaving = true`, `StartPath(ExitPoints)` e `Spawner.OnCustomerServed(self)`.
+- **`CheckDelivery()`** (não é mais chamado; a mesma lógica agora está em `BP_LibrarySystem.TitlesMatch`): pega `CounterZone.GetBooksInZone()`.
   - Se a quantidade for diferente da pedida, a entrega está errada.
   - Senão, para cada livro, procura o título numa cópia de `RequestedTitles` e remove (multiconjunto). Se algum título não bater, a entrega está errada.
   - A comparação é **por título**, e não por malha: `SM_Book_02` e `SM_Book_07` são os dois "Diary of Ms. Rose".
@@ -92,7 +93,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 ## Fila: `BP_CustomerSpawner` (`/Game/Library/Blueprints/`, ator `CustomerSpawner`)
 - **Instance-editable:**
   - Pontos: `DoorPoint = NPC_Spawn`, `EntryPoint = NPC_Entry`, `CounterPoint = NPC_Counter`, `ExitLanePoint = NPC_Exit` e `CounterZone = Zone_Counter`.
-  - Tempo: `FirstDelay` 3 s, `MinInterval` 60 s, `MaxInterval` 120 s (eram 15–40 s, e a fila ficava sempre cheia).
+  - Tempo: `FirstDelay` 5 s, `MinInterval` **180 s** e `MaxInterval` **360 s**. Antes eram 60–120 s; com o sistema, o ciclo ficou longo e a ideia é o jogador esperar um pouco, com fila só às vezes.
   - Fila: `MaxCustomers` 3 e `SlotStep` (90, 0, 0).
 - `Queue` (Array BP_Customer) guarda os clientes na ordem da fila. A posição i fica em `CounterPoint + SlotStep * i`, ou seja, X -438, -348, -258 e -168 em Y 170.
 - **BeginPlay:** `SetTimerbyFunctionName("TrySpawn", FirstDelay)`.
@@ -100,13 +101,60 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - Primeiro rearma o timer com `RandomFloatInRange(Min, Max)`.
   - Se a `Queue` tiver menos que `MaxCustomers`: spawna o `BP_Customer` em `DoorPoint + (0, 0, 80)`, yaw 180. Depois preenche `Spawner`, `CounterZone` e `ExitPoints = [ExitLanePoint, (EntryPoint.x, 250), DoorPoint]`.
   - Se o pedido veio vazio, destrói o cliente.
-  - Senão: entra na `Queue`, recebe o `QueueIndex`, chama `PlayBell` e `StartPath([EntryPoint, posição da vez])`.
+  - Senão: entra na `Queue`, recebe o `QueueIndex`, chama `OnSpawned` (sininho + identidade) e `StartPath([EntryPoint, posição da vez])`.
   - Os arrays de pontos são montados em **variáveis locais com `Add`**, porque o MakeArray do DSL só aceita 1 elemento.
 - **`OnCustomerServed(c)`:** tira `c` da `Queue` e chama `GoToSlot(i, posição i)` em todos os outros. A fila anda assim que o da frente pega os livros, enquanto ele sai pela faixa Y≈250.
 - **Verificado no PIE:**
   - Intervalos de 2–4 s formam a fila de 4, com o da frente em State 2 em X -437 e os outros em State 5.
   - Livro errado + E: nada acontece.
   - Livros certos + E: o da frente sai e some na porta, os outros avançam uma posição e um 5º cliente entra no fim da fila.
+
+## Sistema da livraria: `BP_LibrarySystem` (`/Game/Library/Blueprints/`, ator `LibrarySystem`)
+É o "computador". Por enquanto fica na caixa registradora; quando houver um monitor de verdade, basta mover o ator.
+- **Colisão:** a raiz é o `Collision` (BoxComponent, extent (30, 22, 16), perfil `OverlapAllDynamic`, ObjectType **WorldDynamic** = `ObjectTypeQuery2`, oculto no jogo). Ele cobre a caixa registradora (X de -533 a -479, Y de 237 a 276, Z de 134 a 161), logo ao lado da `Zone_Counter`.
+- **Instance-editable:** `Spawner = CustomerSpawner` e `CounterZone = Zone_Counter`.
+- **Dados** (arrays paralelos, porque o MCP não cria struct; seeds no CDO):
+  - `PersonNames[]`/`PersonDocs[]`: pool de 10 pessoas (Helena Duarte 48.213.907, Marcos Vieira 31.774.520, Beatriz Nakamura 52.908.163, Tomás Albuquerque 27.461.398, Lúcia Ferraz 63.085.214, Rafael Monteiro 19.630.842, Clara Bittencourt 44.517.069, Otávio Reis 38.902.475, Isadora Lins 57.246.381, Joaquim Prado 22.358.716).
+  - `UserNames[]`/`UserDocs[]`: o cadastro. Começa com Helena, Tomás, Clara, Otávio e Joaquim; os outros cinco precisam ser cadastrados. O cadastro vive só durante a sessão (não há SaveGame ainda).
+  - `LoanDocs[]`, `LoanTitles[]` (títulos juntados por ` | `) e `LoanCount`.
+  - Rascunho: `DraftDoc`, `DraftTitles[]` e `DraftStatus`.
+- **Funções:**
+  - `NormDoc(Doc)` tira pontos, traços e espaços. Toda comparação de documento passa por ela, então "27461398" acha "27.461.398".
+  - `FindDocIndex(Doc) → int`.
+  - `PickPerson() → (PName, PDoc)` sorteia do pool alguém que não esteja na loja (lê `GetIdentity` de todos os `BP_Customer`).
+  - `BuildCatalog() → (Titles, Authors, Counts)`:
+    - Os títulos e autores vêm dos mapas `BookTitles`/`BookAuthors` de um `BP_Book` qualquer da cena, sem repetir título, então todos os 19 títulos aparecem, mesmo com 0 cópias.
+    - `Counts` = livros com `State == 0` que **não** estão no balcão (na estante, ou parados em outro lugar).
+  - `FindUsers(Query) → (Names, Docs)`: com `Query` vazia, lista todos. Senão, `Contains` (sem diferenciar maiúsculas) no nome **ou** no documento normalizado.
+  - `RegisterUser(NewName, NewDoc) → (Ok, Msg)`: recusa vazio ou documento repetido.
+  - `CounterTitles()` e `TitlesMatch(A, B)` (multiconjunto, mesma lógica do antigo `CheckDelivery`).
+  - **`ConfirmLoan(Doc, Titles) → (Ok, Msg)`**, nesta ordem:
+    1. Sem itens: "Nenhum livro lançado."
+    2. Documento fora do cadastro: "Selecione um usuário cadastrado."
+    3. Sem cliente da frente em State 2/3: "Não há cliente no balcão."
+    4. Documento ≠ o do cliente: "Este usuário não é o cliente do balcão."
+    5. Balcão ≠ lançamento: "Os livros no balcão não conferem com o lançamento."
+    6. Lançamento ≠ pedido: "Estes não são os livros do pedido."
+    7. Tudo certo: registra o empréstimo, `ClearDraft()`, `Cust.CompleteLoan()` e devolve "Empréstimo registrado."
+  - `ClearDraft()`.
+
+## Tela do sistema: `WBP_LibrarySystem` (`/Game/Library/UI/`)
+- **Layout:**
+  - Tela cheia, com fundo quase preto esverdeado (alfa 0,97) e texto verde de terminal.
+  - **Padding esquerdo de 470 px**, para o papel do pedido (`WBP_RequestList`, x 40) ficar visível ao lado.
+  - Três colunas: **ACERVO** (`SearchBox` + `BookList`), **USUÁRIO** (`UserSearch` + `UserList` + "Cadastrar novo usuário" → `NewUserPanel` com `NewName`, `NewDoc`, Salvar e Cancelar) e **NOVO EMPRÉSTIMO** (`SelectedUserText`, `LoanItems`, `StatusText` em âmbar, "Lançar empréstimo" → `ConfirmPanel` com Confirmar e Voltar, "Limpar lançamento" e "Sair do sistema").
+- **Linhas:** `WBP_Row` (Button + TextBlock `Label`), com `Setup(InOwner, InKind, InValue, InValue2, InIndex, InLabel, InEnabled)`. O clique chama `Owner.OnRowClicked(Kind, Value, Value2, Index)`.
+  - Kind 0 = livro (adiciona aos itens, máximo de 3; a linha fica desabilitada com 0 cópias).
+  - Kind 1 = usuário (seleciona).
+  - Kind 2 = item lançado (remove).
+- **Variáveis:** `System`, `SelDoc`, `SelName`, `Items[]` e `Status`.
+- **`Open(Sys)`** carrega o rascunho do sistema, esconde os painéis, faz `ResolveName` e depois `RefreshAll`. Cada mudança chama `SaveDraft()`, que grava de volta no sistema.
+- **Eventos (`BindToEventProperty`):** `OnTextChanged` do `SearchBox` → `RefreshBooks` e do `UserSearch` → `RefreshUsers`. `OnClicked` dos 8 botões → `OnNewUser`, `OnSaveUser`, `OnCancelUser`, `OnLaunch`, `OnConfirm`, `OnBack`, `OnClear` e `OnExit`.
+- **`OnConfirm`:** chama `System.ConfirmLoan(SelDoc, Items)`.
+  - Se der certo: limpa as variáveis e chama `CloseSystem(true)`, que esconde o papel (`HideRequest` do personagem).
+  - Se der errado: mostra o aviso e salva o rascunho.
+- **`CloseSystem(Done)`:** `SaveDraft`, `RemoveFromParent`, `SetInputModeGameOnly` e esconde o cursor.
+- **Ainda falta:** Esc/B não fecham a tela (só o botão "Sair do sistema"). O controle navega pelos botões do UMG, mas ainda não foi testado.
 
 ## Game setup
 - World Settings → GameMode Override = `/Game/Library/Blueprints/BP_LibraryGameMode`, que é filho de `BP_FirstPersonGameMode`. Controller: `BP_FirstPersonPlayerController`.
@@ -224,7 +272,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 - **Tick do personagem:** Sequence → `UpdatePlacementPreview` e `UpdateCameraEffects(Delta)`.
 
 ### Interação no `BP_LibraryCharacter`
-- **Variáveis:** `HeldBooks` (array de BP_Book), `MaxHeld` 3, `InteractDistance` 250, `Ghost`, `CurrentZone`, `PrevZone`, `CurrentPlacement` e `bPlacementValid`.
+- **Variáveis:** `HeldBooks` (array de BP_Book), `MaxHeld` 3, `InteractDistance` 250, `Ghost`, `CurrentZone`, `PrevZone`, `CurrentPlacement`, `bPlacementValid`, `RequestWidget` e `SystemWidget`.
 - `TraceBook()`: SphereTraceForObjects com raio 5 e `[ObjectTypeQuery4]`, depois cast para BP_Book.
 - `TraceZone()`: SphereTraceForObjects com raio 2 e `[ObjectTypeQuery7]`, depois cast para BP_PlaceZone. Devolve Zone, HitLoc e Found.
 - **`UpdatePlacementPreview()`, a cada Tick:**
@@ -237,7 +285,11 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - Para falar com o cliente, mire no **rosto** dele (acima do tampo).
   - `TraceCustomer()`: SphereTraceForObjects com raio 10, `[ObjectTypeQuery5 = Vehicle]` (o tipo da cápsula dos clientes) e `InteractDistance`, depois cast para BP_Customer. O próprio jogador é ignorado (IgnoreSelf).
   - Se achou um cliente: `HandleCustomer(c)` chama `c.Interact()`, e o resultado decide o que fazer: 1 → `ShowRequest(Msg)`, 3 → `HideRequest()`, 0 → nada. O caso 2 → `SetRequestStatus(Msg)` continua no código, mas o cliente não usa mais (o `StatusText` do papel fica vazio).
-  - Se não achou: chama o `Interact()` dos livros, descrito abaixo e sem mudanças.
+  - Se não achou cliente: `TraceTerminal()` (SphereTraceForObjects com raio 5, `[ObjectTypeQuery2 = WorldDynamic]` e `InteractDistance`, depois cast para `BP_LibrarySystem`). Se achou, chama **`OpenSystem(sys)`**:
+    - Cria um `WBP_LibrarySystem` novo, chama `Open(sys)`, `AddToViewport` (ZOrder 5), `SetInputModeUIOnly` e mostra o cursor.
+    - Se o papel está aberto, ele é re-adicionado com ZOrder 10, por cima da tela.
+    - O estado não se perde ao recriar o widget, porque fica no rascunho do sistema.
+  - Se não achou nada: chama o `Interact()` dos livros, descrito abaixo e sem mudanças.
 - **Papelzinho `WBP_RequestList`** (`/Game/Library/UI/`):
   - Estrutura: CanvasPanel → Border bege (`Paper`), ancorado à esquerda (x 40, 40% da altura) → VerticalBox com `Header` "Pedido:", `ListText` e `StatusText` (vermelho).
   - Funções `SetList(NewText)` e `SetStatus(NewText)`.
