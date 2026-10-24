@@ -30,6 +30,7 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 - [x] Etapa 1c: capa para cima no balcão e na mão (pilha deitada), e E no balcão entrega a pilha inteira
 - [ ] Teste do usuário com teclado do ciclo completo
 - [ ] Destaque do livro sob a mira (outline ou ponto que muda de cor)
+- [~] Precisão de pegar/devolver (2026-10-24): `TraceBook` com raio 0.5 (era 5), `SlotOffsets` em passos de 0,25 cm até ±8 (65 valores). A tolerância do overlap em `GetPlacement` ficou em 0.4 (original): 1.2 deixava o livro atravessar o vizinho. Aplicado, **falta teste do usuário com o mouse** (Open Office Design vs Cities; devolver livro em vão apertado).
 - [ ] Empilhar no balcão mirando em cima de outro livro (hoje mirar num livro = pegar)
 - [ ] Converter outras estantes (livros unitários + zonas, script em lote igual ao da History)
 - [x] Balcão → entregar o livro ao NPC (primeiro passo do ciclo de empréstimo). Veja a Etapa 2.
