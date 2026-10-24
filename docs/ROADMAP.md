@@ -51,10 +51,19 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - Os manequins parados foram removidos.
   - Verificado por teste automático no PIE (pedido, entrega errada, entrega certa e saída).
 - [ ] Teste do usuário com teclado do ciclo de empréstimo
-- [ ] Porta que abre de verdade: hoje a folha está fundida na `SM_WallwDoor01`, e o NPC surge do lado de dentro
+- [x] Etapa 2b, spawn e fila:
+  - `BP_CustomerSpawner` cria clientes a cada 60–120 s (até 3 na loja).
+  - Eles entram em linha reta pela porta e fazem fila em Y 170. A fila anda quando o da frente é atendido, e quem sai vai pela faixa Y≈250 e some na porta.
+  - O cliente para colado no balcão (X -437).
+  - Entrega errada não faz nada (a frase de erro saiu).
+  - Clientes não pedem títulos já pedidos por outro.
+  - Verificado por teste automático no PIE.
+- [ ] Teste do usuário com teclado da fila
+- [ ] Porta que abre de verdade: hoje a folha está fundida na `SM_WallwDoor01`, e o NPC surge e some do lado de dentro
 - [ ] Som do sininho da porta (gancho `PlayBell` vazio, o projeto não tem sons)
 - [ ] Devolução de livros (cliente traz um livro, o jogador guarda na estante)
-- [ ] Ciclo de spawn (vários clientes, um depois do outro) e fila no balcão
+- [ ] Reposição/estoque: hoje os livros levados somem da estante. Com o tempo, a History esvazia e o spawner passa a descartar clientes sem pedido.
+- [ ] Talvez: clientes em espera olhando em volta, impaciência, ou ir embora se esperarem demais
 - [ ] Animação de entregar/receber os livros (hoje eles grudam na mão `hand_r`)
 - [ ] Diálogos simples
 

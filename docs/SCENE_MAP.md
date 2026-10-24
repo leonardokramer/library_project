@@ -29,9 +29,13 @@ Unidades em cm, coordenadas do mundo. +X aponta para a porta de entrada (lado le
 |---|---|---|
 | `PlayerStart` | (-640, 170, 102), yaw 0 | Jogador nasce atrás do balcão, olhando para a loja |
 | `NavMeshBounds` | centro (122, 0, 220), escala (9.8, 5.5, 2.6) | NavMesh nos dois andares |
-| `NPC_Spawn` (`Gameplay/NPCPoints`) | (960, 290, 20) | NPC entra pela porta |
-| `NPC_Counter` | (-420, 170, 20), yaw 180 | NPC para de frente pro balcão |
-| `NPC_Exit` | (960, 380, 20) | NPC sai pela porta |
+| `NPC_Spawn` (`Gameplay/NPCPoints`) | (1000, 207, 20), yaw 180 | Porta: o NPC surge e some aqui (a folha da porta fica por volta de Y 165–245) |
+| `NPC_Entry` | (820, 207, 20) | Primeiro passo: entra em linha reta pela porta |
+| `NPC_Counter` | (-438, 170, 20), yaw 180 | Posição 0 da fila, colada no balcão (a frente do balcão fica em X -472) |
+| `NPC_Exit` | (-380, 255, 20) | Começo da faixa de saída (Y≈250, paralela à fila) |
+| `CustomerSpawner` (`Gameplay/NPCs`) | (900, 207, 20) | Gera os clientes e controla a fila |
+
+**Corredor de clientes:** os traces mostram livre o trecho de Y 170 a 290 entre o balcão e a porta. Há expositores baixos em Y 10–166 (ex.: `Bookshelf_6`); a escada começa em Y 292 e a `Column3` fica em (-460, 300). A fila fica em Y 170 e a saída em Y 250–255.
 
 ### NavMesh sem ilhas em cima dos móveis (pasta `Gameplay/NavModifiers`)
 O Recast gera NavMesh em qualquer superfície plana, inclusive mesas, balcões e estantes. Para evitar isso, há 8 `NavModifierVolume` com `AreaClass = NavArea_Null` (`NavBlock_{Ground,Upper}_{A..D}`):
@@ -40,33 +44,69 @@ O Recast gera NavMesh em qualquer superfície plana, inclusive mesas, balcões e
 - Se aparecer outra área elevada que precise ser andável (rampa, palco), abra um buraco nos volumes ali.
 
 ## Clientes: `BP_Customer` (`/Game/Library/Characters/`, pasta `Gameplay/NPCs`)
-Os manequins parados de antes (`Customer_Counter/Cafe/Browsing`) foram **apagados**. Hoje há só um cliente, `Customer_01`, colocado em (960, 290, 100), yaw 180, logo do lado de dentro da porta.
-- **Porta falsa por enquanto:** a porta está fundida na malha `SM_WallwDoor01` e não abre. O cliente surge do lado de dentro e some no `NPC_Exit`. `PlayBell()` é um gancho vazio para o som do sininho, porque o projeto não tem nenhum som ainda.
+Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
+- **Porta falsa por enquanto:** a porta está fundida na malha `SM_WallwDoor01` e não abre. O cliente surge em `NPC_Spawn`, logo do lado de dentro, e some quando volta lá. `PlayBell()` é um gancho vazio para o som do sininho, porque o projeto não tem nenhum som ainda.
 - **Configuração:**
-  - Pai `Character`, malha `SKM_Quinn_Simple` com `AnimClass = ABP_Unarmed` (idle/andar pela velocidade), offset Z -89 e yaw -90.
+  - Pai `Character`, malha `SKM_Quinn_Simple` com **`AnimClass = ABP_Customer`** (`/Game/Library/Characters/`), offset Z -89 e yaw -90.
+  - O `ABP_Customer` é uma cópia do `ABP_Unarmed` em que `ShouldMove = GroundSpeed > 3`, sem exigir aceleração.
+  - No original, a aceleração da IA chega zerada em quadros alternados. O `ShouldMove` piscava e a caminhada ficava picotada, "como W apertado aos toquinhos".
   - `AIController` com `AutoPossessAI = PlacedInWorldOrSpawned`.
+  - **Colisão entre clientes:** no BeginPlay, a cápsula vira ObjectType **Vehicle** e passa a **ignorar Vehicle**. Os clientes atravessam uns aos outros (sem isso, quem saía e quem entrava travavam na porta), mas continuam sólidos para o jogador, porque o perfil Pawn bloqueia Vehicle. Por isso o `TraceCustomer` do personagem procura `ObjectTypeQuery5` (Vehicle).
   - `bUseControllerRotationYaw = false` e `bOrientRotationToMovement = true`, porque senão o `SetActorRotation` é ignorado. `MaxWalkSpeed` é 150.
-  - **`NavMovementProperties.bUseAccelerationForPaths = true`** (no CDO **e** na instância `Customer_01`). Sem isso, o NPC desliza em pose idle: o `ABP_Unarmed` só ativa a caminhada (`ShouldMove`) com aceleração ≠ 0, e o movimento por IA não gera aceleração por padrão.
+  - **`NavMovementProperties.bUseAccelerationForPaths = true`** no CDO (os spawnados herdam). Sem isso, o NPC desliza em pose idle: o `ABP_Unarmed` só ativa a caminhada (`ShouldMove`) com aceleração ≠ 0, e o movimento por IA não gera aceleração por padrão.
 - **Variáveis:**
-  - `State`: 0 esperando, 1 indo ao balcão, 2 no balcão, 3 pedido entregue ao jogador, 4 indo embora.
-  - `RequestedTitles` e `RequestedAuthors` (arrays de string), `CarriedBooks` e `StartDelay` (2 s).
-  - Instance-editable: `CounterPoint = NPC_Counter`, `ExitPoint = NPC_Exit`, `CounterZone = Zone_Counter`.
-- **BeginPlay:** `BuildRequest()` sorteia de 1 a 3 **títulos distintos** entre os `BP_Book` da cena que têm título no catálogo. Depois vem o Delay `StartDelay`, `PlayBell` e `SimpleMoveToLocation(CounterPoint)`, com State 1.
-- **Tick:**
-  - State 1 e a menos de 60 cm (2D) do `CounterPoint`: passa para State 2. Ele para em cerca de (-382, 175).
-  - States 2 e 3: gira suavemente para yaw 180, olhando para o atendente.
-  - State 4 e a menos de 60 cm do `ExitPoint`: destrói os `CarriedBooks` e se destrói.
+  - `State`: 0 recém-criado, 1 andando, 2 no balcão (pode pedir), 3 pedido mostrado, 4 indo embora, **5 esperando na fila**.
+  - `RequestedTitles` e `RequestedAuthors` (arrays de string), `CarriedBooks`.
+  - Caminho: `Path` (Array Vector), `PathIdx`, `QueueIndex`, `Leaving`, `FineApproach`, `FineTime`.
+  - Preenchidas pelo spawner: `Spawner`, `CounterZone` e `ExitPoints`.
+- **BeginPlay:** só `BuildRequest()`. Ele sorteia de 1 a 3 **títulos distintos** entre os `BP_Book` da cena que estão no catálogo, **excluindo títulos já pedidos por outros clientes vivos** (via `GetRequested()` de cada um). Se não sobrar nada, o pedido fica vazio e o spawner descarta o cliente.
+- **`StartPath(Points)`:** grava o caminho, zera o `PathIdx`, vai para State 1 (ou 4 se `Leaving`) e faz `SimpleMoveToLocation(Points[0])`.
+- **`UpdateWalk(Delta)`**, chamado no Tick em State 1 ou 4:
+  - Ponto intermediário a menos de 60 cm: passa para o próximo ponto.
+  - Último ponto e saindo, a menos de **120 cm** (ou travado): `PlayBell`, destrói os `CarriedBooks` e se destrói. É assim que ele some na porta. Com 60 cm, às vezes ele parava antes, porque o navmesh acaba antes da parede, e ficava preso.
+  - **Detector de travado:** `StuckTime` soma enquanto a velocidade XY for < 5 cm/s e zera quando ele anda (também zera no `StartPath`). Passou de 1,5 s: num ponto intermediário, avança para o próximo; no último ponto, some (saindo) ou entra na aproximação fina (chegando).
+  - Último ponto e chegando, a menos de 60 cm: entra em **aproximação fina**. Chama `StopMovement` no controller e depois `AddMovementInput(Normalize2D(alvo - posição), 0.5)` até ficar a menos de 6 cm ou passar 1,5 s.
+  - Chegou: `Arrive()` → State 2 se `QueueIndex == 0`, senão State 5. É isso que cola o NPC no balcão (para em X≈-437).
+- **`GoToSlot(Index, Loc)`**, chamado pelo spawner quando a fila anda:
+  - State 5: `StartPath([Loc])`.
+  - State 1: troca o último ponto do caminho e, se já está indo para ele, refaz o `SimpleMove`.
+  - States 2, 3 e 4: ignora.
+- **Tick:** os States 2, 3 e 5 giram suavemente para yaw 180.
 - **`Interact() → (Result int, Message text)`.** Quem cuida da UI é o personagem. O cliente não conhece o `BP_LibraryCharacter`.
   - State 2: vai para State 3 e devolve `1` + `BuildListText()`, com uma linha por livro: `- Título  (Autor)`.
   - State 3: chama `CheckDelivery()`.
-    - Certo: `TakeBooks()`, State 4, `SimpleMoveToLocation(ExitPoint)` e devolve `3`.
-    - Errado: devolve `2` + "Hmm... não é bem isso que eu pedi."
-  - Fora isso, devolve `0`.
+    - Certo: `TakeBooks()`, `Leaving = true`, `StartPath(ExitPoints)`, `Spawner.OnCustomerServed(self)` e devolve `3`.
+    - **Errado: devolve `0`.** Não acontece nada e não aparece mensagem.
+  - Os outros States (inclusive quem está na fila) devolvem `0`.
 - **`CheckDelivery()`:** pega `CounterZone.GetBooksInZone()`.
   - Se a quantidade for diferente da pedida, a entrega está errada.
   - Senão, para cada livro, procura o título numa cópia de `RequestedTitles` e remove (multiconjunto). Se algum título não bater, a entrega está errada.
   - A comparação é **por título**, e não por malha: `SM_Book_02` e `SM_Book_07` são os dois "Diary of Ms. Rose".
-- **`TakeBooks()`:** desliga a colisão de cada livro do balcão e faz `AttachActorToComponent(Mesh, "hand_r", SnapToTarget, KeepWorld)`, com +4,5 cm em Z por livro. Os livros ficam presos à mão e vão embora com o cliente. **Não há reposição na estante.**
+- **`TakeBooks()`:** desliga a colisão de cada livro do balcão e faz `AttachActorToComponent(Mesh, "hand_r", SnapToTarget, SnapToTarget, KeepWorld)`. Depois aplica `SetActorRelativeTransform`:
+  - Rotação relativa fixa **(Roll -86.16, Pitch -3.04, Yaw 85.99)**: o livro fica **em pé ao lado da coxa**, preso pela borda de cima (4 cm abaixo do topo), com a capa para fora e a lombada para trás.
+  - Posição = `RotateVector((s - c.x, -c.y, (4 - h.z) - c.z), rot)`, em que `(c, h)` = `GetBookExtents` e `s = ((n-1)/2 - i) * 4.6`. A pilha fica centrada na mão.
+  - Valores calculados com a rotação do osso `hand_r` no idle (lida no Simulate) e conferidos com foto.
+  - Ajuste fino: mude a rotação/offset no grafo do `TakeBooks`. Para testar rápido, use o modo Simulate + `set_actor_transform(worldspace=false)` nos livros presos.
+  - **Não há reposição na estante.**
+
+## Fila: `BP_CustomerSpawner` (`/Game/Library/Blueprints/`, ator `CustomerSpawner`)
+- **Instance-editable:**
+  - Pontos: `DoorPoint = NPC_Spawn`, `EntryPoint = NPC_Entry`, `CounterPoint = NPC_Counter`, `ExitLanePoint = NPC_Exit` e `CounterZone = Zone_Counter`.
+  - Tempo: `FirstDelay` 3 s, `MinInterval` 60 s, `MaxInterval` 120 s (eram 15–40 s, e a fila ficava sempre cheia).
+  - Fila: `MaxCustomers` 3 e `SlotStep` (90, 0, 0).
+- `Queue` (Array BP_Customer) guarda os clientes na ordem da fila. A posição i fica em `CounterPoint + SlotStep * i`, ou seja, X -438, -348, -258 e -168 em Y 170.
+- **BeginPlay:** `SetTimerbyFunctionName("TrySpawn", FirstDelay)`.
+- **`TrySpawn()`:**
+  - Primeiro rearma o timer com `RandomFloatInRange(Min, Max)`.
+  - Se a `Queue` tiver menos que `MaxCustomers`: spawna o `BP_Customer` em `DoorPoint + (0, 0, 80)`, yaw 180. Depois preenche `Spawner`, `CounterZone` e `ExitPoints = [ExitLanePoint, (EntryPoint.x, 250), DoorPoint]`.
+  - Se o pedido veio vazio, destrói o cliente.
+  - Senão: entra na `Queue`, recebe o `QueueIndex`, chama `PlayBell` e `StartPath([EntryPoint, posição da vez])`.
+  - Os arrays de pontos são montados em **variáveis locais com `Add`**, porque o MakeArray do DSL só aceita 1 elemento.
+- **`OnCustomerServed(c)`:** tira `c` da `Queue` e chama `GoToSlot(i, posição i)` em todos os outros. A fila anda assim que o da frente pega os livros, enquanto ele sai pela faixa Y≈250.
+- **Verificado no PIE:**
+  - Intervalos de 2–4 s formam a fila de 4, com o da frente em State 2 em X -437 e os outros em State 5.
+  - Livro errado + E: nada acontece.
+  - Livros certos + E: o da frente sai e some na porta, os outros avançam uma posição e um 5º cliente entra no fim da fila.
 
 ## Game setup
 - World Settings → GameMode Override = `/Game/Library/Blueprints/BP_LibraryGameMode`, que é filho de `BP_FirstPersonGameMode`. Controller: `BP_FirstPersonPlayerController`.
@@ -192,8 +232,11 @@ Os manequins parados de antes (`Customer_Counter/Cafe/Browsing`) foram **apagado
   - Caso contrário, esconde o fantasma e apaga a zona.
 - **No preview, quando a zona é o balcão (ZoneType 1):** chama `GetCounterStack(HitLoc, HeldBooks)`, guarda `CurrentStack` e o fantasma vira a caixa da **pilha inteira**. Na estante, o fantasma continua sendo só o livro de cima.
 - **Tecla E → `OnInteractPressed()`** (é o que o `IA_Interact` Started chama):
-  - `TraceCustomer()`: SphereTraceForObjects com raio 10, `[ObjectTypeQuery3 = Pawn]` e `InteractDistance`, depois cast para BP_Customer. O próprio jogador é ignorado (IgnoreSelf).
-  - Se achou um cliente: `HandleCustomer(c)` chama `c.Interact()`, e o resultado decide o que fazer: 1 → `ShowRequest(Msg)`, 2 → `SetRequestStatus(Msg)`, 3 → `HideRequest()`.
+  - **Prioridade:** se `TraceBook` acha um livro **ou** `bPlacementValid` está ligado (mirando numa área válida com livros na mão), o E vai direto para o `Interact()` dos livros.
+  - Só depois disso ele procura cliente. O motivo: com o NPC colado no balcão, o raio de 2,5 m passava pelo tampo e acertava o NPC atrás dele, então o livro nunca era colocado.
+  - Para falar com o cliente, mire no **rosto** dele (acima do tampo).
+  - `TraceCustomer()`: SphereTraceForObjects com raio 10, `[ObjectTypeQuery5 = Vehicle]` (o tipo da cápsula dos clientes) e `InteractDistance`, depois cast para BP_Customer. O próprio jogador é ignorado (IgnoreSelf).
+  - Se achou um cliente: `HandleCustomer(c)` chama `c.Interact()`, e o resultado decide o que fazer: 1 → `ShowRequest(Msg)`, 3 → `HideRequest()`, 0 → nada. O caso 2 → `SetRequestStatus(Msg)` continua no código, mas o cliente não usa mais (o `StatusText` do papel fica vazio).
   - Se não achou: chama o `Interact()` dos livros, descrito abaixo e sem mudanças.
 - **Papelzinho `WBP_RequestList`** (`/Game/Library/UI/`):
   - Estrutura: CanvasPanel → Border bege (`Paper`), ancorado à esquerda (x 40, 40% da altura) → VerticalBox com `Header` "Pedido:", `ListText` e `StatusText` (vermelho).
