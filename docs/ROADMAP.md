@@ -91,7 +91,15 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - **Os botões só aparecem quando o último input foi do controle** (`SetPadMode`, via `OnPreviewKeyDown` com `IsGamepadKey`; mouse volta a escondê-los). Com teclado/mouse, o campo de texto normal basta.
   - Esc/B fecha o teclado primeiro (`HandleBack`).
   - Verificado no PIE (digitar "Cit" filtra para "Cities"; botões escondidos sem controle e visíveis com ele). **Falta testar com um controle de verdade** (foco por D-pad nas teclas, e a detecção de controle).
-- [ ] Fase 4 do redesenho: prévia 3D da capa (SceneCapture do `BP_Book`, de lado para mostrar a lombada) e mapa de sinopses (`BookSynopses`, título → sinopse) no CDO do `BP_Book`
+- [x] Fase 4 do redesenho (2026-10-26): **prévia 3D da capa + sinopses**:
+  - `BP_BookPreview` (`/Game/Library/Blueprints/`): `Pivot` → `BookMesh`, `Cap` (SceneCaptureComponent2D, `ShowOnlyActorComponents` só dele, sem atmosfera/fog/bloom, fundo preto) e 2 luzes. No `BeginPlay` cria um RenderTarget 512×512. `ShowMesh(Mesh, Yaw)` centraliza a malha pelos bounds, gira o pivô, afasta a câmera (3,1 × o raio) e chama `CaptureScene`.
+  - O shell **gera o ator** em (0, 0, -30000) no `Open` (`Preview`) e o destrói no `CloseSystem` (`KillPreview`). `ShowPreview(Title, Img)` acha um `BP_Book` da cena com aquele título, copia a malha para a prévia e liga o RenderTarget ao `PreviewImage` (via `SetBrushResourceObject`).
+  - **Pose: yaw -38°. Mostra a FRENTE da capa com a lombada à esquerda** (conferido em "Cities": ilustração e título na frente, título na lombada). Cuidado ao mudar o yaw: a +142° apareceria o verso.
+  - **Sinopses:** `BP_Book.BookSynopses` (mapa título → sinopse, 19 textos curtos em pt-BR, tom cozy) no CDO; `GetSynopsis(Title)` no shell; "Sem descrição." se faltar.
+  - Verificado no PIE com "Classic Poems" e "Cities".
+  - **Layout do detalhe (ajuste pós-teste):** título, autor, cópias, **botão de adicionar (no topo)**, prévia (Fill) e **sinopse embaixo**, dentro de `SizeBox` (`bOverride_MaxDesiredHeight` + 150) + `ScrollBox` (`SynScroll`): sinopse longa rola em vez de estourar o painel (testado com texto de ~600 caracteres). Câmera da prévia em 3,9 × o raio, para o livro não cortar.
+  - **Rolagem no controle:** o analógico direito (eixo Y) rola a sinopse (aba Livros) e o histórico (aba Clientes) via `OnAnalogValueChanged` → `ScrollContent`. Não testado com controle de verdade.
+  - Ao adicionar livros novos: crie a entrada em `BookTitles`, `BookAuthors` **e** `BookSynopses`.
 - [ ] Histórico com data/dia de jogo e status "devolvido" (hoje `LoanDocs`/`LoanTitles` guardam só documento e títulos)
 - [x] **Navegação por foco (controle/teclado), 2026-10-26:**
   - Ao abrir o sistema o foco vai para a aba LIVROS (`FocusTab`, com timer de 0,2 s). Ao fechar o papel ou o teclado, o foco volta para a aba atual. Ao abrir o teclado, o foco vai para a primeira tecla; ao abrir o papel, para o botão Fechar.

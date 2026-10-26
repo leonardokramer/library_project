@@ -168,6 +168,13 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **Tick num widget** criado do zero: `create_node('AddEvent|UserInterface|EventTick')` e ligue `then` a um `CallFunction`.
 - **Foto do PIE:** se uma janela flutuante (ex.: "Message Log") abrir na frente, `CaptureEditorImage` fotografa ela. Use `SlateInspectorToolset.Windows(action: "list")` e `action: "close", index: N` para fechá-la.
 
+- **Prévia 3D em UMG (SceneCapture → Image), sem material:** `Rendering|CreateRenderTarget2D` (sem pino de world context: não passe `self`), `Class|SceneCaptureComponent2D|SetTextureTarget :self cap :TextureTarget rt`, `Rendering|SceneCapture|ShowOnlyActorComponents cap self` e `Appearance|SetBrushResourceObject (Image) rt`. Configure no componente (`set_properties`): `CaptureSource: SCS_FinalColorLDR`, `bCaptureEveryFrame/bCaptureOnMovement: false`, `PrimitiveRenderMode: PRM_UseShowOnlyList` e `ShowFlagSettings: [{ShowFlagName, Enabled:false}]` para Atmosphere/Fog/VolumetricFog/Cloud/Bloom (senão o fundo sai claro). Chame `Rendering|SceneCapture|CaptureScene` depois de trocar a malha.
+- **Bounds de malha:** `StaticMesh|GetBounds` devolve uma struct; use `Math|BoxSphereBounds|BreakBoxSphereBounds` (`(bind (_origin _extent _radius) ...)`).
+- **Criar Actor BP com componentes:** `BlueprintTools.create(folder_path, asset_name, asset_type=/Script/Engine.Actor)` + `ActorTools.add_component(owner=<BP>, component_type, name)` e `set_properties` em `<BP>_C:<Nome>_GEN_VARIABLE`. `set_parent_component` cria o pivô.
+- **Mudar propriedade de widget (ex.: Visibility) exige recompilar o WBP** para valer no PIE.
+- **Mapa título→sinopse:** `add_variable(type_name='string', container_type='MAP')` + `set_properties` no CDO com um objeto JSON (conferido: 19 entradas).
+- **Fotos do PIE:** o `CaptureEditorImage` demora a refletir o estado; tire a foto alguns segundos depois do evento do roteiro e use `sleep` em background para sincronizar.
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...

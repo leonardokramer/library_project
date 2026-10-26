@@ -56,7 +56,8 @@ Estado em 2026-10-24. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, emprésti
   - Esc/B (`HandleBack`) fecha o pedido e depois o sistema, e P/Y abre o pedido (`OnPreviewKeyDown`). **Não testado com teclado/controle de verdade.**
   - **Teclado virtual** (`WBP_VirtualKeyboard`, overlay do shell) **só para o controle**: no controle, o **A num campo de texto abre o teclado** (`PadOpenKeyboard`); com teclado/mouse digita-se direto no campo. Os botões "TECLADO" ficam escondidos.
   - **Foco para controle:** o sistema abre com foco na aba LIVROS; o botão focado é destacado por `Hl`/`HlAll` (Tick do shell) e por `HlOn`/`HlOff` em `WBP_Row`/`WBP_KeyButton`; LB/RB trocam de aba. Não testado com controle de verdade.
-  - Ainda falta: prévia 3D da capa + sinopses, histórico com data/devolvido, SaveGame do cadastro e um computador de verdade no lugar da caixa registradora.
+  - **Detalhe do livro:** sinopse (`BP_Book.BookSynopses`) e **prévia 3D da capa** (`BP_BookPreview`, gerado no `Open` do shell em (0,0,-30000); SceneCapture → RenderTarget → Image). A pose é yaw -38° (frente da capa + lombada à esquerda); não troque sem conferir que não vira o verso.
+  - Ainda falta: histórico com data/devolvido, SaveGame do cadastro e um computador de verdade no lugar da caixa registradora.
 - **Problema conhecido:** o agachar desce a FirstPersonMesh inteira, e os pés atravessam o chão. Falta uma animação de agachar (já está no ROADMAP).
 - **Próximos passos naturais** (ROADMAP Etapa 2): teste do usuário com teclado do ciclo completo (papel → estante → balcão → sistema), Esc para fechar o sistema, porta que abre, sininho, devolução e reposição de estoque.
 - O `BP_TestDriver` (`/Game/Library/Debug/`) ficou com o roteiro de teste do sistema no EventGraph. Ele **não está na cena**. Reescreva o grafo antes de reutilizar.
