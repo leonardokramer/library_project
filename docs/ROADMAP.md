@@ -73,6 +73,22 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - Clientes a cada 180–360 s (o primeiro em 5 s).
   - Verificado por teste automático no PIE.
 - [ ] Teste do usuário com teclado/mouse do sistema
+- [x] Etapa 2d, redesenho do sistema em subtelas (fases 1, 3, 5 e 6 do plano; fases 2 e 4 abaixo):
+  - `WBP_LibrarySystem` virou o **shell**: barra lateral (LIVROS · CLIENTES · EMPRÉSTIMO · PEDIDO · SAIR) + `WidgetSwitcher` com `WBP_ScreenBooks`, `WBP_ScreenUsers` e `WBP_ScreenLoan`. O estado (usuário, itens, status, rascunho) continua no shell; as telas chamam o shell por `Owner`.
+  - **Livros:** busca, A→Z / Z→A, lista grande, detalhe (título, autor, cópias, "ADICIONAR AO EMPRÉSTIMO"). Sinopse e prévia 3D ainda são placeholders.
+  - **Clientes:** busca, A→Z / Z→A, detalhe com **histórico de empréstimos**, cadastro novo, "USAR NO EMPRÉSTIMO".
+  - **Empréstimo:** cliente, resumo do pedido, livros lançados, lançar/confirmar/limpar (mesmas regras de conferência de antes).
+  - **Pedido:** o papel saiu da coluna. Virou um modal por cima do sistema (botão PEDIDO, P / Y). O papel do jogo fica escondido enquanto o sistema está aberto e volta ao sair sem concluir.
+  - `BP_LibrarySystem` ganhou `StrLess` e `SortOrder` (ordenação alfabética sem tool de sort).
+  - Verificado no PIE por roteiro (`BP_TestDriver`): as 3 telas, ordenação, detalhe, histórico, modal do pedido e saída.
+- [x] Ajustes pós-teste do usuário (2026-10-26):
+  - **Balcão não deixa mais atravessar livros:** `BP_PlaceZone.StackFree(Center, HalfSize)` (BoxOverlap contra `BP_Book`) entra antes do `Return` de `GetCounterStack` e define o `Valid`. Pilha que invade livros já no balcão fica inválida (fantasma some e o E solta). Verificado no PIE: pilha 1 válida, sobreposta (16 cm) inválida, livre (45 cm) válida.
+  - **Feedback do "Adicionar ao empréstimo":** o botão vira "✓ ADICIONADO AO EMPRÉSTIMO" (desativado) e aparece "Adicionado! Livros no empréstimo: N de 3". Ao voltar para a aba Livros o botão se atualiza (`RefreshAddButton`), e o limite de 3 mostra aviso.
+- [ ] Teste do usuário com teclado/controle do novo sistema: **P / Y** abre o pedido, **Esc / B** fecha o pedido e depois o sistema, e foco por setas/D-pad (a tecla simulada não chega ao PIE, então não foi testada)
+- [ ] Fase 2 do redesenho: teclado virtual na tela (estilo YouTube TV) ligado às buscas e ao cadastro
+- [ ] Fase 4 do redesenho: prévia 3D da capa (SceneCapture do `BP_Book`, de lado para mostrar a lombada) e mapa de sinopses (`BookSynopses`, título → sinopse) no CDO do `BP_Book`
+- [ ] Histórico com data/dia de jogo e status "devolvido" (hoje `LoanDocs`/`LoanTitles` guardam só documento e títulos)
+- [ ] Destaque visual do foco nos botões e nas linhas (o botão do UMG não muda de aparência com foco de teclado/controle)
 - [ ] Sistema no controle: navegação por foco nos botões e **teclado virtual** do console. No console, o `EditableTextBox` com foco abre o teclado nativo da plataforma. A busca é opcional, porque a lista é navegável sem digitar.
 - [ ] Fechar o sistema com Esc / B (hoje é pelo botão "Sair do sistema"; no PIE, o Esc encerra o jogo)
 - [ ] Trocar a caixa registradora por um computador/monitor de verdade (asset da Fab) e mover o `BP_LibrarySystem` para lá

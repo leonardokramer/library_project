@@ -21,6 +21,9 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - Não edite os assets do template First Person (`/Game/FirstPerson`, `/Game/Input`). Crie filhos ou cópias em `/Game/Library`.
 - Prefixos de nome: `BP_`, `WBP_`, `DT_` (DataTable), `DA_`, `M_`/`MI_`, `L_` (mapas), `E_` (enums), `S_` (structs).
 
+## Git
+- **Nunca faça commit (nem push) por conta própria.** Só commite quando o usuário confirmar explicitamente, a cada vez.
+
 ## Como trabalhar no editor
 - Use o MCP do Unreal (skill `unreal-mcp`). Os detalhes práticos e as pegadinhas estão em [docs/MCP_WORKFLOW.md](docs/MCP_WORKFLOW.md).
 - O layout da cena (coordenadas do balcão, da porta, da escada, do café e as pastas do Outliner) está em [docs/SCENE_MAP.md](docs/SCENE_MAP.md). Consulte antes de posicionar qualquer coisa.
@@ -29,7 +32,7 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - Os atores de gameplay ficam na pasta `Gameplay/` do Outliner; as câmeras e a sequência originais ficam em `Cinematic/`.
 
 ## Onde paramos (atualize ao fim de cada sessão)
-Estado em 2026-10-24. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, empréstimo)**, **2b (spawn + fila)** e **2c (sistema no computador)** estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
+Estado em 2026-10-24. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, empréstimo)**, **2b (spawn + fila)**, **2c (sistema no computador)** e **2d (sistema em subtelas)** estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
 - **Personagem `BP_LibraryCharacter`:**
   - Primeira pessoa, sem pulo, caminhada lenta.
   - Mira de ponto central.
@@ -46,12 +49,12 @@ Estado em 2026-10-24. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, emprésti
   - Cada um tem **nome e documento**, sorteados de um pool de 10 pessoas no `BP_LibrarySystem` (5 já cadastradas).
   - Só o da frente responde. O E mostra o papel `WBP_RequestList` com nome, documento e 1 a 3 livros. O E **não entrega** mais os livros.
   - Sem devolução e sem reposição na estante.
-- **Sistema `BP_LibrarySystem` + `WBP_LibrarySystem`** (E na caixa registradora, tela cheia):
-  - Acervo com cópias e busca. Busca de usuário por nome ou documento, e cadastro de usuário novo.
-  - Lança até 3 livros e confirma. O sistema confere usuário, livros no balcão e pedido; se algo não bate, mostra um aviso e não registra nada.
-  - Com tudo certo, a tela fecha e o cliente leva os livros e sai sozinho.
-  - Sair guarda um rascunho, que volta ao reabrir.
-  - Ainda falta: Esc/B para fechar, teste no controle, SaveGame do cadastro e um computador de verdade no lugar da caixa registradora.
+- **Sistema `BP_LibrarySystem` + `WBP_LibrarySystem`** (E na caixa registradora, tela cheia), **redesenhado em subtelas (Etapa 2d)**:
+  - `WBP_LibrarySystem` é o shell: barra lateral + `WidgetSwitcher` com `WBP_ScreenBooks` (busca, A→Z/Z→A, detalhe), `WBP_ScreenUsers` (busca, ordenação, histórico, cadastro) e `WBP_ScreenLoan` (lançar, confirmar, limpar). O estado fica no shell; as telas o chamam por `Owner` (`Bind`).
+  - O papel do pedido virou **modal** (botão PEDIDO, P / Y). O papel do jogo fica escondido enquanto o sistema está aberto e volta ao sair sem concluir.
+  - O sistema confere usuário, livros no balcão e pedido; se algo não bate, mostra um aviso e não registra nada. Com tudo certo, a tela fecha e o cliente leva os livros e sai sozinho. Sair guarda um rascunho.
+  - Esc/B (`HandleBack`) fecha o pedido e depois o sistema, e P/Y abre o pedido (`OnPreviewKeyDown`). **Não testado com teclado/controle de verdade.**
+  - Ainda falta: teclado virtual, prévia 3D da capa + sinopses, destaque visual do foco, histórico com data/devolvido, SaveGame do cadastro e um computador de verdade no lugar da caixa registradora.
 - **Problema conhecido:** o agachar desce a FirstPersonMesh inteira, e os pés atravessam o chão. Falta uma animação de agachar (já está no ROADMAP).
 - **Próximos passos naturais** (ROADMAP Etapa 2): teste do usuário com teclado do ciclo completo (papel → estante → balcão → sistema), Esc para fechar o sistema, porta que abre, sininho, devolução e reposição de estoque.
 - O `BP_TestDriver` (`/Game/Library/Debug/`) ficou com o roteiro de teste do sistema no EventGraph. Ele **não está na cena**. Reescreva o grafo antes de reutilizar.

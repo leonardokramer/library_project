@@ -134,6 +134,27 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **`CaptureEditorImage` com `{}`** fotografa a janela do editor **com o PIE e a UI** (widgets aparecem). O base64 vem salvo em `tool-results/`. Decodifique com Python.
 - **Espera no Bash:** `sleep` solto é bloqueado. Use `run_in_background: true` (você é avisado quando termina) e, enquanto isso, consulte `GetLogEntries`.
 
+### Aprendizados da Etapa 2d (subtelas, shell + telas filhas)
+- **Slot de VerticalBox/HorizontalBox:** o tamanho "auto" é `Size: {SizeRule: "Automatic", Value: 1.0}`. `"Auto"` falha em silêncio ("could not be set: Size").
+- **Cor de Button:** `WidgetStyle: {Normal/Hovered/Pressed/Disabled: {TintColor: {SpecifiedColor}}}`. A tinta é **linear** e a tela mostra sRGB, então valores como 0.07 aparecem bem mais claros (≈0.3). Para fundo escuro use ~0.01–0.04.
+- **EditableTextBox:** só tem `WidgetStyle` (`BackgroundColor`, `ForegroundColor`, `FocusedForegroundColor`, `TextStyle: {Font: {Size}}`). `BackgroundColor` solto dá erro.
+- **Widget filho em outro widget:** `AddWidget` aceita `widgetClass` = `/Game/.../WBP_X.WBP_X_C`, e `ToggleWidgetAsVariable` expõe `Variables|<Pai>|GetX`.
+- **Setter `SetOwner` entre classes vira `Actor|SetOwner`** (AActor::SetOwner) e liga errado. Crie uma função `Bind(InOwner)` dentro de cada tela e chame `Class|WBPScreenX|Bind :self ... :InOwner self`. Evite variáveis com nome de função de AActor (Owner, Name, Tag…) se for escrever setter de outra classe.
+- **Ordem de criação (tela filha ↔ pai):** crie função/variável stub, **compile os dois**, e só então escreva os corpos. Antes do compile o nó `Class|WBPScreenX|Refresh` vira `ControlActor|Refresh` no read-back e na prática liga errado.
+- **O read-back mente nos nomes** (`Baseline|GetSystem`, `ControlActor|Refresh`, `Class|ComboBox(Object)|GetItems`): o que vale é o pino `self` em `get_node_infos` (tipo "WBP Library System Object Reference" etc.).
+- **`write_graph_dsl` não substitui, soma.** Limpe antes: apague tudo menos os nós `K2Node_FunctionEntry`/`K2Node_FunctionResult` (pelo refPath). Use um helper `clear(graph)`. `write_graph_dsl` também compila: se **outra** função ainda aponta para widget removido, a escrita grava mas devolve erro. Limpe/neutralize essas funções antes.
+- **`remove_function_graph(blueprint, graph_name)`** e `RemoveWidget` (apaga a subárvore) funcionam. Ao trocar uma tela inteira: limpe o EventGraph (`find_nodes title=''` + `delete_node`), apague as funções, remova a árvore e recrie.
+- **Override de função de widget:** `add_function_graph` com o nome do evento nativo (`OnPreviewKeyDown`) cria o override com `MyGeometry`, `InKeyEvent` e retorno `EventReply`. Use `Widget|EventReply|Handled` / `Unhandled` no `return`.
+- **Comparar tecla:** `==` entre `Key` e `MakeKey` não liga. Funciona comparar `Input|Key|GetKeyDisplayName` (convertido com `ToString(Text)`) com `"Escape"`, `"P"`, `"Gamepad Face Button Right"`. `==` com enum literal (`EUINavigationAction`) também não liga.
+- **Teclado/controle exigem widget focável:** com `SetInputModeUIOnly(widget)`, o `bIsFocusable` do shell precisa estar `true` (CDO via `ObjectTools.set_properties`, depois compile e salve). Senão `OnPreviewKeyDown` nunca dispara.
+- **Atenção com atalhos de letra:** `OnPreviewKeyDown` tunela antes do campo de texto. Use um guard (`Widget|HasAnyUserFocusedDescendants` nos EditableTextBox) para não roubar a digitação.
+- **Tipos de variável em `add_variable`:** `bool` (não `boolean`), `int`, `string`. Array: `container_type: "ARRAY"`. Variável local de função: passe `graph`.
+- **`Utilities|Operators|Less(<)` com string não liga.** Foi preciso escrever `StrLess` (loop de `GetCharacterAsNumber` sobre `ToLower`) e `SortOrder` (rank por contagem). Os ids no DSL podem ficar com minúsculas diferentes (`AddBooktoLoan`).
+- **Nós de outra classe ficam desatualizados** no catálogo de um BP já aberto (o personagem e o `BP_TestDriver` ainda listavam funções antigas). Prefira que o widget novo busque o que precisa (ex.: o shell lê o texto do papel pelo `RequestWidget` do personagem) em vez de editar o personagem.
+- **`GetLogEntries`:** passe `category: ""` (o padrão é "LogsToolset", que não existe).
+- **Teste de tela:** driver com `ShowRequest` + `OpenSystem` do personagem (caminho real), delays de 8 s e `CaptureEditorImage` a cada etapa. `PressKey` do SlateInspector **não** aciona o `OnPreviewKeyDown` no PIE.
+- Para ler a imagem do `CaptureEditorImage`: o arquivo em `tool-results/` tem o base64 dentro; extraia com `re.search(r'[A-Za-z0-9+/=]{5000,}', s)` e grave o PNG no scratchpad.
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...
