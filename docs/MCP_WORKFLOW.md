@@ -155,6 +155,19 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **Teste de tela:** driver com `ShowRequest` + `OpenSystem` do personagem (caminho real), delays de 8 s e `CaptureEditorImage` a cada etapa. `PressKey` do SlateInspector **não** aciona o `OnPreviewKeyDown` no PIE.
 - Para ler a imagem do `CaptureEditorImage`: o arquivo em `tool-results/` tem o base64 dentro; extraia com `re.search(r'[A-Za-z0-9+/=]{5000,}', s)` e grave o PNG no scratchpad.
 
+- **`SetText` por código não dispara `OnTextChanged`** do EditableTextBox. Depois de alterar o texto pelo teclado virtual, chame a função de refresh da lista manualmente (`KeyboardTyped`).
+- **Ocultar por dispositivo:** `Input|Key|IsGamepadKey` no `OnPreviewKeyDown` e `OnPreviewMouseButtonDown` (override via `add_function_graph`) bastam para saber se o jogador está no controle.
+- **Pôr um campo ao lado de um botão:** `UMGToolSet.WrapWidgets(widgetBlueprint, widgets=[campo], wrapperClass=/Script/UMG.HorizontalBox)` cria o HBox em volta do campo, e depois `AddWidget` no wrapper. Ajuste o slot do campo para `Fill`.
+- **`SizeBox`:** `Layout|SizeBox|SetWidthOverride` (e `WidthOverride`/`HeightOverride` via `set_properties`) para teclas de largura fixa.
+- **Widget criado em loop** (`UserInterface|CreateWidget` + `Widget|Panel|AddChild`) funciona para montar as teclas; `BuildKeys` com flag `Built` evita duplicar.
+- **`BoxOverlapActorsWithOrientation` no DSL:** o pino `ObjectTypes` não aceita `MakeArray` do DSL. Escreva a chamada sem ele, depois `create_node Utilities|Array|MakeArray`, `set_pin_value` no item `[0]` (`ObjectTypeQuery4`) e `connect_pins` para `ObjectTypes`. `Math|Vector|vector-vector` não existe na escrita: use `(- a b)`.
+- **Inserir uma checagem no meio de uma função grande** (ex.: `StackFree` em `GetCounterStack`): crie a função auxiliar com DSL e depois, no grafo grande, `break_pins` da ligação `then → Return`, crie o `CallFunction`, ligue `exec`, as entradas e a saída ao pino `Valid` do `Return`.
+
+- **Foco em UMG:** `Widget|SetUserFocus (widget, PlayerController)` coloca o foco (confirme com `Widget|HasKeyboardFocus`/`HasAnyUserFocus` + `PrintString`). Chame depois do widget estar na viewport (use `Utilities|Time|SetTimerbyFunctionName ... 0.1–0.2 s`). **O Button do UMG não muda de aparência com foco**; faça o destaque por conta própria (`Button|Appearance|SetBackgroundColor` com `Utilities|Struct|MakeLinearColor`).
+- **Eventos nativos sem retorno** (`OnAddedToFocusPath`, `OnRemovedFromFocusPath`) **não** podem ser criados com `add_function_graph` (erro "must be placed as an event node"). Use `add_event(blueprint, event_name, position)`, crie funções próprias (`HlOn`/`HlOff`) e ligue `then` → `CallFunction|...`. Funções com retorno (`OnPreviewKeyDown`, `OnPreviewMouseButtonDown`) sim, via `add_function_graph`.
+- **Tick num widget** criado do zero: `create_node('AddEvent|UserInterface|EventTick')` e ligue `then` a um `CallFunction`.
+- **Foto do PIE:** se uma janela flutuante (ex.: "Message Log") abrir na frente, `CaptureEditorImage` fotografa ela. Use `SlateInspectorToolset.Windows(action: "list")` e `action: "close", index: N` para fechá-la.
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...

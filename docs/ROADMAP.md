@@ -85,10 +85,29 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - **Balcão não deixa mais atravessar livros:** `BP_PlaceZone.StackFree(Center, HalfSize)` (BoxOverlap contra `BP_Book`) entra antes do `Return` de `GetCounterStack` e define o `Valid`. Pilha que invade livros já no balcão fica inválida (fantasma some e o E solta). Verificado no PIE: pilha 1 válida, sobreposta (16 cm) inválida, livre (45 cm) válida.
   - **Feedback do "Adicionar ao empréstimo":** o botão vira "✓ ADICIONADO AO EMPRÉSTIMO" (desativado) e aparece "Adicionado! Livros no empréstimo: N de 3". Ao voltar para a aba Livros o botão se atualiza (`RefreshAddButton`), e o limite de 3 mostra aviso.
 - [ ] Teste do usuário com teclado/controle do novo sistema: **P / Y** abre o pedido, **Esc / B** fecha o pedido e depois o sistema, e foco por setas/D-pad (a tecla simulada não chega ao PIE, então não foi testada)
-- [ ] Fase 2 do redesenho: teclado virtual na tela (estilo YouTube TV) ligado às buscas e ao cadastro
+- [x] Fase 2 do redesenho: **teclado virtual** (`WBP_VirtualKeyboard` + `WBP_KeyButton`), pensado **só para o controle**:
+  - Overlay no shell (`KeyboardOverlay`), grade 0-9 / QWERTY / acentos (ÁÉÍÓÚÃÕÂÊÔÇ), ESPAÇO, APAGAR, LIMPAR e OK. Auto-capitaliza a primeira letra de cada palavra. Tem prévia do texto.
+  - Botões "TECLADO" ao lado da busca de livros, da busca de clientes e dos campos do cadastro (`OpenKeyboard(Target, Title, Mode)`). A busca filtra a lista a cada tecla (`KeyboardTyped`).
+  - **Os botões só aparecem quando o último input foi do controle** (`SetPadMode`, via `OnPreviewKeyDown` com `IsGamepadKey`; mouse volta a escondê-los). Com teclado/mouse, o campo de texto normal basta.
+  - Esc/B fecha o teclado primeiro (`HandleBack`).
+  - Verificado no PIE (digitar "Cit" filtra para "Cities"; botões escondidos sem controle e visíveis com ele). **Falta testar com um controle de verdade** (foco por D-pad nas teclas, e a detecção de controle).
 - [ ] Fase 4 do redesenho: prévia 3D da capa (SceneCapture do `BP_Book`, de lado para mostrar a lombada) e mapa de sinopses (`BookSynopses`, título → sinopse) no CDO do `BP_Book`
 - [ ] Histórico com data/dia de jogo e status "devolvido" (hoje `LoanDocs`/`LoanTitles` guardam só documento e títulos)
-- [ ] Destaque visual do foco nos botões e nas linhas (o botão do UMG não muda de aparência com foco de teclado/controle)
+- [x] **Navegação por foco (controle/teclado), 2026-10-26:**
+  - Ao abrir o sistema o foco vai para a aba LIVROS (`FocusTab`, com timer de 0,2 s). Ao fechar o papel ou o teclado, o foco volta para a aba atual. Ao abrir o teclado, o foco vai para a primeira tecla; ao abrir o papel, para o botão Fechar.
+  - **Destaque do foco:** o botão do UMG não muda de aparência com foco, então o shell chama `HlAll` no Tick e `Hl(Btn)` clareia o botão com foco (`SetBackgroundColor` ×7 sobre o estilo escuro com moldura). `WBP_Row` e `WBP_KeyButton` fazem o mesmo em `OnAddedToFocusPath`/`OnRemovedFromFocusPath` (`HlOn`/`HlOff`). O destaque some no modo mouse (`MouseMode`, ligado por clique, desligado por qualquer tecla).
+  - **LB / RB** trocam de aba (`HandleShoulder`).
+  - Verificado no PIE: foco inicial no LIVROS (`HasKeyboardFocus = YES`) e o botão fica destacado. **Falta testar com controle de verdade:** D-pad/setas entre botões, linhas da lista e teclas, e o A apertando.
+- [x] Correções após o teste do usuário com controle (2026-10-26):
+  - Aviso "WBP_KeyButton does not support focus": `FocusFirst` pedia foco para o `UserWidget` da tecla. Agora a tecla tem `FocusMe` (foco no botão interno) e o teclado usa `Cast` para chamá-la. O foco entra no teclado e volta para a aba ao fechar (verificado).
+  - **Voltar com ←:** regra de navegação explícita "esquerda → aba atual" nos controles da borda esquerda de cada tela (`SetLeftRules`, chamada em `ShowTab`) e em todas as linhas (`WBP_Row.Setup`, via `TabButton`).
+  - Com o teclado virtual ou o papel abertos, o fundo (`Bg`) fica desabilitado, então o foco não escapa para a tela de trás.
+  - **Falta confirmar com o controle:** ← na lista volta para a aba; navegação em todas as direções no teclado virtual.
+- [x] Ajustes do controle, rodada 2 (2026-10-26):
+  - **→ das linhas** vai para o botão de ação da aba (`ContentButton`: "ADICIONAR AO EMPRÉSTIMO" nos Livros, "USAR NO EMPRÉSTIMO" nos Clientes), por regra explícita em `WBP_Row.Setup`.
+  - **A num campo de texto abre direto o teclado virtual** (`OnPreviewKeyDown` → `PadOpenKeyboard`). Os botões "TECLADO" ficam sempre escondidos (o código `SetKbdVisible` ainda existe, mas `SetPadMode` não o chama mais).
+  - Verificado: campo focado + `PadOpenKeyboard` abre o teclado com o foco dentro. **Falta confirmar com o controle:** → da lista de clientes até "USAR NO EMPRÉSTIMO".
+- [ ] Talvez: cursor virtual controlado pelo analógico, se o foco por D-pad não bastar nas listas longas
 - [ ] Sistema no controle: navegação por foco nos botões e **teclado virtual** do console. No console, o `EditableTextBox` com foco abre o teclado nativo da plataforma. A busca é opcional, porque a lista é navegável sem digitar.
 - [ ] Fechar o sistema com Esc / B (hoje é pelo botão "Sair do sistema"; no PIE, o Esc encerra o jogo)
 - [ ] Trocar a caixa registradora por um computador/monitor de verdade (asset da Fab) e mover o `BP_LibrarySystem` para lá
