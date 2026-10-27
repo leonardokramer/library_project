@@ -35,7 +35,8 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - Pilha **na mão** (estado 1): o mesmo trace dá `HoldScale = clamp((dist+26)/62, 0.3, 1)`, gravado em cada livro por `UpdateInspect`. No tick do `BP_Book`, `ScaleHoldTransform` (inserido entre `GetBookExtents` e o `SetActorTransform` do estado 1) escala a pose-alvo em torno da câmera. `Drop` volta a escala para 1 antes de ligar a física. Verificado no PIE colado na estante. Falta teste do usuário (inclusive soltar/guardar com a pilha encolhida).
 - [~] Precisão de pegar/devolver (2026-10-24): `TraceBook` com raio 0.5 (era 5), `SlotOffsets` em passos de 0,25 cm até ±8 (65 valores). A tolerância do overlap em `GetPlacement` ficou em 0.4 (original): 1.2 deixava o livro atravessar o vizinho. Aplicado, **falta teste do usuário com o mouse** (Open Office Design vs Cities; devolver livro em vão apertado).
 - [ ] Empilhar no balcão mirando em cima de outro livro (hoje mirar num livro = pegar)
-- [ ] Converter outras estantes (livros unitários + zonas, script em lote igual ao da History)
+- [x] Converter outras estantes (2026-10-27): 24 estantes por gênero, exemplares iguais agrupados, margem para não atravessar a lateral, mais livros no meio/baixo. Script em `docs/shelf_populate.py`. Verificado no PIE (roteiro automático): pegar um livro da S16 e guardar em outra prateleira funciona. Falta teste do usuário com teclado e as ilhas (corpo 02) continuam cenário.
+- [ ] Gêneros novos (Poetry, Design, Informática) com placa própria: hoje só há 8 placas; os 19 títulos foram encaixados nelas (veja SCENE_MAP). Criar a arte das placas e o mapa `BookGenres` no `BP_Book`.
 - [x] Balcão → entregar o livro ao NPC (primeiro passo do ciclo de empréstimo). Veja a Etapa 2.
 - [x] Migrar a tecla E para Enhanced Input (`IA_Interact`, `IMC_Library`)
 - [x] Agachar (C / B, alternar; a câmera desce 50 cm suavemente)

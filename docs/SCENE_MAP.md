@@ -171,7 +171,28 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 - Cada estante tem 7 prateleiras. Em geral **2 têm livros soltos** (`SM_Book_XX`, um ator por livro) e **5 são fileiras fundidas** (`SM_BookStack_XX`, um modelo só de cerca de 80 cm). As fileiras fundidas não dá para separar.
 - No total são 883 livros soltos e 108 fileiras fundidas. As capas vêm todas de uma única textura (`MI_BookCoversCC0`), então os títulos se repetem ("Lost Souls", "Colorblind", "Diary of Ms. Rose", "The Attic"...).
 
-### Estante de teste: History (`BP_BookShelfs10`)
+### Estantes por gênero
+- **Regra: só estantes com `internalMeshType == 1` (prateleira de madeira reta) recebem livros.** O tipo 2 (arcos de arame tipo adega: S3, S27) e o tipo 3 (pegboard com ganchos: S5, S6, S41) ficam só com tintas/produtos, porque livros ali ficam estranhos. As ilhas (corpo 02: S, S13, S37–S40) e as de tintas S2, S34, S35 também ficaram como cenário.
+- **Layout (2026-10-27).** 24 estantes de livro (1 corpo 01, tipo 1):
+
+  | Gênero | Estantes (rótulo `BP_BookShelfsN`) | Títulos (malhas) |
+  |---|---|---|
+  | Sci-Fi | 11, 8 (mezanino), 30, 31 (térreo) | First Contact (15), Space Walk (22) |
+  | Science | 7, 9, 22 | Colorblind (10), Theoretical Calculus (13), Analytic Geometry (17) |
+  | History | 10, 23 | Cities (11), The Illusion of Democracy (20) |
+  | Novels | 14, 15, 24 (mezanino), 28, 29 (térreo) | L'homme (03), Summer's End (04), The Lake Murders (26) |
+  | Fantasy | 16, 17 (mezanino), 4, 33 (térreo) | Lost Souls (09), Treasures of Al-Saban (21), Chrysanthemums (12) |
+  | Economy | 18, 36 | Open Office Design (08), Data Structures (14) |
+  | Dictionaries | 19 (mezanino), 26 (térreo) | Book Covers Guide (01), Classic Poems (05) |
+  | Biography | 20, 21 | Diary of Ms. Rose (02, 07), Cats and Their Humans (29) |
+
+  Alguns encaixes são provisórios (Data Structures em Economy, Classic Poems em Dictionaries) porque só existem as 8 placas de gênero da Fab.
+- **Placa:** o BP `BP_BookShelfs` monta a placa pelas variáveis `bookshelf_LabelType` (1 = com placa) e `bookshelf_LabelMaterial` (índice em `boolshelf_Label_MaterialType`: 1 Biography, 2 Dictionaries, 3 Economy, 4 Fantasy, 5 History, 6 Novels, 7 Sci-Fi, 8 Science). Mudar o material direto no componente não funciona (o construction script refaz).
+- **Geometria (espaço local da estante):** prateleiras em z relativo 20, 60, 95, 130, 165, 200 e 235; frente dos livros em y local -16,6 (livro com o mesmo yaw da estante); largura útil x de -66 a +66 (o interior vai a ±69,6, e o layout antigo da History passava disso, por isso os livros atravessavam a lateral). Livros têm 17–20 cm de profundidade e até 29 cm de altura.
+- **Povoamento:** blocos de 3–6 exemplares iguais (2–3 nas prateleiras de cima), enchimento de 60/65/65/50/25/12/8% da largura nas 7 prateleiras (escala 0,5 no térreo), resto livre para devolução. Script: `docs/shelf_populate.py`. Cada livro é `Book_<Genero>_S<n>_R<z>_NN` (pasta `Gameplay/Books`) e cada zona `Zone_<Genero>_S<n>_R<z>` (pasta `Gameplay/PlaceZones`).
+- Nas estantes do térreo, as tintas (`PaintContainer`, até 192 por estante) e seus grupos foram apagados.
+
+### Estante de teste: History (`BP_BookShelfs10`) — *histórico, refeita no layout acima*
 - Parede oeste do mezanino, logo no topo da escada. Vai de X -730 a -687, Y de 279 a 429, Z de 314 a 644, com a frente virada para +X.
 - O fundo das 7 prateleiras fica em Z **350, 390, 425, 460, 495, 530 e 565**. Os livros vão de Y 281 a 423, a frente fica em x = -693,4 e a rotação é yaw 90.
 - **Só tem livros unitários (`BP_Book`):**
@@ -207,6 +228,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 - **BeginPlay:**
   - `SetCollisionResponseToChannel(Pawn, Ignore)`: o livro ignora o jogador. Sem isso, ao soltar, o livro nasce dentro da cápsula, é ejetado e atravessa o piso.
   - `SetUseCCD(true)`.
+- **Tick (desempenho, 2026-10-27):** com ~1.700 livros, o tick de Blueprint de cada um pesava à toa. O CDO agora tem `bStartWithTickEnabled = false`. `PickUp` e `PlaceAt` ligam o tick (`SetActorTickEnabled true`), e o ramo "nem State 1 nem 2" do `EventTick` chama `SleepIfIdle`, que desliga o tick no State 0. Os livros já colocados no mapa guardam `bStartWithTickEnabled = true` na instância: fazem 1 tick e dormem. **Se criar outra função que ponha um livro em State 1 ou 2, ligue o tick nela.**
 - **State:**
   - 0: parado (estante ou balcão), sem física e com colisão.
   - 1: na mão.

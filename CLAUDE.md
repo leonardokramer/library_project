@@ -40,8 +40,8 @@ Estado em 2026-10-26. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, emprésti
   - **E** (`OnInteractPressed`): mirando num livro ou numa área válida, cuida dos livros; mirando num cliente, fala com ele; mirando na **caixa registradora**, abre o sistema; senão solta livros. **Q** (segurado) abre os livros da mão em leque na frente da câmera para ler as capas (`SetInspectMode`/`UpdateInspect` no personagem, `GetInspectTransform` no `BP_Book`; os livros ficam no State 4 enquanto abertos); **C** agacha (alterna); **botão direito** segurado dá zoom.
   - O input é Enhanced Input (`/Game/Library/Input/IMC_Library`), com controle já mapeado mas não testado.
 - **Livros `BP_Book`:**
-  - Só a estante **History** (`BP_BookShelfs10`, topo da escada) tem livros unitários pegáveis (138). As outras estantes ainda são o cenário original do pacote.
-  - Áreas amarelas `BP_PlaceZone`: 7 na History e 1 no balcão. No balcão, o E entrega a pilha inteira.
+  - **24 estantes por gênero** têm livros unitários pegáveis (cerca de 1.700, 2026-10-27): 17 no mezanino e 7 no térreo (S4, S26, S28–S31, S33). Só estantes de madeira reta (`internalMeshType == 1`) recebem livros; as de arame/pegboard (S3, S5, S6, S27, S41), as ilhas e S2/S34/S35 ficam com tintas e produtos. Tabela e regras em [docs/SCENE_MAP.md](docs/SCENE_MAP.md#estantes-por-gênero).
+  - Áreas amarelas `BP_PlaceZone`: 7 por estante convertida e 1 no balcão. No balcão, o E entrega a pilha inteira.
   - Cada livro tem título e autor pela malha (`GetBookInfo`, mapas no CDO do BP_Book).
 - **Clientes `BP_Customer`, criados pelo `CustomerSpawner`:**
   - Chegam a cada 180–360 s, até 3 na loja (o primeiro em 5 s).
