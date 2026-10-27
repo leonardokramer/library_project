@@ -42,7 +42,9 @@ Estado em 2026-10-26. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, emprésti
 - **Livros `BP_Book`:**
   - **24 estantes por gênero** têm livros unitários pegáveis (cerca de 1.700, 2026-10-27): 17 no mezanino e 7 no térreo (S4, S26, S28–S31, S33). Só estantes de madeira reta (`internalMeshType == 1`) recebem livros; as de arame/pegboard (S3, S5, S6, S27, S41), as ilhas e S2/S34/S35 ficam com tintas e produtos. Tabela e regras em [docs/SCENE_MAP.md](docs/SCENE_MAP.md#estantes-por-gênero).
   - Áreas amarelas `BP_PlaceZone`: 7 por estante convertida e 1 no balcão. No balcão, o E entrega a pilha inteira.
-  - Cada livro tem título e autor pela malha (`GetBookInfo`, mapas no CDO do BP_Book).
+  - Cada livro tem título e autor pela malha (`GetBookInfo`, mapas no CDO do BP_Book) e **gênero** (`BookGenres`, o mesmo nome da placa da estante; `BP_LibrarySystem.GenreOf`). O gênero aparece na UI do sistema e no papel do pedido, para o jogador saber onde guardar.
+  - **O jogo já começa com histórico:** `BP_LibrarySystem.SeedHistory` (BeginPlay) cria 11 registros (5 pessoas com livro em aberto, 3 devoluções feitas) e esconde as cópias emprestadas (`Stash`), então já vêm clientes para devolver desde o primeiro dia.
+  - O `BP_Book` só liga o tick em State 1/2 (`PickUp`/`PlaceAt` ligam, `SleepIfIdle` desliga). Se criar outra função que ponha um livro em State 1 ou 2, ligue o tick nela.
 - **Clientes `BP_Customer`, criados pelo `CustomerSpawner`:**
   - Chegam a cada 180–360 s, até 3 na loja (o primeiro em 5 s).
   - Surgem do lado de dentro da porta (a porta é falsa por enquanto), entram em linha reta e fazem fila em frente ao balcão.

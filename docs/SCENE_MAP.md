@@ -247,11 +247,11 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 
   | Malha | Título | Autor |
   |---|---|---|
-  | 01 | A Universal Guide to Creating Book Covers | Bernhard R. Painter |
+  | 01 | A Universal Guide to Creating Book Covers | Bernhard B. Painter |
   | 02, 07 | Diary of Ms. Rose | Eleanor Whitby* |
   | 03 | L'homme qui vivait au loin | Beaujolie |
   | 04 | Summer's End | Arthur Heinlein |
-  | 05 | Classic Poems, Volume I | J. A. Stover |
+  | 05 | Classic Poems of the 18th Century, Volume I | J. A. Brown |
   | 08 | Open Office Design | Johnny Matthews |
   | 09 | Lost Souls | Gregg Tielms |
   | 10 | Colorblind | Kevin Reich |
@@ -267,7 +267,11 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   | 26 | The Lake Murders | Ingrid Holm* |
   | 29 | Cats and Their Humans | Freya Malcolm |
 
-  \* autor inventado. Para adicionar uma malha nova, acrescente a chave nos dois mapas do CDO.
+  \* autor inventado. Para adicionar uma malha nova, acrescente a chave nos dois mapas do CDO (e em `BookSynopses` e `BookGenres`, que usam o **título** como chave).
+- **Revisão de 2026-10-27:** títulos e autores conferidos nas lombadas dentro do jogo. Corrigidos: `SM_Book_05` ("Classic Poems of the 18th Century, Volume I", J. A. Brown) e `SM_Book_01` (Bernhard **B.** Painter). Dúvida que ficou: o autor de `SM_Book_14` na lombada parece "John **W.** Matthews" (catálogo: "John M. Matthews"); a lombada é pequena demais para ter certeza.
+- **Gênero:** `BookGenres` (CDO do `BP_Book`, título → nome da placa: Fantasy, Sci-Fi...). `BP_LibrarySystem.GenreOf(Title) → Genre` é a função única usada pela UI (LIVROS: detalhe e linhas; CLIENTES: histórico; DEVOLUÇÃO: linhas e itens) e pelo papel do pedido (`BP_Customer.BuildListText`: "- Título  (Autor · Gênero)"). Ao criar um título novo, preencha também `BookGenres`.
+- **Preview:** `WBP_LibrarySystem.PreviewTitle` pega a malha do **primeiro** `BP_Book` com o título (para na primeira cópia: com ~100 cópias por título, sem isso eram ~100 `CaptureScene` por clique).
+- **Histórico inicial (seed):** `BP_LibrarySystem.SeedHistory()` roda no `BeginPlay` e lê `SeedNos/SeedDocs/SeedTitles/SeedClosed` (defaults do CDO, 11 linhas, `LoanCount` = 5). Para cada linha acha **uma cópia real** do título na estante (State 0): se em aberto, `Stash` (some da estante, o estoque desce); se devolvido, a cópia fica na estante. Quem tem livro em aberto: Helena (Lost Souls, Treasures of Al-Saban), Tomás (Colorblind), Clara (Classic Poems), Otávio (Space Walk, First Contact, The Lake Murders), Joaquim (Summer's End). Devolvidos: Theoretical Calculus, Cities, Diary of Ms. Rose. Os títulos do seed precisam bater **exatamente** com `BookTitles`.
 - **Pose na mão:** é uma **pilha deitada, com a capa para cima e sempre horizontal no mundo**.
   - A base fica em `câmera + fwd*HoldForward(40) + right*HoldRight(14) + up*HoldUp(-22)`.
   - A rotação é `CombineRotators((pitch -90, yaw HoldYaw 10 + HeldIndex*HoldStackYaw 6), (0, yawDaCâmera, 0))`.
