@@ -188,6 +188,17 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **Teste integrado longo (empréstimo → devolução):** o roteiro do `BP_TestDriver` rodou em tempo real (o jogo não fica lento sem foco). Combine `Delay` generosos (30–40 s) com `PrintString` rotulado (`T0 … T6`) e leia com `GetLogEntries`. O devedor ainda **está na loja** enquanto sai, e `PickReturner` o exclui de propósito: espere ele sumir (~30 s) antes de forçar `TrySpawn`.
 - **Timer do sistema:** use `Bash sleep N` em `run_in_background` para sincronizar; cada notificação chega depois (consulte o log com `GetLogEntries` mesmo assim).
 
+### Aprendizados do visual Win95 (2026-10-27)
+- **Estilo em lote:** um `execute_tool_script` percorre `UMGToolSet.GetWidgets` de cada WBP e aplica `set_properties` por classe/nome (TextBlock, Border, Button, EditableTextBox). Dentro do script os nomes são completos (`UMGToolSet.UMGToolSet.GetWidgets`); em `call_tool` direto o `tool_name` é curto (`GetWidgets`) e o `toolset_name` é `UMGToolSet.UMGToolSet`.
+- **Moldura/janela:** `WrapWidgets` (Border) várias vezes + `RenameWidget`; `AddWidget` aceita `childIndex` para inserir antes de um irmão. Relevo falso = Borders aninhados com padding assimétrico.
+- **Botão quadrado:** `RoundedBox` com `cornerRadii` 0 e `outlineSettings.width`. `Disabled` precisa ser definido no estilo, senão fica na cor antiga.
+- **`HintText = ''` apaga o texto-dica** e não dá para recuperar (assets são binários). Leia antes de mexer.
+- **Não use `ObjectTools.list_properties`** em TextBlock/Border: devolve ~15 KB. Prefira `get_properties` com nomes conhecidos (`BrushColor`, `Padding`, `ColorAndOpacity`, `Font`, `WidgetStyle`).
+- **Cor do texto em botão:** `ColorAndOpacity` com `colorUseRule: UseColor_Foreground` faz o texto seguir `normalForeground`/`hoveredForeground` do botão.
+- **`Hl`/`HlOn` multiplicam o fundo do botão por 7** (`SetBackgroundColor`): em cinza vira branco, em branco não muda.
+- **Testar a tela sem teclado:** driver temporário com `(event EventBeginPlay (Delay 3) (GetAllActorsOfClass BP_LibrarySystem_C) (cast do GetPlayerCharacter → OpenSystem))`; no PIE, `SlateInspectorToolset.Snapshot` lista os botões do UMG com `ref` e `Click` troca de aba. `CaptureEditorImage` sai em base64 num arquivo: decodifique pegando a maior string base64.
+- `save_assets` com lista vazia salva **tudo** que está sujo, inclusive o mapa.
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...
