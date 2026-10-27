@@ -199,6 +199,15 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **Testar a tela sem teclado:** driver temporário com `(event EventBeginPlay (Delay 3) (GetAllActorsOfClass BP_LibrarySystem_C) (cast do GetPlayerCharacter → OpenSystem))`; no PIE, `SlateInspectorToolset.Snapshot` lista os botões do UMG com `ref` e `Click` troca de aba. `CaptureEditorImage` sai em base64 num arquivo: decodifique pegando a maior string base64.
 - `save_assets` com lista vazia salva **tudo** que está sujo, inclusive o mapa.
 
+### Aprendizados do agachar (AnimGraph, 2026-10-27)
+- **Não existe tool de importação de FBX nem de IK Rig/Retargeter**: o usuário importa e retargeta na UI do editor. O MCP só vê o resultado (`AssetTools.get_asset_tags` mostra o skeleton e a duração).
+- **AnimGraph não sai no `read_graph_dsl`** (devolve vazio). Para ver a ligação, use `find_nodes` + `get_node_infos` e imprima só `connected_pins`. O script do `execute_tool_script` precisa devolver um **dict**.
+- **Nós de animação:** `create_node` com `Animation|Blends|BlendPosesbybool` (pino 0 = verdadeiro, 1 = falso, 4 = `bActiveValue`) e `Animation|Sequences|SequencePlayer`. A sequência: `set_properties` no nó com `{"Node":{"Sequence":"<asset>","bLoopAnimation":true}}`. Para ganhar o pino de `PlayRate`: leia `ShowPinForProperties`, ponha `bShowPin: true` na entrada `PlayRate` e regrave o array inteiro.
+- **Parâmetros que confundem:** `add_variable(name, type_name)`, `add_function_graph(graph_name)`, `create_node(graph, type_id, pos)`, `connect_pins(output_pin, input_pin)` e `break_pins` (mesmos nomes). `find_nodes` exige `graph` e `title`.
+- **Lógica em ABP:** o `EventGraph` aceita DSL. Para somar lógica sem reescrever o evento, crie uma função com DSL (`UpdateCrouch`), `create_node CallFunction|UpdateCrouch` e ligue ao `then` do último `Set` do `EventBlueprintUpdateAnimation`.
+- **Um `Delay` dentro de um `for` roda uma vez só.** Para andar por N segundos num teste, use `EventTick` com `select` no tempo de jogo (`Utilities|Time|GetGameTimeinSeconds`).
+- **Corpo e mãos:** o corpo do personagem (`CharacterMesh0`, escondido do dono) é quem toca a animação; a `FirstPersonMesh` copia a pose (CopyPoseFromMesh). Troque o `AnimClass` do corpo no CDO (`...Default__BP_LibraryCharacter_C:CharacterMesh0`).
+
 ### Enhanced Input pelo MCP (funciona)
 - Input Action: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputAction)`. O padrão já é ValueType Boolean.
 - Mapping Context: `DataAssetTools.create(asset_type=/Script/EnhancedInput.InputMappingContext)`, depois `set_properties(imc, {"DefaultKeyMappings":{"mappings":[{"action":"/Game/.../IA_X.IA_X","key":"E","triggers":[],"modifiers":[]}, ...]}})`. Nomes de tecla: `E`, `C`, `RightMouseButton`, `Gamepad_FaceButton_Left/Right/Bottom`, `Gamepad_LeftTrigger`...
