@@ -15,7 +15,7 @@ Detalhes de gameplay e etapas: [ROADMAP.md](ROADMAP.md). Coordenadas da cena: [S
 | `BP_Book` | Livro unitário: estados de estante/mão/movendo/física/inspeção/emprestado; `GetBookInfo` lê título/autor da `DT_Books` pelo nome da malha | — |
 | `BP_PlaceZone` / `BP_PlaceGhost` | Área onde se guarda livro (estante, balcão) e o fantasma amarelo | `BP_Book` |
 | `BP_Customer` + `ABP_Customer` | Cliente: pedido ou devolução, andar até a fila, segurar livros, sair | `BP_CustomerSpawner`, `BP_LibrarySystem`, `BP_Book` |
-| `BP_CustomerSpawner` | Cria clientes (180–360 s, até 3), gerencia a fila | `BP_Customer`, `BP_LibrarySystem` |
+| `BP_CustomerSpawner` | Cria clientes (180–360 s, até 3), gerencia a fila. `ShuffleSeed` (no `BeginPlay`) consome de 0 a ~1.000 sorteios conforme o relógio, porque o gerador global do Blueprint começava igual a cada partida e o primeiro cliente saía sempre o mesmo | `BP_Customer`, `BP_LibrarySystem` |
 | `BP_LibrarySystem` | Regras do sistema: cadastro, catálogo, empréstimo, devolução, histórico (`SeedHistory`) | `BP_Book`, `BP_Customer`, `BP_CustomerSpawner` |
 | `WBP_LibrarySystem` (shell) + `WBP_Screen{Books,Users,Loan,Return}` + `WBP_Row`/`WBP_KeyButton`/`WBP_VirtualKeyboard` | UI estilo Win95. O shell guarda o estado; as telas o chamam por `Owner` (`Bind`) | `BP_LibrarySystem`, `BP_LibraryCharacter`, `BP_BookPreview` |
 | `ABP_Body_Library` / `ABP_FP_Library` | Corpo (agachar) e braços em primeira pessoa (pose do livro) | `CtrlRig_FPWarp` |
