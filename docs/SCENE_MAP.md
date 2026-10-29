@@ -114,8 +114,8 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 - **Colisão:** a raiz é o `Collision` (BoxComponent, extent (30, 22, 16), perfil `OverlapAllDynamic`, ObjectType **WorldDynamic** = `ObjectTypeQuery2`, oculto no jogo). Ele cobre a caixa registradora (X de -533 a -479, Y de 237 a 276, Z de 134 a 161), logo ao lado da `Zone_Counter`.
 - **Instance-editable:** `Spawner = CustomerSpawner` e `CounterZone = Zone_Counter`.
 - **Dados** (arrays paralelos, porque o MCP não cria struct; seeds no CDO):
-  - `PersonNames[]`/`PersonDocs[]`: pool de 10 pessoas (Helena Duarte 48.213.907, Marcos Vieira 31.774.520, Beatriz Nakamura 52.908.163, Tomás Albuquerque 27.461.398, Lúcia Ferraz 63.085.214, Rafael Monteiro 19.630.842, Clara Bittencourt 44.517.069, Otávio Reis 38.902.475, Isadora Lins 57.246.381, Joaquim Prado 22.358.716).
-  - `UserNames[]`/`UserDocs[]`: o cadastro. Começa com Helena, Tomás, Clara, Otávio e Joaquim; os outros cinco precisam ser cadastrados. O cadastro vive só durante a sessão (não há SaveGame ainda).
+  - `DT_People` (`/Game/Library/Data/Tables`, struct `S_Person`): pool de 10 pessoas (Helena Duarte 48.213.907, Marcos Vieira 31.774.520, Beatriz Nakamura 52.908.163, Tomás Albuquerque 27.461.398, Lúcia Ferraz 63.085.214, Rafael Monteiro 19.630.842, Clara Bittencourt 44.517.069, Otávio Reis 38.902.475, Isadora Lins 57.246.381, Joaquim Prado 22.358.716).
+  - `BP_LibrarySystem.Users` (array de `S_Person`): o cadastro. Começa com Helena, Tomás, Clara, Otávio e Joaquim; os outros cinco precisam ser cadastrados. O cadastro vive só durante a sessão (não há SaveGame ainda).
   - `LoanDocs[]`, `LoanTitles[]` (títulos juntados por ` | `) e `LoanCount`.
   - Rascunho: `DraftDoc`, `DraftTitles[]` e `DraftStatus`.
 - **Funções:**
