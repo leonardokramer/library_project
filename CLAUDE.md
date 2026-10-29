@@ -19,7 +19,7 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - O jogo é montado em **`/Game/Library/Maps/L_Library`**, uma cópia de L_Stationer. Ela é o mapa padrão do jogo e do editor.
 - Todo conteúdo nosso fica em `/Game/Library/{Maps,Blueprints,Characters,UI,Data,Input,Materials}`.
 - Não edite os assets do template First Person (`/Game/FirstPerson`, `/Game/Input`). Crie filhos ou cópias em `/Game/Library`.
-- Prefixos de nome: `BP_`, `WBP_`, `DT_` (DataTable), `DA_`, `M_`/`MI_`, `L_` (mapas), `E_` (enums), `S_` (structs).
+- Prefixos de nome: `BP_`, `WBP_`, `ABP_` (AnimBP), `DT_` (DataTable), `DA_`, `M_`/`MI_`, `L_` (mapas), `E_` (enums), `S_` (structs), `IA_`/`IMC_` (input).
 
 ## Git
 - **Nunca faça commit (nem push) por conta própria.** Só commite quando o usuário confirmar explicitamente, a cada vez.
@@ -32,48 +32,23 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - Os atores de gameplay ficam na pasta `Gameplay/` do Outliner; as câmeras e a sequência originais ficam em `Cinematic/`.
 
 ## Onde paramos (atualize ao fim de cada sessão)
-Estado em 2026-10-29. Etapas 0, 1, 1b, 1c, 1d, **2a (primeiro cliente, empréstimo)**, **2b (spawn + fila)**, **2c (sistema no computador)**, **2d (sistema em subtelas)** e **2e (devolução + histórico)** estão concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)).
-- **Personagem `BP_LibraryCharacter`:**
-  - Primeira pessoa, sem pulo, caminhada lenta.
-  - Mira de ponto central.
-  - Carrega até 3 livros (pilha deitada, capa para cima).
-  - **E** (`OnInteractPressed`): mirando num livro ou numa área válida, cuida dos livros; mirando num cliente, fala com ele; mirando na **caixa registradora**, abre o sistema; senão solta livros. **Q** (segurado) abre os livros da mão em leque na frente da câmera para ler as capas (`SetInspectMode`/`UpdateInspect` no personagem, `GetInspectTransform` no `BP_Book`; os livros ficam no State 4 enquanto abertos); **C** agacha (alterna); **botão direito** segurado dá zoom.
-  - O input é Enhanced Input (`/Game/Library/Input/IMC_Library`), com controle já mapeado mas não testado.
-- **Livros `BP_Book`:**
-  - **24 estantes por gênero** têm livros unitários pegáveis (cerca de 1.700, 2026-10-27): 17 no mezanino e 7 no térreo (S4, S26, S28–S31, S33). Só estantes de madeira reta (`internalMeshType == 1`) recebem livros; as de arame/pegboard (S3, S5, S6, S27, S41), as ilhas e S2/S34/S35 ficam com tintas e produtos. Tabela e regras em [docs/SCENE_MAP.md](docs/SCENE_MAP.md#estantes-por-gênero).
-  - Áreas amarelas `BP_PlaceZone`: 7 por estante convertida e 1 no balcão. No balcão, o E entrega a pilha inteira.
-  - Cada livro tem título e autor pela malha (`GetBookInfo`, mapas no CDO do BP_Book) e **gênero** (`BookGenres`, o mesmo nome da placa da estante; `BP_LibrarySystem.GenreOf`). O gênero aparece na UI do sistema e no papel do pedido, para o jogador saber onde guardar.
-  - **O jogo já começa com histórico:** `BP_LibrarySystem.SeedHistory` (BeginPlay) cria 11 registros (5 pessoas com livro em aberto, 3 devoluções feitas) e esconde as cópias emprestadas (`Stash`), então já vêm clientes para devolver desde o primeiro dia.
-  - O `BP_Book` só liga o tick em State 1/2 (`PickUp`/`PlaceAt` ligam, `SleepIfIdle` desliga). Se criar outra função que ponha um livro em State 1 ou 2, ligue o tick nela.
-- **Clientes `BP_Customer`, criados pelo `CustomerSpawner`:**
-  - Chegam a cada 180–360 s, até 3 na loja (o primeiro em 5 s).
-  - Surgem do lado de dentro da porta (a porta é falsa por enquanto), entram em linha reta e fazem fila em frente ao balcão.
-  - Cada um tem **nome e documento**, sorteados de um pool de 10 pessoas no `BP_LibrarySystem` (5 já cadastradas).
-  - Só o da frente responde. O E mostra o papel `WBP_RequestList` com nome, documento e 1 a 3 livros. O E **não entrega** mais os livros.
-  - **Devolução (Etapa 2e):** com chance `ReturnChance` (0,4), o cliente vem devolver: `BP_Customer.Mode = 1`, sorteado por `BP_LibrarySystem.PickReturner` entre quem tem livro em aberto e não está na loja. O cliente já nasce **com os livros na mão** (`HoldReturnBooks`, mesma pose de quem sai) e, ao chegar à frente da fila, os coloca no balcão (`PutReturnBooks`, usa o mesmo ator que foi emprestado). Os livros emprestados ficam **guardados** (`BP_Book.Stash`, oculto, `State 6`) em vez de destruídos. O jogador registra na aba DEVOLUÇÃO e depois guarda o livro na estante; só aí o estoque volta.
-  - **Pose de segurar livros (NPC):** o `ABP_Customer` dobra o braço direito (Transform Modify Bone, `HoldAlpha`) quando `BP_Customer.HoldingBooks` é verdadeiro. Detalhes e valores no ROADMAP.
-  - **Pose de segurar livros (jogador):** a `FirstPersonMesh` usa `/Game/Library/Characters/ABP_FP_Library` (cópia do `ABP_FP_Copy`) com a mesma técnica; palma aberta para cima, livros sobre ela. `BP_LibraryCharacter.SyncHold` (fim do Tick) faz os livros seguirem a mão. Livros na mão ficam com `FirstPersonPrimitiveType = FirstPerson` (senão a mão, que é desenhada na frente do mundo, aparece por cima deles). O braço abaixa quando o leque (Q) está aberto (não testado).
-- **Sistema `BP_LibrarySystem` + `WBP_LibrarySystem`** (E na caixa registradora, tela cheia), **redesenhado em subtelas (Etapa 2d)**:
-  - `WBP_LibrarySystem` é o shell: barra lateral + `WidgetSwitcher` com `WBP_ScreenBooks` (busca, A→Z/Z→A, detalhe), `WBP_ScreenUsers` (busca, ordenação, histórico, cadastro) e `WBP_ScreenLoan` (lançar, confirmar, limpar). O estado fica no shell; as telas o chamam por `Owner` (`Bind`).
-  - O papel do pedido virou **modal** (botão PEDIDO, P / Y). O papel do jogo fica escondido enquanto o sistema está aberto e volta ao sair sem concluir.
-  - O sistema confere usuário, livros no balcão e pedido; se algo não bate, mostra um aviso e não registra nada. Com tudo certo, a tela fecha e o cliente leva os livros e sai sozinho. Sair guarda um rascunho.
-  - Esc/B (`HandleBack`) fecha o pedido e depois o sistema, e P/Y abre o pedido (`OnPreviewKeyDown`). **Não testado com teclado/controle de verdade.**
-  - **Teclado virtual** (`WBP_VirtualKeyboard`, overlay do shell) **só para o controle**: no controle, o **A num campo de texto abre o teclado** (`PadOpenKeyboard`); com teclado/mouse digita-se direto no campo. Os botões "TECLADO" ficam escondidos.
-  - **Foco para controle:** o sistema abre com foco na aba LIVROS; o botão focado é destacado por `Hl`/`HlAll` (Tick do shell) e por `HlOn`/`HlOff` em `WBP_Row`/`WBP_KeyButton`; LB/RB trocam de aba. Não testado com controle de verdade.
-  - **Detalhe do livro:** sinopse (`BP_Book.BookSynopses`) e **prévia 3D da capa** (`BP_BookPreview`, gerado no `Open` do shell em (0,0,-30000); SceneCapture → RenderTarget → Image). A pose é yaw -38° (frente da capa + lombada à esquerda); não troque sem conferir que não vira o verso.
-  - **Quatro abas:** LIVROS, CLIENTES, EMPRÉSTIMO e **DEVOLUÇÃO** (`WBP_ScreenReturn`, LB/RB passam por todas). O histórico (em Clientes) mostra "Nº N · título · em aberto / devolvido ✓", um registro **por livro** (`HNos/HDocs/HTitles/HReturned/HBooks` no `BP_LibrarySystem`).
-  - Ainda falta: data no histórico (só há o nº do empréstimo; a data vem com o ciclo de dias), SaveGame do cadastro/histórico (hoje zera ao reiniciar o mapa) e um computador de verdade no lugar da caixa registradora.
-- **Visual do sistema (2026-10-27):** o `WBP_LibrarySystem` agora é uma janela estilo Windows 95/98 (fundo teal, barra de título azul, menu, barra de status, botões cinza). Só aparência; a lógica não mudou. Detalhes e pendências no ROADMAP.
-- **Animação de agachar (2026-10-29) — FEITA, "ficou ótimo" no teste do usuário.** A tentativa com Mixamo (2026-10-27) foi descartada; agora usamos animações do **Lyra Starter Game** (mesmo esqueleto do Manny, sem retarget):
-  - Assets em `/Game/Library/Characters/Anims/Lyra/`: `SK_Mannequin_Lyra`, `MM_Unarmed_Crouch_*` (Idle, Entry, Exit, Walk_Fwd/Bwd/Left/Right) e `MM_Unarmed_IdleBreak_Fidget/Scan`. O `SK_Mannequin` do template (`/Game/Characters/Mannequins/Meshes/`) tem `compatibleSkeletons = [SK_Mannequin_Lyra]` (exceção autorizada à regra do template).
-  - O corpo (`CharacterMesh0`) usa **`/Game/Library/Characters/ABP_Body_Library`** (cópia do `ABP_Unarmed`): depois da máquina `Locomotion`, Blend Poses by Bool (`IsCrouched`) escolhe entre `Crouch_Idle` e as 4 `Walk_*`; dois Layered Blend deixam o tronco (`spine_02`+) no `Crouch_Idle` (sem balanço de câmera) e só o `clavicle_r` no `MM_Idle` em pé (braço do livro). O braço esquerdo segue o Lyra.
-  - `CrouchCamDrop` = 0 (a malha não desce mais). **Armadilha descoberta:** o `ABP_FP_Library` passa a pose pelo Control Rig `CtrlRig_FPWarp`, que prende a cabeça na altura da cápsula; o Alpha desse nó é um **pino** (vale mais que `Node.alpha`) e agora lê `RigAlpha` (0 agachado, 1 em pé). Câmera medida: em pé Z 177,9, agachado ≈100.
-  - **Pendências:** a sombra do jogador mostra o braço direito reto (a pose do livro só existe no `ABP_FP_Library`); o livro some ao andar agachado (aceito). Detalhes e como foi medido (PrintString + `GetSocketLocation "head"`) no ROADMAP.
-- **Polimento do NPC (2026-10-29), `ABP_Customer`:** `clavicle_r` do `MM_Idle` com peso `HoldAlpha` (ombro estável com livro) e **olhar em volta na fila** (`IdleBreak_Fidget/Scan` via Sequence Evaluator + função `UpdateIdleBreak`; 6 s parado dispara, depois 8–15 s). O usuário aprovou o resultado.
-- ⚠️ **Nunca use "Adicionar ao projeto" do Lyra no `library_project`:** sobrescreve `Config/`, traz `Source/` e `Plugins/` e o editor deixa de abrir. Para pegar mais animações, o Lyra fica como projeto separado (`C:\...\Unreal Projects\LyraStarterGame`) e copiamos só os `.uasset` (com o esqueleto no caminho original `/Game/Characters/Heroes/Mannequin/Meshes/SK_Mannequin` durante a cópia). Veja o ROADMAP.
-- **Próximos passos naturais** (ROADMAP Etapa 2): teste do usuário com teclado do ciclo completo (papel → estante → balcão → sistema), Esc para fechar o sistema, porta que abre, sininho, devolução e reposição de estoque.
-- O `BP_TestDriver` (`/Game/Library/Debug/`) ficou com o roteiro de teste do sistema no EventGraph. Ele **não está na cena**. Reescreva o grafo antes de reutilizar.
-- ⚠️ Não apague assets pelo MCP logo depois de um PIE: isso já derrubou o editor (veja o MCP_WORKFLOW).
+Estado em 2026-10-29. Etapas 0, 1 e 2a–2e concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)); limpeza de manutenção em andamento (itens e dívida técnica em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+Mapa dos Blueprints, convenções e como adicionar livro/tela: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+**O que já funciona**
+- **Jogador `BP_LibraryCharacter`:** primeira pessoa, sem pulo, caminhada lenta, mira de ponto. **E** interage (livro, área de guardar, cliente, caixa registradora, ou solta livros); **Q** segurado abre os livros da mão em leque; **C** agacha (alterna); **botão direito** dá zoom. Carrega até 3 livros. Input em `/Game/Library/Input/IMC_Library` (Enhanced Input; controle mapeado, não testado).
+- **Livros `BP_Book`:** ~1.700 unitários em 24 estantes por gênero (tabela em [docs/SCENE_MAP.md](docs/SCENE_MAP.md#estantes-por-gênero)); áreas `BP_PlaceZone` (7 por estante + balcão); título/autor/sinopse/gênero nos mapas do CDO. O `BP_Book` só liga o tick em State 1/2 (`PickUp`/`PlaceAt` ligam, `SleepIfIdle` desliga): se criar outra função que ponha um livro em State 1 ou 2, ligue o tick nela.
+- **Clientes `BP_Customer` + `BP_CustomerSpawner`:** chegam a cada 180–360 s (primeiro em 5 s), até 3 na loja, fazem fila; só o da frente responde. Empréstimo (papel `WBP_RequestList`) ou devolução (`ReturnChance` 0,4; vêm com os livros na mão). O jogo já começa com histórico (`SeedHistory`: 11 registros).
+- **Sistema `BP_LibrarySystem` + `WBP_LibrarySystem`** (E na caixa registradora): janela estilo Win95 com abas LIVROS, CLIENTES, EMPRÉSTIMO e DEVOLUÇÃO (LB/RB), pedido em modal (P/Y), Esc/B fecha, teclado virtual só no controle, prévia 3D da capa (`BP_BookPreview`, pose yaw -38°: não troque sem conferir que não vira o verso).
+- **Animações:** agachar com assets do Lyra (`ABP_Body_Library`, `ABP_FP_Library`) e polimento do NPC (`ABP_Customer`: olhar em volta na fila). Detalhes e armadilhas (o Alpha do `CtrlRig_FPWarp` é um pino) em [docs/ANIMATION_NOTES.md](docs/ANIMATION_NOTES.md).
+
+**Ainda falta:** teste do usuário com teclado/controle de verdade (ciclo completo, Esc, foco por D-pad); data no histórico; SaveGame do cadastro/histórico (zera ao reiniciar o mapa); computador de verdade no lugar da caixa registradora; porta que abre e sininho; reposição de estoque. Próximo: Etapa 3 (ciclo de dias).
+
+**Armadilhas que custaram caro**
+- ⚠️ **Nunca use "Adicionar ao projeto" do Lyra no `library_project`:** sobrescreve `Config/`, traz `Source/` e `Plugins/` e o editor deixa de abrir. O Lyra fica como projeto separado (`LyraStarterGame`, ao lado deste em `Unreal Projects`); copiamos só os `.uasset` (veja o ANIMATION_NOTES).
+- ⚠️ **Não apague assets pelo MCP logo depois de um PIE:** já derrubou o editor. Reabra o editor antes ou apague pelo Content Browser.
+- O `BP_TestDriver` (`/Game/Library/Debug/`) tem o EventGraph vazio e fica **fora da cena**; reescreva o grafo antes de reutilizar.
+- Estados numéricos (`State`/`Mode`) ainda não são enums: ao mexer neles, confira todos os `==` (veja ARCHITECTURE).
 
 ## Como trabalhar bem aqui (aprendizados)
 - Leia o [docs/MCP_WORKFLOW.md](docs/MCP_WORKFLOW.md) **antes** de editar Blueprints pelo MCP. Ele tem várias armadilhas já resolvidas: nós puros reavaliados, `if` que encerra o fluxo, defaults do CDO que se perdem, pinos de array, eventos de input, perfis de colisão etc.

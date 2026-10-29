@@ -16,9 +16,11 @@
 4. Se o Unreal perguntar sobre `GameFeatureData` no Asset Manager, aceite. A entrada já está no `Config/DefaultGame.ini`.
 
 ## O que está no repo e veio do template First Person
-`/Content/FirstPerson`, `/Content/Input`, `/Content/Characters/Mannequins`, `/Content/LevelPrototyping`
-e `/Content/Weapons` (cerca de 145 MB). Esses entram no git normalmente: o template é da Epic e
-pode ser incluído no projeto. Assim, não é preciso adicionar o Feature Pack de novo.
+`/Content/FirstPerson`, `/Content/Input` e `/Content/Characters/Mannequins` (cerca de 95 MB). Entram no git
+normalmente: o template é da Epic. O `BP_LibraryCharacter` e o `BP_LibraryGameMode` herdam dos Blueprints
+do `FirstPerson`, então essas pastas **não podem ser apagadas** sem reparentar os dois.
+As armas (`/Content/Weapons`), o `LevelPrototyping`, o mapa `Lvl_FirstPerson` e as animações de arma foram
+removidos na limpeza de 2026-10-29 (estão no histórico do git se precisar).
 
 ## Configs importantes (já no repo)
 - `Config/DefaultEngine.ini`:

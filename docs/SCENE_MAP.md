@@ -164,7 +164,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - `MaxAcceleration = 800` e `BrakingDecelerationWalking = 1200`, para começar e parar com suavidade.
   - Para ajustar o ritmo, mude isso no CharMoveComp do CDO.
 - Animações de andar para NPCs: `/Game/Characters/Mannequins/Anims/Unarmed/BS_Idle_Walk_Run` (blendspace por velocidade) e `.../Unarmed/Walk/MF_Unarmed_Walk_*`.
-- O template First Person também trouxe `/Game/FirstPerson`, `/Game/Input`, `/Game/Characters/Mannequins`, `/Game/LevelPrototyping` e `/Game/Weapons`. As armas não serão usadas.
+- O template First Person trouxe `/Game/FirstPerson`, `/Game/Input` e `/Game/Characters/Mannequins` (armas e LevelPrototyping foram removidos em 2026-10-29).
 
 ## Livros e estantes
 - As estantes são instâncias de `BP_BookShelf_01` (só o móvel e a plaquinha). O gênero vem do material da placa (`MI_Bookshelf_Label_<Genero>`).
@@ -189,7 +189,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   Alguns encaixes são provisórios (Data Structures em Economy, Classic Poems em Dictionaries) porque só existem as 8 placas de gênero da Fab.
 - **Placa:** o BP `BP_BookShelfs` monta a placa pelas variáveis `bookshelf_LabelType` (1 = com placa) e `bookshelf_LabelMaterial` (índice em `boolshelf_Label_MaterialType`: 1 Biography, 2 Dictionaries, 3 Economy, 4 Fantasy, 5 History, 6 Novels, 7 Sci-Fi, 8 Science). Mudar o material direto no componente não funciona (o construction script refaz).
 - **Geometria (espaço local da estante):** prateleiras em z relativo 20, 60, 95, 130, 165, 200 e 235; frente dos livros em y local -16,6 (livro com o mesmo yaw da estante); largura útil x de -66 a +66 (o interior vai a ±69,6, e o layout antigo da History passava disso, por isso os livros atravessavam a lateral). Livros têm 17–20 cm de profundidade e até 29 cm de altura.
-- **Povoamento:** blocos de 3–6 exemplares iguais (2–3 nas prateleiras de cima), enchimento de 60/65/65/50/25/12/8% da largura nas 7 prateleiras (escala 0,5 no térreo), resto livre para devolução. Script: `docs/shelf_populate.py`. Cada livro é `Book_<Genero>_S<n>_R<z>_NN` (pasta `Gameplay/Books`) e cada zona `Zone_<Genero>_S<n>_R<z>` (pasta `Gameplay/PlaceZones`).
+- **Povoamento:** blocos de 3–6 exemplares iguais (2–3 nas prateleiras de cima), enchimento de 60/65/65/50/25/12/8% da largura nas 7 prateleiras (escala 0,5 no térreo), resto livre para devolução. Script: `Tools/shelf_populate.py`. Cada livro é `Book_<Genero>_S<n>_R<z>_NN` (pasta `Gameplay/Books`) e cada zona `Zone_<Genero>_S<n>_R<z>` (pasta `Gameplay/PlaceZones`).
 - Nas estantes do térreo, as tintas (`PaintContainer`, até 192 por estante) e seus grupos foram apagados.
 
 ### Estante de teste: History (`BP_BookShelfs10`) — *histórico, refeita no layout acima*
