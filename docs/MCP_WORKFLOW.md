@@ -236,6 +236,13 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - Os labels podem enganar. Conferir as dimensões com `get_actor_bounds` é o jeito mais confiável de entender o que um ator é (`CheckoutBlock_2`, por exemplo, é o balcão).
 - O comando `find_actors` sem filtro devolve cerca de 8 mil atores. Agregue tudo dentro de um script e devolva só o resumo.
 
+### Aprendizados da migração para structs (2026-10-29)
+- **Chamar função do mesmo BP no DSL:** o argumento posicional cai em `self`. Use argumentos nomeados: `(CallFunction|NormDoc :Doc x)`, `(CallFunction|MarkReturned :Index i)`. Em função de outra classe, o alvo vem primeiro: `(Class|BPLibrarySystem|GenreOf sys :Title t)`.
+- **Struct de usuário:** `add_struct_variable(..., container_type="ARRAY")`; nós `Utilities|Struct|MakeS<Nome>` (pinos na ordem dos campos) e `BreakS<Nome>` (`(bind (a b c) (Break ...))`). Confira as ligações reais com `get_node_infos`: o read-back junta os Break e esconde o pino usado.
+- **O read-back mente em `type_id` de nós de outra classe** (`Capture|GetState`, `TakeRecorder|Panel|GetMode`, `Baseline|GetSystem`, `Class|WBPKeyButton|Setup` para o Row). Ao reescrever, use os ids reais, achados com `find_node_types` no grafo (`Class|BPBook|GetState`, `Class|WBPLibrarySystem|GetSystem`, `Class|WBPRow|Setup`). `GetIdentity` devolve (Nome, Doc): desmonte os dois explicitamente.
+- **Reescrever uma função existente deixa nós órfãos** em alguns casos; um `write_graph_dsl` que falha **grava o grafo pela metade**. Varra a alcançabilidade a partir do `FunctionEntry` (exec adiante, entradas de dados para trás) e apague o resto com `delete_node`.
+- **Teste de UI no PIE:** `SlateInspectorToolset.Click` só dá foco em botão UMG (não ativa); prefira o driver chamando as funções do widget (`ShowTab`, `PickUser`, `SelectUser`). `Screenshot` vem em base64 enorme: salve em arquivo, decodifique com Python para PNG no scratchpad e abra com Read.
+
 ## O que só dá para fazer pela interface do editor (peça ao usuário)
 - Adicionar Feature Packs (First Person, Third Person): Content Drawer → **Add** → *Add Feature or Content Pack*.
 - Baixar assets da Fab ou do Quixel Bridge e criar MetaHumans (MetaHuman Creator).
