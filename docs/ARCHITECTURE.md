@@ -29,7 +29,7 @@ Detalhes de gameplay e etapas: [ROADMAP.md](ROADMAP.md). Coordenadas da cena: [S
 ## Dívida técnica (backlog priorizado, da auditoria de 2026-10-29)
 Itens com risco médio/alto precisam de struct/enum/DataTable criados **no editor** (o MCP não cria).
 
-1. ~~Arrays paralelos do histórico~~ **feito (2026-10-29):** `BP_LibrarySystem.Loans` (`S_LoanRecord`); só `AddHistory` e `MarkReturned` escrevem. Resta o seed ainda em 4 arrays paralelos (`SeedNos/Docs/Titles/Closed`) → `DT_SeedLoans`.
+1. ~~Arrays paralelos do histórico e do seed~~ **feito (2026-10-29):** `BP_LibrarySystem.Loans` (`S_LoanRecord`); só `AddHistory` e `MarkReturned` escrevem; o seed vem da `DT_SeedLoans`.
 2. ~~Catálogo nos mapas do CDO do `BP_Book`~~ **feito (2026-10-29):** `DT_Books` (`S_BookInfo`). Resta `BuildCatalog` e `BuildRequest` ainda varrerem todos os `BP_Book` com `GetAllActorsOfClass`.
 3. **Estados numéricos soltos** → enums: `BP_Book.State` (0 estante, 1 mão, 2 movendo, 3 física, 4 inspeção, 6 guardado), `BP_Customer.State/Mode`, `BP_PlaceZone.ZoneType`, `WBP_LibrarySystem.CurTab`.
 4. **Pool de pessoas e cadastro duplicados** (`PersonNames/Docs` vs `UserNames/Docs`) → `S_Person` + `DT_People`.
