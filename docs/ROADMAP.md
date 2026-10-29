@@ -37,7 +37,7 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 - [ ] Empilhar no balcão mirando em cima de outro livro (hoje mirar num livro = pegar)
 - [x] Converter outras estantes (2026-10-27): 24 estantes por gênero, exemplares iguais agrupados, margem para não atravessar a lateral, mais livros no meio/baixo. Script em `Tools/shelf_populate.py`. Verificado no PIE (roteiro automático): pegar um livro da S16 e guardar em outra prateleira funciona. Falta teste do usuário com teclado e as ilhas (corpo 02) continuam cenário.
 - [x] Gênero de cada livro mostrado na UI e no papel do pedido, catálogo revisado pelas lombadas e histórico inicial de empréstimos (seed, devolução possível desde o início) (2026-10-27). Verificado no PIE: papel, abas LIVROS/CLIENTES/DEVOLUÇÃO e preview. Falta teste do usuário com teclado do ciclo de devolução completo.
-- [ ] Gêneros novos (Poetry, Design, Informática) com placa própria: hoje só há 8 placas; os 19 títulos foram encaixados nelas (veja SCENE_MAP). Criar a arte das placas e o mapa `BookGenres` no `BP_Book`.
+- [ ] Gêneros novos (Poetry, Design, Informática) com placa própria: hoje só há 8 placas; os 19 títulos foram encaixados nelas (veja SCENE_MAP). Criar a arte das placas e a coluna `genre` na `DT_Books`.
 - [x] Balcão → entregar o livro ao NPC (primeiro passo do ciclo de empréstimo). Veja a Etapa 2.
 - [x] Migrar a tecla E para Enhanced Input (`IA_Interact`, `IMC_Library`)
 - [x] Agachar (C / B, alternar; a câmera desce 50 cm suavemente)
@@ -98,11 +98,11 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - `BP_BookPreview` (`/Game/Library/Blueprints/`): `Pivot` → `BookMesh`, `Cap` (SceneCaptureComponent2D, `ShowOnlyActorComponents` só dele, sem atmosfera/fog/bloom, fundo preto) e 2 luzes. No `BeginPlay` cria um RenderTarget 512×512. `ShowMesh(Mesh, Yaw)` centraliza a malha pelos bounds, gira o pivô, afasta a câmera (3,1 × o raio) e chama `CaptureScene`.
   - O shell **gera o ator** em (0, 0, -30000) no `Open` (`Preview`) e o destrói no `CloseSystem` (`KillPreview`). `ShowPreview(Title, Img)` acha um `BP_Book` da cena com aquele título, copia a malha para a prévia e liga o RenderTarget ao `PreviewImage` (via `SetBrushResourceObject`).
   - **Pose: yaw -38°. Mostra a FRENTE da capa com a lombada à esquerda** (conferido em "Cities": ilustração e título na frente, título na lombada). Cuidado ao mudar o yaw: a +142° apareceria o verso.
-  - **Sinopses:** `BP_Book.BookSynopses` (mapa título → sinopse, 19 textos curtos em pt-BR, tom cozy) no CDO; `GetSynopsis(Title)` no shell; "Sem descrição." se faltar.
+  - **Sinopses:** coluna `synopsis` da `DT_Books` (19 textos curtos em pt-BR, tom cozy); `GetSynopsis(Title)` no shell chama `BP_LibrarySystem.SynopsisOf`.
   - Verificado no PIE com "Classic Poems" e "Cities".
   - **Layout do detalhe (ajuste pós-teste):** título, autor, cópias, **botão de adicionar (no topo)**, prévia (Fill) e **sinopse embaixo**, dentro de `SizeBox` (`bOverride_MaxDesiredHeight` + 150) + `ScrollBox` (`SynScroll`): sinopse longa rola em vez de estourar o painel (testado com texto de ~600 caracteres). Câmera da prévia em 3,9 × o raio, para o livro não cortar.
   - **Rolagem no controle:** o analógico direito (eixo Y) rola a sinopse (aba Livros) e o histórico (aba Clientes) via `OnAnalogValueChanged` → `ScrollContent`. Não testado com controle de verdade.
-  - Ao adicionar livros novos: crie a entrada em `BookTitles`, `BookAuthors` **e** `BookSynopses`.
+  - Ao adicionar livros novos: acrescente uma linha na `DT_Books` (nome da linha = nome da malha).
 - [ ] Histórico com data/dia de jogo e status "devolvido" (hoje `LoanDocs`/`LoanTitles` guardam só documento e títulos)
 - [x] **Navegação por foco (controle/teclado), 2026-10-26:**
   - Ao abrir o sistema o foco vai para a aba LIVROS (`FocusTab`, com timer de 0,2 s). Ao fechar o papel ou o teclado, o foco volta para a aba atual. Ao abrir o teclado, o foco vai para a primeira tecla; ao abrir o papel, para o botão Fechar.

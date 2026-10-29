@@ -123,7 +123,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - `FindDocIndex(Doc) → int`.
   - `PickPerson() → (PName, PDoc)` sorteia do pool alguém que não esteja na loja (lê `GetIdentity` de todos os `BP_Customer`).
   - `BuildCatalog() → (Titles, Authors, Counts)`:
-    - Os títulos e autores vêm dos mapas `BookTitles`/`BookAuthors` de um `BP_Book` qualquer da cena, sem repetir título, então todos os 19 títulos aparecem, mesmo com 0 cópias.
+    - Os títulos e autores vêm da `DT_Books`, sem repetir título, então todos os 19 títulos aparecem, mesmo com 0 cópias.
     - `Counts` = livros com `State == 0` que **não** estão no balcão (na estante, ou parados em outro lugar).
   - `FindUsers(Query) → (Names, Docs)`: com `Query` vazia, lista todos. Senão, `Contains` (sem diferenciar maiúsculas) no nome **ou** no documento normalizado.
   - `RegisterUser(NewName, NewDoc) → (Ok, Msg)`: recusa vazio ou documento repetido.
@@ -239,7 +239,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - `Drop()`: liga a colisão e a física, zera as velocidades e passa para State 3.
   - `PlaceAt(Target, PhysicsOnArrive)`: guarda o `TargetTransform` e passa para State 2. Hoje sempre recebe `false`.
   - `GetBookExtents() → (Center, HalfSize)`: vem do bounding box da malha, no espaço local do livro.
-- **Catálogo (título e autor):** os mapas `BookTitles` e `BookAuthors` (Map string→string) ficam nos **defaults do CDO** do BP_Book. A chave é o **nome da malha** (`SM_Book_07`).
+- **Catálogo (título, autor, gênero e sinopse):** `/Game/Library/Data/Tables/DT_Books` (struct `S_BookInfo`). O nome da linha é o **nome da malha** (`SM_Book_07`).
   - `GetBookInfo() → (Title, Author, Known)` lê `GetObjectName(Mesh.StaticMesh)` nos mapas.
   - Os títulos foram transcritos das lombadas na estante. Os autores vêm da lombada quando dá para ler; os outros são inventados.
   - `SM_Book_06` (lombada escura, sem título) fica **fora** do catálogo de propósito e nunca é pedida.
@@ -267,9 +267,9 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   | 26 | The Lake Murders | Ingrid Holm* |
   | 29 | Cats and Their Humans | Freya Malcolm |
 
-  \* autor inventado. Para adicionar uma malha nova, acrescente a chave nos dois mapas do CDO (e em `BookSynopses` e `BookGenres`, que usam o **título** como chave).
+  \* autor inventado. Para adicionar uma malha nova, acrescente uma linha na `DT_Books`.
 - **Revisão de 2026-10-27:** títulos e autores conferidos nas lombadas dentro do jogo. Corrigidos: `SM_Book_05` ("Classic Poems of the 18th Century, Volume I", J. A. Brown) e `SM_Book_01` (Bernhard **B.** Painter). Dúvida que ficou: o autor de `SM_Book_14` na lombada parece "John **W.** Matthews" (catálogo: "John M. Matthews"); a lombada é pequena demais para ter certeza.
-- **Gênero:** `BookGenres` (CDO do `BP_Book`, título → nome da placa: Fantasy, Sci-Fi...). `BP_LibrarySystem.GenreOf(Title) → Genre` é a função única usada pela UI (LIVROS: detalhe e linhas; CLIENTES: histórico; DEVOLUÇÃO: linhas e itens) e pelo papel do pedido (`BP_Customer.BuildListText`: "- Título  (Autor · Gênero)"). Ao criar um título novo, preencha também `BookGenres`.
+- **Gênero:** coluna `genre` da `DT_Books` (nome da placa: Fantasy, Sci-Fi...). `BP_LibrarySystem.GenreOf(Title) → Genre` é a função única usada pela UI (LIVROS: detalhe e linhas; CLIENTES: histórico; DEVOLUÇÃO: linhas e itens) e pelo papel do pedido (`BP_Customer.BuildListText`: "- Título  (Autor · Gênero)"). Ao criar um título novo, preencha a coluna `genre` da linha.
 - **Preview:** `WBP_LibrarySystem.PreviewTitle` pega a malha do **primeiro** `BP_Book` com o título (para na primeira cópia: com ~100 cópias por título, sem isso eram ~100 `CaptureScene` por clique).
 - **Histórico inicial (seed):** `BP_LibrarySystem.SeedHistory()` roda no `BeginPlay` e lê `SeedNos/SeedDocs/SeedTitles/SeedClosed` (defaults do CDO, 11 linhas, `LoanCount` = 5). Para cada linha acha **uma cópia real** do título na estante (State 0): se em aberto, `Stash` (some da estante, o estoque desce); se devolvido, a cópia fica na estante. Quem tem livro em aberto: Helena (Lost Souls, Treasures of Al-Saban), Tomás (Colorblind), Clara (Classic Poems), Otávio (Space Walk, First Contact, The Lake Murders), Joaquim (Summer's End). Devolvidos: Theoretical Calculus, Cities, Diary of Ms. Rose. Os títulos do seed precisam bater **exatamente** com `BookTitles`.
 - **Pose na mão:** é uma **pilha deitada, com a capa para cima e sempre horizontal no mundo**.

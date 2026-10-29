@@ -12,17 +12,17 @@ Detalhes de gameplay e etapas: [ROADMAP.md](ROADMAP.md). Coordenadas da cena: [S
 | BP | Responsabilidade | Fala com |
 |---|---|---|
 | `BP_LibraryCharacter` | Jogador: mira/interação (E), carregar até 3 livros, leque Q, agachar, zoom. Filho de `BP_FirstPersonCharacter` | `BP_Book`, `BP_PlaceZone`, `BP_PlaceGhost`, `BP_Customer`, `BP_LibrarySystem`, `WBP_RequestList` |
-| `BP_Book` | Livro unitário: estados de estante/mão/movendo/física/inspeção/emprestado; catálogo (título, autor, sinopse, gênero) nos mapas do CDO | — |
+| `BP_Book` | Livro unitário: estados de estante/mão/movendo/física/inspeção/emprestado; `GetBookInfo` lê título/autor da `DT_Books` pelo nome da malha | — |
 | `BP_PlaceZone` / `BP_PlaceGhost` | Área onde se guarda livro (estante, balcão) e o fantasma amarelo | `BP_Book` |
 | `BP_Customer` + `ABP_Customer` | Cliente: pedido ou devolução, andar até a fila, segurar livros, sair | `BP_CustomerSpawner`, `BP_LibrarySystem`, `BP_Book` |
 | `BP_CustomerSpawner` | Cria clientes (180–360 s, até 3), gerencia a fila | `BP_Customer`, `BP_LibrarySystem` |
 | `BP_LibrarySystem` | Regras do sistema: cadastro, catálogo, empréstimo, devolução, histórico (`SeedHistory`) | `BP_Book`, `BP_Customer`, `BP_CustomerSpawner` |
 | `WBP_LibrarySystem` (shell) + `WBP_Screen{Books,Users,Loan,Return}` + `WBP_Row`/`WBP_KeyButton`/`WBP_VirtualKeyboard` | UI estilo Win95. O shell guarda o estado; as telas o chamam por `Owner` (`Bind`) | `BP_LibrarySystem`, `BP_LibraryCharacter`, `BP_BookPreview` |
 | `ABP_Body_Library` / `ABP_FP_Library` | Corpo (agachar) e braços em primeira pessoa (pose do livro) | `CtrlRig_FPWarp` |
-| `BP_TestDriver` (Debug) | Roteiro de teste; EventGraph vazio, **não está na cena** | — |
+| `BP_TestDriver` (Debug) | Driver de regressão do ciclo empréstimo/devolução (ver CLAUDE.md), **não está na cena** | `BP_LibrarySystem`, `BP_Customer` |
 
 ## Como adicionar...
-- **Um livro novo:** malha em `BookTitles` e `BookAuthors`, título em `BookSynopses` e `BookGenres` (mapas no CDO do `BP_Book`). Veja a armadilha do CDO em [MCP_WORKFLOW.md](MCP_WORKFLOW.md).
+- **Um livro novo:** uma linha em `/Game/Library/Data/Tables/DT_Books` (nome da linha = nome da malha, ex. `SM_Book_01`; colunas `meshId`, `title`, `author`, `genre`, `synopsis`). Livros com o mesmo título compartilham gênero e sinopse. Consultas: `BP_Book.GetBookInfo` (por malha), `BP_LibrarySystem.GenreOf` / `SynopsisOf` (por título), `BuildCatalog` (lista).
 - **Uma estante de livros:** `Tools/shelf_populate.py` (só estantes de madeira reta, `internalMeshType == 1`).
 - **Uma tela no sistema:** novo `WBP_Screen*`, aba no `WidgetSwitcher` do shell, `Bind(Owner)`, e incluir os botões em `HlAll`/`SetLeftRules` (foco do controle).
 
@@ -30,7 +30,7 @@ Detalhes de gameplay e etapas: [ROADMAP.md](ROADMAP.md). Coordenadas da cena: [S
 Itens com risco médio/alto precisam de struct/enum/DataTable criados **no editor** (o MCP não cria).
 
 1. **Arrays paralelos do histórico** (`HNos/HDocs/HTitles/HReturned/HBooks` + `Seed*`) → `S_LoanRecord` + `DT_SeedLoans`. `HReturned` é gravado como string `"true"`.
-2. **Catálogo nos mapas do CDO do `BP_Book`** (chaves misturadas: malha vs título) → `DT_Books {MeshId, Title, Author, Genre, Synopsis}`; `GenreOf` hoje depende de existir um `BP_Book` na cena.
+2. ~~Catálogo nos mapas do CDO do `BP_Book`~~ **feito (2026-10-29):** `DT_Books` (`S_BookInfo`). Resta `BuildCatalog` e `BuildRequest` ainda varrerem todos os `BP_Book` com `GetAllActorsOfClass`.
 3. **Estados numéricos soltos** → enums: `BP_Book.State` (0 estante, 1 mão, 2 movendo, 3 física, 4 inspeção, 6 guardado), `BP_Customer.State/Mode`, `BP_PlaceZone.ZoneType`, `WBP_LibrarySystem.CurTab`.
 4. **Pool de pessoas e cadastro duplicados** (`PersonNames/Docs` vs `UserNames/Docs`) → `S_Person` + `DT_People`.
 5. **"3 livros" em 6 lugares** (`MaxHeld`, `BuildRequest`, `PickReturner`, `AddBookToLoan`, `OnAddToLoan`, textos) → uma variável/`DA_GameplayConfig`. Números dentro do `TrySpawn` (altura +80, faixa Y 250), poses e tempos do `BP_Customer`, cores do tema Win95.
@@ -41,7 +41,7 @@ Itens com risco médio/alto precisam de struct/enum/DataTable criados **no edito
 10. **Performance leve:** `SyncHold` roda todo Tick mesmo sem livros; `HlAll` no Tick da janela.
 
 ## Código morto
-**Removido (2026-10-29, compilado e testado no PIE):** `BP_LibrarySystem.LoanDocs/LoanTitles`; `BP_Book.BookTitle/Genre/bInspect`; `BP_Customer.CheckDelivery` e `IsHolding`; animações órfãs de arma/morte/ataque dos manequins.
+**Removido (2026-10-29, compilado e testado no PIE):** os mapas `BookTitles/BookAuthors/BookSynopses/BookGenres` do `BP_Book`; `SetKbdVisible` (2 telas); `CurrentHitLoc`; variáveis do `BP_TestDriver`; `BP_LibrarySystem.LoanDocs/LoanTitles`; `BP_Book.BookTitle/Genre/bInspect`; `BP_Customer.CheckDelivery` e `IsHolding`; animações órfãs de arma/morte/ataque dos manequins.
 
 **Pendente (ainda têm nós que os usam, então exige editar o grafo):**
 - `BP_LibraryCharacter.CurrentHitLoc` (só é gravada em `UpdatePlacementPreview`); `CrouchCamOffset`/`CrouchCamDrop` (valem 0; usados em `UpdateCameraEffects`, que ainda chama `SetRelativeLocation` na malha com Z = 0 todo frame).
