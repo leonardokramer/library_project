@@ -32,13 +32,14 @@ Avançamos devagar, em muitas etapas pequenas. Veja [docs/ROADMAP.md](docs/ROADM
 - Os atores de gameplay ficam na pasta `Gameplay/` do Outliner; as câmeras e a sequência originais ficam em `Cinematic/`.
 
 ## Onde paramos (atualize ao fim de cada sessão)
-Estado em 2026-10-29. Etapas 0, 1 e 2a–2e concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)); limpeza de manutenção em andamento (itens e dívida técnica em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+Estado em 2026-10-29. Etapas 0, 1 e 2a–2e concluídas (detalhes no [docs/ROADMAP.md](docs/ROADMAP.md)); limpeza de manutenção concluída em 2026-10-29 (o que sobrou está em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), seção "Dívida técnica").
 Mapa dos Blueprints, convenções e como adicionar livro/tela: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 **O que já funciona**
 - **Jogador `BP_LibraryCharacter`:** primeira pessoa, sem pulo, caminhada lenta, mira de ponto. **E** interage (livro, área de guardar, cliente, caixa registradora, ou solta livros); **Q** segurado abre os livros da mão em leque; **C** agacha (alterna); **botão direito** dá zoom. Carrega até 3 livros. Input em `/Game/Library/Input/IMC_Library` (Enhanced Input; controle mapeado, não testado).
 - **Livros `BP_Book`:** ~1.700 unitários em 24 estantes por gênero (tabela em [docs/SCENE_MAP.md](docs/SCENE_MAP.md#estantes-por-gênero)); áreas `BP_PlaceZone` (7 por estante + balcão); título/autor/sinopse/gênero na `DT_Books` (`/Game/Library/Data/Tables`, uma linha por malha). O `BP_Book` só liga o tick em State 1/2 (`PickUp`/`PlaceAt` ligam, `SleepIfIdle` desliga): se criar outra função que ponha um livro em State 1 ou 2, ligue o tick nela.
 - **Clientes `BP_Customer` + `BP_CustomerSpawner`:** chegam a cada 180–360 s (primeiro em 5 s), até 3 na loja, fazem fila; só o da frente responde. Empréstimo (papel `WBP_RequestList`) ou devolução (`ReturnChance` 0,4; vêm com os livros na mão). O jogo já começa com histórico (`SeedHistory`: 11 registros).
+- **Dados em `/Game/Library/Data`:** structs `S_LoanRecord`/`S_Person`/`S_BookInfo`, tabelas `DT_Books` (catálogo), `DT_People` (pool de clientes) e `DT_SeedLoans` (histórico inicial); no sistema, `Loans` e `Users` são arrays de struct e o limite de livros é `MaxBooks` (e `BP_Customer.MaxRequestBooks`). Os enums `E_*` existem mas não são usados (o MCP não cria variável de enum).
 - **Sistema `BP_LibrarySystem` + `WBP_LibrarySystem`** (E na caixa registradora): janela estilo Win95 com abas LIVROS, CLIENTES, EMPRÉSTIMO e DEVOLUÇÃO (LB/RB), pedido em modal (P/Y), Esc/B fecha, teclado virtual só no controle, prévia 3D da capa (`BP_BookPreview`, pose yaw -38°: não troque sem conferir que não vira o verso).
 - **Animações:** agachar com assets do Lyra (`ABP_Body_Library`, `ABP_FP_Library`) e polimento do NPC (`ABP_Customer`: olhar em volta na fila). Detalhes e armadilhas (o Alpha do `CtrlRig_FPWarp` é um pino) em [docs/ANIMATION_NOTES.md](docs/ANIMATION_NOTES.md).
 
@@ -48,7 +49,8 @@ Mapa dos Blueprints, convenções e como adicionar livro/tela: **[docs/ARCHITECT
 - ⚠️ **Nunca use "Adicionar ao projeto" do Lyra no `library_project`:** sobrescreve `Config/`, traz `Source/` e `Plugins/` e o editor deixa de abrir. O Lyra fica como projeto separado (`LyraStarterGame`, ao lado deste em `Unreal Projects`); copiamos só os `.uasset` (veja o ANIMATION_NOTES).
 - ⚠️ **Não apague assets pelo MCP logo depois de um PIE:** já derrubou o editor. Reabra o editor antes ou apague pelo Content Browser.
 - **Teste de regressão do ciclo empréstimo/devolução:** `BP_TestDriver` (`/Game/Library/Debug/`) tem o roteiro pronto (`Poll` a cada 1 s → `Phase0/1/2`: cliente da frente, `ConfirmLoan`/`ConfirmReturn`, `Stats` do histórico). Ele **fica fora da cena**: ponha um ator temporário, rode o PIE, leia `LogBlueprintUserMessages` e remova o ator. Para forçar o tipo de cliente, mude `ReturnChance` no CDO do `BP_Customer` (0 = empréstimo, 1 = devolução) e **restaure 0,4**.
-- Estados numéricos (`State`/`Mode`) ainda não são enums: ao mexer neles, confira todos os `==` (veja ARCHITECTURE).
+- Estados numéricos (`State`/`Mode`/`ZoneType`) ainda são inteiros: ao mexer neles, confira todos os `==` (veja ARCHITECTURE, seção Enums).
+- Reescrever função com `write_graph_dsl` pode deixar nós órfãos, e o read-back mostra `type_id` falsos: veja o MCP_WORKFLOW ("Aprendizados da migração para structs").
 
 ## Como trabalhar bem aqui (aprendizados)
 - Leia o [docs/MCP_WORKFLOW.md](docs/MCP_WORKFLOW.md) **antes** de editar Blueprints pelo MCP. Ele tem várias armadilhas já resolvidas: nós puros reavaliados, `if` que encerra o fluxo, defaults do CDO que se perdem, pinos de array, eventos de input, perfis de colisão etc.
