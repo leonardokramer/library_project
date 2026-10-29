@@ -31,7 +31,7 @@ Itens com risco médio/alto precisam de struct/enum/DataTable criados **no edito
 
 1. ~~Arrays paralelos do histórico e do seed~~ **feito (2026-10-29):** `BP_LibrarySystem.Loans` (`S_LoanRecord`); só `AddHistory` e `MarkReturned` escrevem; o seed vem da `DT_SeedLoans`.
 2. ~~Catálogo nos mapas do CDO do `BP_Book`~~ **feito (2026-10-29):** `DT_Books` (`S_BookInfo`). Resta `BuildCatalog` e `BuildRequest` ainda varrerem todos os `BP_Book` com `GetAllActorsOfClass`.
-3. **Estados numéricos soltos** → enums: `BP_Book.State` (0 estante, 1 mão, 2 movendo, 3 física, 4 inspeção, 6 guardado), `BP_Customer.State/Mode`, `BP_PlaceZone.ZoneType`, `WBP_LibrarySystem.CurTab`.
+3. **Estados numéricos soltos** (`BP_Book.State`, `BP_Customer.State/Mode`, `BP_PlaceZone.ZoneType`, `WBP_LibrarySystem.CurTab`) → enums: ver a seção "Enums" abaixo (bloqueado pelo MCP).
 4. ~~Pool de pessoas e cadastro duplicados~~ **feito (2026-10-29):** pool na `DT_People` (10 linhas `P01`–`P10`, struct `S_Person`) e cadastro em `BP_LibrarySystem.Users` (array de `S_Person`, 5 iniciais no CDO). **Limitação do MCP:** o `DataTableTools.set_rows`/`get_rows` não enxerga o campo `name`; a tabela foi criada por CSV (`import_file`).
 5. ~~"3 livros" em 6 lugares~~ **feito (2026-10-29):** `BP_LibrarySystem.MaxBooks` (padrão 3) é lido por `PickReturner`, `WBP_LibrarySystem.AddBookToLoan`/`ToggleReturn` e `WBP_ScreenBooks.OnAddToLoan`; as mensagens ficaram genéricas ("Limite de livros por empréstimo atingido."). `BP_Customer.MaxRequestBooks` (padrão 3) limita o pedido do cliente (ele não guarda referência ao sistema): **mantenha os dois iguais**. `BP_LibraryCharacter.MaxHeld` (livros na mão) continua separado. Pendem os números de cena do `TrySpawn` (altura +80, faixa Y 250), as poses (`TakeBooks`/`HoldReturnBooks`/`SyncHold`) e as cores do tema Win95.
 6. **Telas duplicadas:** `WBP_ScreenLoan` ≈ `WBP_ScreenReturn` (`OnPickUser`, `OnViewRequest`, `Bind` idênticos), `ScreenBooks` ≈ `ScreenUsers` (ordenação). Destaque de foco em 3 lugares (`Hl/HlAll` no Tick, `WBP_Row.HlOn`, `WBP_KeyButton.HlOn`). Sugestão: interface `BPI_ScreenHost`, `WBP_ConfirmDialog`, `WBP_Win95Button`.
@@ -41,13 +41,15 @@ Itens com risco médio/alto precisam de struct/enum/DataTable criados **no edito
 10. **Performance leve:** `SyncHold` roda todo Tick mesmo sem livros; `HlAll` no Tick da janela.
 
 ## Código morto
-**Removido (2026-10-29, compilado e testado no PIE):** os mapas `BookTitles/BookAuthors/BookSynopses/BookGenres` do `BP_Book`; `SetKbdVisible` (2 telas); `CurrentHitLoc`; variáveis do `BP_TestDriver`; `BP_LibrarySystem.LoanDocs/LoanTitles`; `BP_Book.BookTitle/Genre/bInspect`; `BP_Customer.CheckDelivery` e `IsHolding`; animações órfãs de arma/morte/ataque dos manequins.
+**Removido (2026-10-29, compilado e testado no PIE):** os mapas `BookTitles/BookAuthors/BookSynopses/BookGenres` do `BP_Book`; `SetKbdVisible` (2 telas); `CurrentHitLoc`; `WBP_LibrarySystem.UsingPad` e `SetPadMode`; variáveis do `BP_TestDriver`; `LoanDocs/LoanTitles`; `BookTitle/Genre/bInspect`; `CheckDelivery`/`IsHolding`; animações órfãs de arma/morte/ataque dos manequins e `MM_Unarmed_Crouch_Entry/Exit`.
 
-**Pendente (ainda têm nós que os usam, então exige editar o grafo):**
-- `BP_LibraryCharacter.CurrentHitLoc` (só é gravada em `UpdatePlacementPreview`); `CrouchCamOffset`/`CrouchCamDrop` (valem 0; usados em `UpdateCameraEffects`, que ainda chama `SetRelativeLocation` na malha com Z = 0 todo frame).
-- `WBP_LibrarySystem.UsingPad` (só gravada em `SetPadMode`); `WBP_ScreenBooks/Users.SetKbdVisible` (nunca chamadas) e os botões `BtnKbd*` escondidos, com eventos ligados.
-- `BP_Customer.PlayBell` (corpo vazio, chamada em `OnSpawned` e `UpdateWalk`; gancho do sininho).
-- 13 variáveis sem uso do `BP_TestDriver`; `MM_Unarmed_Crouch_Entry/Exit` (sem referências).
+**Pendente (decisão consciente):**
+- `BP_LibraryCharacter.CrouchCamOffset/CrouchCamDrop` (valem 0, mas fazem parte da cadeia do agachar aprovada pelo usuário em `UpdateCameraEffects`).
+- Botões `BtnKbd*` escondidos, com eventos ligados (`OnKbdSearch/Name/Doc`).
+- `BP_Customer.PlayBell` (corpo vazio; gancho do sininho).
+
+## Enums (`/Game/Library/Data/Enums`): criados, ainda não usados
+`E_BookState` (6 entradas), `E_CustomerMode` (2) e `E_ZoneType` (2) existem, com os nomes internos padrão (`NewEnumerator0…`). **O MCP não cria variáveis do tipo enum** (só primitivos, structs e objetos), então a migração precisa ser feita no editor: trocar o tipo de `BP_Book.State`, `BP_Customer.Mode` e `BP_PlaceZone.ZoneType` quebra os nós que os leem/gravam (BP_Book: 7 funções + `EventGraph`; BP_Customer: 5; BP_PlaceZone/BP_LibraryCharacter: 3). Cuidados: o valor de `ZoneType` é definido **por instância** no mapa (169 zonas) e se perderia na troca de tipo; no `BP_Book`, o estado "guardado" é hoje `6` e viraria a 6ª entrada (índice 5).
 
 ## Avisos conhecidos
 - 15 avisos `CreateDynamicMaterialInstance ... Bookshelf_Label: Material index 2 is invalid` vêm do pacote Stationer (`BP_BookShelfs_C`): só visual, não editar.
