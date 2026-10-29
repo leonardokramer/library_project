@@ -59,7 +59,7 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
   - Verificado por teste automático no PIE (pedido, entrega errada, entrega certa e saída).
 - [ ] Teste do usuário com teclado do ciclo de empréstimo
 - [x] Etapa 2b, spawn e fila:
-  - `BP_CustomerSpawner` cria clientes a cada 180–360 s (até 3 na loja; o primeiro em 5 s).
+  - `BP_CustomerSpawner` cria clientes a cada 180–360 s (até 3 na loja; o primeiro em 5 s). Se a loja ficar vazia depois de um atendimento, o próximo vem em 20–40 s (2026-10-29).
   - Eles entram em linha reta pela porta e fazem fila em Y 170. A fila anda quando o da frente é atendido, e quem sai vai pela faixa Y≈250 e some na porta.
   - O cliente para colado no balcão (X -437).
   - Entrega errada não faz nada (a frase de erro saiu).
