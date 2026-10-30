@@ -6,10 +6,12 @@
 - **Pacote da Fab "Stationer" (Barrel & Bark):** https://www.fab.com/listings/367b3203-faa7-4f94-8302-0d87f7768c25
 - **Pacote da Fab "1996 Police Headquarters" (Dekogon):** https://www.fab.com/listings/ca315ca8-0bee-4e2c-846e-6995f029c797 (classificação Mature: precisa liberar o filtro de conteúdo maduro na conta). Só usamos o computador do balcão.
 - **Pacote da Fab "Jobsite VOL.12 - Office" (Dekogon):** https://www.fab.com/listings/c657df25-2ce6-4a62-a147-58778e3085ac (ainda não usado na cena).
+- **Pacote da Fab "Jobsite VOL.3 - Postal Service" (Dekogon):** https://www.fab.com/listings/0d1140d4-9ce8-4f6f-9b39-449f9a32c80d (entra em `/Content/JOBSITE/VOL3_PostalService/`; ainda não usado).
+- **Pacotes da Fab "Suburbs VOL.24 - Apartment" (https://www.fab.com/listings/7788e6f4-2221-4e1d-9f3e-59614b969474, Mature) e "Suburbs VOL.1 - Wall Decor" (https://www.fab.com/listings/8ba1a4aa-011c-470d-9408-7e22d77b95f5), da Dekogon:** o Apartment entra em `/Content/SUBURBS/VOL24_Apartment/` (1,3 GB) e o Wall Decor em `/Content/House_Decor/`. Ainda não usados.
 
 ## O que NÃO está no git
 - `/Content/Stationer/` (cerca de 2 GB). Ignorado de propósito: a licença da Fab não permite redistribuir os assets, e o tamanho estoura a cota de LFS. **Todo o nível `L_Library` depende dele.**
-- `/Content/PoliceDepartment/` (cerca de 57 MB, só os meshes e materiais do computador, telefone e mouse pad migrados do projeto da delegacia) e `/Content/JOBSITE/` (Jobsite VOL.12). Ignorados pelo mesmo motivo. **O computador do balcão (`Computer_Counter`) e o `MI_ComputerScreen` dependem do `PoliceDepartment`**; sem ele a tela e o computador aparecem como referência quebrada.
+- `/Content/PoliceDepartment/` (cerca de 57 MB, só os meshes e materiais do computador, telefone e mouse pad migrados do projeto da delegacia) , `/Content/JOBSITE/` (Jobsite VOL.12 e VOL.3) , `/Content/SUBURBS/` (Apartment) e `/Content/House_Decor/` (Wall Decor). Ignorados pelo mesmo motivo. **O computador do balcão (`Computer_Counter`) e o `MI_ComputerScreen` dependem do `PoliceDepartment`**; sem ele a tela e o computador aparecem como referência quebrada.
 - Pastas geradas: `Binaries/`, `DerivedDataCache/`, `Intermediate/` e `Saved/`.
 
 ## Restaurar numa máquina nova

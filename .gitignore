@@ -20,6 +20,8 @@ Plugins/*/Intermediate/
 # Veja docs/SETUP.md para restaurar.
 /Content/PoliceDepartment/
 /Content/JOBSITE/
+/Content/SUBURBS/
+/Content/House_Decor/
 
 # Arquivos de IDE / solução (projeto é só Blueprints, mas por garantia)
 .vs/
