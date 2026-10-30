@@ -16,6 +16,11 @@ Plugins/*/Intermediate/
 # Para restaurar numa máquina nova, veja docs/SETUP.md.
 /Content/Stationer/
 
+# Outros pacotes da Fab usados como fonte de props (mesma razão: licença e tamanho).
+# Veja docs/SETUP.md para restaurar.
+/Content/PoliceDepartment/
+/Content/JOBSITE/
+
 # Arquivos de IDE / solução (projeto é só Blueprints, mas por garantia)
 .vs/
 .vscode/

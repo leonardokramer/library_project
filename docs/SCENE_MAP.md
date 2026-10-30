@@ -14,12 +14,14 @@ Unidades em cm, coordenadas do mundo. +X aponta para a porta de entrada (lado le
 |---|---|---|
 | Porta de entrada | `WallwDoor01` | X≈1038, Y de 149 a 427 |
 | **Balcão do atendente** | `CheckoutBlock_2` | X de -538 a -472, Y de 44 a 292, altura 134 |
-| Caixa registradora | `GroupActor250` (`SM_PAD_CashRegister_*`) | (-500, 255, 135) |
+| **Computador** (anos 90, bege) | `Computer_Counter` (`SM_Computer_01a`, pasta `Props/Computer`) | pivô (-496, 238, 134,5), yaw 90 (tela para -X, para o atendente), **escala 0,9** (em escala 1 o conjunto tinha 69,5 cm de profundidade e o teclado e o mouse pad passavam da borda do balcão, que tem 66); ocupa X -535,5…-473, Y 216,6…286,2, Z 134…183. Do pacote Police HQ (`/Game/PoliceDepartment`) |
+| Tela do computador | slot `Screen` (índice 1) do `Computer_Counter`, com `OverrideMaterials` = `MI_ComputerScreen` | `/Game/Library/Materials/MI_ComputerScreen` (filho de `MI_Screen_01a`, `Enable Emissive? = true`, `Emissive Mask` = `T_ComputerScreen`, intensidade 1,6). A textura é 1024², com a tela desenhada só em V 0,24–0,97 (U 0–0,99); o resto é preto para não acender o mouse pad, que usa o mesmo slot |
+| ~~Caixa registradora~~ | removida em 2026-10-29 | o computador ocupa o lugar dela. A papelaria e a caneca que ficavam sobre o balcão também foram retiradas |
 | Placa "Cashier" | `CashierSign` | X -506, Y de 150 a 221, Z de 261 a 290 |
 | Escada para o mezanino | `StairHalf_02` | X de -450 a -164, Y de 292 a 443, sobe de Z 10 até 434 |
 | Paredes atrás do balcão | `Wall24`, `Wall25` | X≈-740 |
-| Máquina de café | `SM_CS1_CoffeeMachine_01a_*` | (985, 166, 454) |
-| Mesas do café | `TableBig_01`, `TableSmall_*` | X de 559 a 1015, Z de 330 a 415 |
+| ~~Café do mezanino~~ | removido em 2026-10-29 | balcões `CheckoutBlock_01/02`, máquina, 17 canecas, 12 pratos, 5 porta-guardanapos e a lousa foram apagados |
+| **Sala de leitura** (mezanino) | `TableBig_01`, `TableSmall_2`, `TableSmall_3`, 11 `Chair_*` | mesa comprida no sentido norte–sul, centro (640, 0), X 579…701, Y -150…150, com 3 cadeiras de cada lado e 1 na ponta norte (Y 153). Duas mesas redondas junto às janelas do leste, em (950, 0) e (950, 250), com 2 cadeiras cada (Y ±62). Corredor livre de ~1,5 m entre a comprida e as redondas e de mais de 2 m nas pontas. A mesa redonda do sul (950, -250) foi removida porque as cadeiras ficavam a ~55 cm das estantes 23/24 e atrapalhavam pegar livros |
 
 **Espaço do atendente:** fica entre o balcão e a parede, X de -730 a -538, Y de 44 a 292.
 **O cliente fica** do lado +X do balcão, em X≈-420.
@@ -34,7 +36,7 @@ Unidades em cm, coordenadas do mundo. +X aponta para a porta de entrada (lado le
 | `NPC_Counter` | (-438, 170, 20), yaw 180 | Posição 0 da fila, colada no balcão (a frente do balcão fica em X -472) |
 | `NPC_Exit` | (-380, 255, 20) | Começo da faixa de saída (Y≈250, paralela à fila) |
 | `CustomerSpawner` (`Gameplay/NPCs`) | (900, 207, 20) | Gera os clientes e controla a fila |
-| `LibrarySystem` (`Gameplay/`) | (-506, 256.5, 148), sobre a caixa registradora | "Computador": banco de usuários/empréstimos e a caixa de colisão que o E encontra |
+| `LibrarySystem` (`Gameplay/`) | (-505, 252.8, 161), sobre o computador | "Computador": banco de usuários/empréstimos e a caixa de colisão que o E encontra (`Collision` com BoxExtent (36, 40, 28), cobre o conjunto monitor/CPU/teclado) |
 
 **Corredor de clientes:** os traces mostram livre o trecho de Y 170 a 290 entre o balcão e a porta. Há expositores baixos em Y 10–166 (ex.: `Bookshelf_6`); a escada começa em Y 292 e a `Column3` fica em (-460, 300). A fila fica em Y 170 e a saída em Y 250–255.
 
@@ -111,7 +113,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 
 ## Sistema da livraria: `BP_LibrarySystem` (`/Game/Library/Blueprints/`, ator `LibrarySystem`)
 É o "computador". Por enquanto fica na caixa registradora; quando houver um monitor de verdade, basta mover o ator.
-- **Colisão:** a raiz é o `Collision` (BoxComponent, extent (30, 22, 16), perfil `OverlapAllDynamic`, ObjectType **WorldDynamic** = `ObjectTypeQuery2`, oculto no jogo). Ele cobre a caixa registradora (X de -533 a -479, Y de 237 a 276, Z de 134 a 161), logo ao lado da `Zone_Counter`.
+- **Colisão:** a raiz é o `Collision` (BoxComponent, extent (36, 40, 28), perfil `OverlapAllDynamic`, ObjectType **WorldDynamic** = `ObjectTypeQuery2`, oculto no jogo). Ele cobre o computador do balcão (centro (-505, 252.8, 161): X de -541 a -469, Y de 213 a 293, Z de 133 a 189), logo ao lado da `Zone_Counter`. Para mudar o extent pelo MCP: `ObjectTools.set_properties` com `values` = `{"BoxExtent":"(X=36.0,Y=40.0,Z=28.0)"}` (o formato `{x,y,z}` só aplicou o X).
 - **Instance-editable:** `Spawner = CustomerSpawner` e `CounterZone = Zone_Counter`.
 - **Dados** (arrays paralelos, porque o MCP não cria struct; seeds no CDO):
   - `DT_People` (`/Game/Library/Data/Tables`, struct `S_Person`): pool de 10 pessoas (Helena Duarte 48.213.907, Marcos Vieira 31.774.520, Beatriz Nakamura 52.908.163, Tomás Albuquerque 27.461.398, Lúcia Ferraz 63.085.214, Rafael Monteiro 19.630.842, Clara Bittencourt 44.517.069, Otávio Reis 38.902.475, Isadora Lins 57.246.381, Joaquim Prado 22.358.716).
@@ -218,7 +220,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 - **`GetBooksInZone() → Books (Array Actor)`:** `BoxOverlapActorsWithOrientation` no centro da zona, com caixa `Extent + (2, 2, 30)` (para pegar pilhas), `[PhysicsBody]` e classe BP_Book. Livros na mão ou em movimento estão sem colisão, então só entram os que estão parados na zona. Quem usa é o `BP_Customer` para ler o balcão.
 - **Zonas na cena:**
   - `Zone_History_R350 … R565`: 7 zonas, centro (-702,36, 352, z+15), yaw 90, Extent (72, 9, 15).
-  - `Zone_Counter`: centro (-505, 176.5, 140.4), yaw 0, Extent (31, 58.5, 6). Cobre o tampo inteiro do `CheckoutBlock_2` em X. Se a zona for estreita, a mira de quem está atrás do balcão passa por baixo dela. A `BookStack_121` foi apagada.
+  - `Zone_Counter`: centro (-505, 154, 140.4), yaw 0, Extent (31, 54, 6) (Y de 100 a 208). Cobre o tampo inteiro do `CheckoutBlock_2` em X. Se a zona for estreita, a mira de quem está atrás do balcão passa por baixo dela. Termina em Y 208 para a pilha de livros não bater no computador (Y 214…292). A `BookStack_121` foi apagada.
 - `BP_PlaceGhost`: cubo com `MI_PlaceHighlight_Ghost` e sem colisão. O personagem cria um no BeginPlay e o posiciona e escala no lugar exato onde o livro vai ficar.
 - **Materiais** (`/Game/Library/Materials/`): `M_PlaceHighlight` (Unlit Translucent, parâmetros `Color` e `Opacity`) e duas instâncias, `MI_PlaceHighlight_Zone` (0,12) e `MI_PlaceHighlight_Ghost` (0,45).
 
@@ -239,6 +241,7 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
   - `Drop()`: liga a colisão e a física, zera as velocidades e passa para State 3.
   - `PlaceAt(Target, PhysicsOnArrive)`: guarda o `TargetTransform` e passa para State 2. Hoje sempre recebe `false`.
   - `GetBookExtents() → (Center, HalfSize)`: vem do bounding box da malha, no espaço local do livro.
+  - **`GetTopBook() → Top`** (2026-10-29): devolve o livro que está **imediatamente em cima** deste (um `SphereTraceForObjects` de 0,5 cm de raio, 1,5 a 8 cm acima do topo do bounding box, `ObjectTypeQuery4`), ou o próprio livro se não houver nada. Os livros empilhados no balcão não têm física, então pegar o de baixo deixava os de cima flutuando. O `BP_LibraryCharacter.TraceBook` encadeia **4 chamadas** de `GetTopBook` depois do cast, então o E sempre pega o livro do topo da pilha (sem recursão: o BP não enxerga o próprio tipo ao escrever o DSL).
 - **Catálogo (título, autor, gênero e sinopse):** `/Game/Library/Data/Tables/DT_Books` (struct `S_BookInfo`). O nome da linha é o **nome da malha** (`SM_Book_07`).
   - `GetBookInfo() → (Title, Author, Known)` lê `GetObjectName(Mesh.StaticMesh)` nos mapas.
   - Os títulos foram transcritos das lombadas na estante. Os autores vêm da lombada quando dá para ler; os outros são inventados.
