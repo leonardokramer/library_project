@@ -51,6 +51,23 @@ Os números são a posição na lista extraída; o título é o nome na Fab (bus
 - **Tempered Glass – Destructible Glass System**, **Destruction System** (UB).
 - **MetaHuman Animator** (Epic) — para quando os MetaHumans entrarem.
 
+## Plano de enriquecimento do interior (2026-10-29, a aprovar: nada foi colocado na cena)
+Princípio: pouca coisa, só o que combina com uma livraria/biblioteca aconchegante dos anos 80/90 que vai azedando. Primeira passada: no máximo ~25 atores novos. Cada pacote não baixado precisa ser adicionado pelo usuário (Add to Project); o inventário e as fotos vêm antes de qualquer colocação.
+
+| Onde | Pacote | O que entraria | Observação |
+|---|---|---|---|
+| Balcão do atendente | **Jobsite VOL.12 - Office** (já no projeto) | canetas, porta-canetas, grampeador, post-its (`Stationery_*`), `Books_Mail_*`, 1 cadeira de escritório atrás do balcão, 1–2 porta-retratos | os nomes dos meshes são genéricos (`SM_Stationery_01ax`…): precisa de uma folha de miniaturas para escolher |
+| Balcão | **Police HQ** (já migrado) | `SM_Telephone_01a` ao lado do computador | |
+| Devolução / livros a repor | **Jobsite VOL.3 - Postal Service** | carrinho de arame e escaninhos (pigeonholes) para livros devolvidos, algumas caixas | combina com o fluxo de devolução; precisa baixar |
+| Paredes do mezanino e do térreo | **Suburbs VOL.1 - Wall Decor** | 6–10 quadros com moldura | nota 3,5, mas o visual é bom; poucos |
+| Canto de leitura (junto às janelas do mezanino) | **Suburbs VOL.24 - Apartment** | 1–2 poltronas, 1 abajur de chão, 1 tapete | classificação Mature; verde-oliva anos 70 combina com o tom de madeira; precisa baixar |
+| Placa e ambientação anos 80/90 | **Jobsite VOL.6 - Movies & Rental** | letras do alfabeto para uma placa, 1–2 cartazes | só se quisermos placa de entrada; precisa baixar |
+| Detalhes de prateleira | **Suburbs VOL.25 - Knick Knacks** | 3–4 vasinhos/bibelôs no topo das estantes | estilo tiki dos anos 70: escolher só os neutros |
+| Terror (fase futura, **não agora**) | **Church VOL.1** (candelabros, bancos), **Gothic Furniture Props**, **Horror and Decay VOL.5** (materiais), **Decals VOL.4/5** (decay, grunge), **TRASH VOL.2** (lixo de chão), **Bodycam VHS Effect** | desgaste progressivo, sujeira, velas | decals e lixo permitem "azedar" o espaço aos poucos |
+| Fora da lista | Modern Library/Bookstore (UE 5.0–5.4, nota 3,5, moderno), Store Displays (expositores de loja), Apartment (cozinha), Museum/Modern Home paintings (arte moderna destoa), Steam Punk Lamp (steampunk e só FBX/GLB), School VOL.1/2 (sala de aula), Realistic Materials VOL.4 | | avaliar só se surgir necessidade |
+
+Como vai ser: (1) o usuário olha este plano e corta o que não quer; (2) baixa um pacote por vez; (3) eu gero uma folha de miniaturas num mapa separado (não no `L_Library`) para escolhermos peças; (4) eu proponho posições com foto do "antes" e do "depois" para aprovar; (5) só então coloco, salvo e atualizo o SCENE_MAP.
+
 ## Observações
 - A lista completa (372) pode ser regerada com a extensão do Chrome em `fab.com/library` (rolar até o fim e ler os links `/listings/`).
 - Itens da Hivemind e RagTarock são, em sua maioria, fantasia/medieval/sci-fi e fogem do tema.
