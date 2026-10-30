@@ -255,6 +255,11 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **PNG sem bibliotecas:** não há Pillow neste Python. `pngkit.py` (zlib + struct, fonte 5x7) foi usado para desenhar a tela do computador. Para descobrir o mapeamento UV de um slot, gere um PNG de teste com gradiente (R = U, G = V), com grade rotulada, aplique no slot e fotografe.
 - **Foto do viewport:** `CaptureViewport` sempre estoura o limite e salva em `tool-results/`. Decodifique com um script que pega a maior sequência base64 (veja o item de `CaptureViewport` acima). O modelo escuro de "câmera" que aparece nas fotos é o ícone da `CineCameraActor`, só existe no editor.
 
+### Armadilha: limpar pacotes pelo MCP (2026-10-30)
+- ⚠️ **Nunca apague pastas de assets pelo MCP em lote.** `AssetTools.list_folders` devolve caminhos **sem o prefixo `/Game/`**, então uma checagem do tipo `k.startswith(pasta + '/')` contra os caminhos `/Game/...` nunca bate e a rotina apaga **tudo**, pasta por pasta, na ordem alfabética. Uma chamada demorou mais que o limite do MCP, ficou rodando no editor (que travou) e apagou o Wall Decor, o Jobsite VOL.12, o Police HQ e quase todo o Apartment. Foi recuperado de uma cópia e re-adicionando pela Fab.
+- **Como limpar com segurança:** (1) calcular a lista dos assets usados (BFS em `AssetTools.get_dependencies` a partir do nível e de `/Game/Library/**`, só dentro das pastas dos pacotes) e gravar em arquivo; (2) conferir que todos existem em disco; (3) **simulação**: listar o que seria apagado e procurar nela qualquer item em uso; (4) apagar com `rm` **pelo sistema de arquivos**, de preferência com o editor fechado; (5) conferir de novo a lista. Antes de qualquer apagamento em massa, copiar o que está em uso para fora do projeto.
+- **Se o editor foi aberto com assets faltando:** o nível carrega com as malhas vazias (`StaticMesh = None`) em memória, mesmo com o arquivo em disco intacto. Depois de restaurar os assets, recarregue com `SceneTools.load_level('/Game/Library/Maps/L_Library')` (ou File → Revert), **sem salvar antes**.
+
 ## O que só dá para fazer pela interface do editor (peça ao usuário)
 - Adicionar Feature Packs (First Person, Third Person): Content Drawer → **Add** → *Add Feature or Content Pack*.
 - Baixar assets da Fab ou do Quixel Bridge e criar MetaHumans (MetaHuman Creator).

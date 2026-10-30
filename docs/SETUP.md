@@ -35,3 +35,6 @@ removidos na limpeza de 2026-10-29 (estão no histórico do git se precisar).
   - Lumen.
   - **Mudanças de canal ou perfil exigem reiniciar o editor.**
 - `.mcp.json`: servidor MCP do Unreal em `http://127.0.0.1:8000/mcp`. Depende dos plugins `ModelContextProtocol` e `AllToolsets` (habilitados no `.uproject`). O AllToolsets liga o plugin GameFeatures.
+
+## Pacotes de terceiros reduzidos (2026-10-30)
+Depois do enriquecimento, os quatro pacotes (`PoliceDepartment`, `JOBSITE`, `SUBURBS`, `House_Decor`) foram **reduzidos aos 116 assets realmente usados pela cena**, de 1,9 GB para ~460 MB. A lista está em [PACK_ASSETS_IN_USE.txt](PACK_ASSETS_IN_USE.txt). Para usar outra peça de um desses pacotes, adicione o pacote de novo pela Fab (Add to Project) e depois apague o que não for usar, **pelo sistema de arquivos com o editor fechado** (veja a armadilha no MCP_WORKFLOW).
