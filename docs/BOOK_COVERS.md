@@ -111,5 +111,12 @@ Base das revistas: malha `SM_Book_30` (fina, 24,3×32,3×2,65 cm; jaqueta R 2075
 
 **Ficaram de fora de propósito:** capas em vietnamita/tailandês (Thế Giới Bánh, Tiếu Xanh, Hoạt hình nâng cao, Kẹo Quốc, Đôn Hổ, o cachorro amarelo). Também sobrou uma capa lisa de couro verde-oliva (linha 5, R≈3550) sem texto, boa para um livro estranho futuro. O autor aproximado de *Saturn Recoiling* ("Joyce Smilecht") fica como está, por decisão do usuário.
 
+## Gêneros revisados e estantes refeitas (2026-10-31)
+- Gêneros que não faziam sentido foram corrigidos na `DT_Books`: Classic Poems e Lost Souls → Novels; Colorblind → History (o verso fala de racismo); Chrysanthemums → Science (é fotografia). Novo gênero **Guides** para manuais e guias (Book Covers Guide, Open Office Design, Data Structures, D## For Beginners, Hunting Techniques, Fuerteventura Travel Guide). **Dictionaries** deixou de existir.
+- **Sinopses corrigidas pelo verso da capa:** Diary of Ms. Rose, Colorblind, Chrysanthemums, Lost Souls, Treasure of Al-Saban, Space Walk, First Contact e Summer's End contradiziam o que está impresso. **Regra: ao escrever uma sinopse, leia o verso da capa no atlas (as faixas do mosaico).**
+- As 24 estantes de livro foram refeitas com `Tools/shelf_populate.py` (59 títulos; 1.734 livros). Escala de enchimento automática: 0,5 no térreo e 0,6 no mezanino. Veja a tabela em [SCENE_MAP.md](SCENE_MAP.md) (as estantes 26 = Magazines e 19 = Guides são do `BP_BookShelf_Library`, com placas novas).
+- O script aceita malhas `SM_BookX_*`; as dimensões (meia espessura, profundidade) da cópia são as da malha-base (veja `GEN` no script).
+
 ## Próximos passos
-1. Colocar os livros novos nas estantes (hoje só as 20 malhas antigas aparecem; `Tools/shelf_populate.py` e a tabela de gêneros do SCENE_MAP). Gênero **Magazines** precisa de estante e plaquinha nova (ou um expositor de revistas).
+1. Revistas: a parte "verso" da janela mostra arte vizinha e as lombadas ficam brancas (revista não tem lombada impressa). Se incomodar, trocar a malha-base por uma própria.
+2. Os livros novos usam o material simples `M_BookAtlas` (sem sujeira/riscos e sem normal map): de perto ficam um pouco mais lisos que os do pacote.

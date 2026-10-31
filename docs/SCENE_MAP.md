@@ -180,18 +180,23 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 - **Regra: só estantes com `internalMeshType == 1` (prateleira de madeira reta) recebem livros.** O tipo 2 (arcos de arame tipo adega: S3, S27) e o tipo 3 (pegboard com ganchos: S5, S6, S41) ficam só com tintas/produtos, porque livros ali ficam estranhos. As ilhas (corpo 02: S, S13, S37–S40) e as de tintas S2, S34, S35 também ficaram como cenário.
 - **Layout (2026-10-27).** 24 estantes de livro (1 corpo 01, tipo 1):
 
-  | Gênero | Estantes (rótulo `BP_BookShelfsN`) | Títulos (malhas) |
-  |---|---|---|
-  | Sci-Fi | 11, 8 (mezanino), 30, 31 (térreo) | First Contact (15), Space Walk (22) |
-  | Science | 7, 9, 22 | Colorblind (10), Theoretical Calculus (13), Analytic Geometry (17) |
-  | History | 10, 23 | Cities (11), The Illusion of Democracy (20) |
-  | Novels | 14, 15, 24 (mezanino), 28, 29 (térreo) | L'homme (03), Summer's End (04), The Lake Murders (26) |
-  | Fantasy | 16, 17 (mezanino), 4, 33 (térreo) | Lost Souls (09), Treasures of Al-Saban (21), Chrysanthemums (12) |
-  | Economy | 18, 36 | Open Office Design (08), Data Structures (14) |
-  | Dictionaries | 19 (mezanino), 26 (térreo) | Book Covers Guide (01), Classic Poems (05) |
-  | Biography | 20, 21 | Diary of Ms. Rose (02, 07), Cats and Their Humans (29) |
+  **Revisado em 2026-10-31** (59 títulos nas estantes; lista completa e genero de cada um na `DT_Books` e em [BOOK_COVERS.md](BOOK_COVERS.md)). O gênero Dictionaries deixou de existir (nenhum dicionário); as duas estantes viraram **Magazines** (26, térreo) e **Guides** (19, mezanino).
 
-  Alguns encaixes são provisórios (Data Structures em Economy, Classic Poems em Dictionaries) porque só existem as 8 placas de gênero da Fab.
+  | Gênero | Estantes (rótulo `BP_BookShelfsN`) | Títulos |
+  |---|---|---|
+  | Sci-Fi | 11, 8 (mezanino), 30, 31 (térreo) | 5: First Contact, Space Walk, The Fourth Target, Saturn Recoiling, Mars |
+  | Science | 7, 9, 22 | 6: Theoretical Calculus, Analytic Geometry, Chrysanthemums, Weather, Symmetry, La culture de la framboise |
+  | History | 10, 23 | 3: Cities, The Illusion of Democracy, Colorblind |
+  | Novels | 14, 15, 24 (mezanino), 28, 29 (térreo) | 18: os 3 originais, Classic Poems, Lost Souls e 13 novos (Peeping Tim, Pilot Dreams, The Attic...) |
+  | Fantasy | 16, 17 (mezanino), 4, 33 (térreo) | 5: Treasure of Al-Saban, The Jester Vampire, Skyland Tales, Skyland Story, Final Light |
+  | Economy | 18, 36 | 2: Don't Bother, Leading from the Back of the Line |
+  | Biography | 20, 21 | 4: Diary of Ms. Rose (02, 07), Cats and Their Humans, Runaway |
+  | **Guides** (novo) | 19 (mezanino) | 6: Book Covers Guide, Open Office Design, Data Structures, D## For Beginners, Hunting Techniques, Fuerteventura Travel Guide |
+  | **Magazines** (novo) | 26 (térreo) | 10 revistas em inglês (~100 exemplares, são finas) |
+
+  Não colocados em nenhuma estante: `SM_Book_06` (The Last Borrower, livro estranho) e `SM_Book_31` (Fluffy Doggo).
+
+  **As estantes 26 e 19 são instâncias do `BP_BookShelf_Library`** (`/Game/Library/Blueprints`, filho do `BP_BookShelf_01` da Fab). O `boolshelf_Label_MaterialType` do original só tem 8 placas e **não é editável na instância** (e mexer em `OverrideMaterials` do componente é desfeito pelo construction script); o filho tem 11 entradas, com `[9]` = `MI_Bookshelf_Label_Magazines` e `[10]` = `MI_Bookshelf_Label_Guides` (`/Game/Library/Materials/Labels`). As duas placas usam a textura `T_Labels_New` (4096², fundo escuro + as palavras no mesmo lugar em que "SCI-FI" e "DICTIONARIES" ficam no atlas, porque as MIs foram copiadas das placas Sci-Fi e Dictionaries com os mesmos `Offset U/V`). Para outra placa nova: escreva a palavra nessa textura na posição de uma palavra existente, duplique a MI correspondente e acrescente no array do filho (para redimensionar o array pelo MCP, mande primeiro o array com `'None'` extras e depois com as referências).
 - **Altura da placa no térreo (2026-10-30):** a placa é parte do componente `Bookshelf_Label` (malha `SM_Bookshelf_01_Label`, a tábua de cima com a placa preta no centro, 44 cm de altura, origem a Z 270 do pé). No térreo o pé está em Z 10, então a tábua vai de Z 280 a 324 e os 14 cm de cima ficam dentro do piso do mezanino (Z ≥ 310): a placa parecia colada no teto. Nas 8 estantes do térreo com placa (`BP_BookShelfs_C_3/25/27/28/30/32/33/36`) o `Bookshelf_Label` foi descido para **RelativeLocation Z 263** (7 cm), por instância, via `ObjectTools.set_properties` com `{"RelativeLocation":"(X=0.0,Y=-7.0,Z=263.0)"}`; o ajuste sobrevive ao construction script. ⚠️ **O `Booshelf_Internal` (prateleiras de dentro) é filho do `Bookshelf_Label`**: descer a tábua desce as prateleiras e os livros (atores separados) ficam flutuando. Por isso, nessas mesmas 8 estantes, o `Booshelf_Internal` foi para **RelativeLocation Z -263** (era -270), que devolve as prateleiras à altura original (Z do pé). Qualquer mudança no `Bookshelf_Label` pede a compensação inversa no `Booshelf_Internal`. As do mezanino (Z 270) ficam como estão. O BP é do pacote Stationer (não editar): por isso o ajuste é por instância.
 - **Placa:** o BP `BP_BookShelfs` monta a placa pelas variáveis `bookshelf_LabelType` (1 = com placa) e `bookshelf_LabelMaterial` (índice em `boolshelf_Label_MaterialType`: 1 Biography, 2 Dictionaries, 3 Economy, 4 Fantasy, 5 History, 6 Novels, 7 Sci-Fi, 8 Science). Mudar o material direto no componente não funciona (o construction script refaz).
 - **Geometria (espaço local da estante):** prateleiras em z relativo 20, 60, 95, 130, 165, 200 e 235; frente dos livros em y local -16,6 (livro com o mesmo yaw da estante); largura útil x de -66 a +66 (o interior vai a ±69,6, e o layout antigo da History passava disso, por isso os livros atravessavam a lateral). Livros têm 17–20 cm de profundidade e até 29 cm de altura.
