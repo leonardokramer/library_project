@@ -1,0 +1,115 @@
+# Capas dos livros (Stationer) — o que existe e como bater com o sistema
+
+## Como as capas funcionam
+- **Todas as malhas** `SM_Book_XX` (`/Game/Stationer/Meshes/Books`) usam o mesmo material `MI_BookCoversCC0` (slot `BookCoverCC0`), que lê o **atlas** `T_BookCoversCC0_B` (4096×4096, `/Game/Stationer/Textures/BooksAndPosters`). Cada malha tem o UV apontando para uma região do atlas. O atlas não é uma grade regular.
+- **As capas têm título e autor impressos.** O que está na `DT_Books` precisa bater com o impresso, senão o jogador vê um texto na capa e outro no sistema.
+- O atlas tem uns 70 designs distintos (estimativa visual), entre eles revistas e livros em vietnamita. Cada design tem frente e verso. O rodapé do atlas traz os 8 rótulos de gênero: Dictionaries, Science, Biography, Fantasy, Sci-Fi, Novels, Economy, History.
+- **Existem 24 malhas:** 01–15, 17, 20–22, 26, 29–32 (não existem 16, 18, 19, 23–25, 27, 28 nem 33 em diante).
+- Duas capas **lisas** (sem texto impresso): `SM_Book_05` (couro escuro) e `SM_Book_06` (couro com cantos dourados). Servem para livros com título à escolha, como os livros estranhos do terror.
+
+## Mapeamento conferido (2026-10-31, fotografando as malhas)
+| Malha | Título impresso | Autor impresso | Estado na `DT_Books` |
+|---|---|---|---|
+| 01 | A Universal Guide to Creating Book Covers | Bernhard B. Painter | ok |
+| 02, 07 | Diary of Ms. Rose | Sydney Andrews | autor corrigido (mesma capa nas duas malhas) |
+| 03 | L'homme qui vivait au loin | Alphonsine Beaujolie | autor corrigido |
+| 04 | Summer's End | Arthur Heinlein | ok |
+| 05 | (lisa) | — | título livre: "Classic Poems of the 18th Century, Volume I" |
+| 06 | **The Last Borrower** (dourado, escrito por nós) | Anonymous | **livro estranho**: cópia da malha em `/Game/Library/Meshes/Books/SM_Book_06` com `M_BookStrange`; linha na `DT_Books` (gênero Novels). Ainda **não está em nenhuma estante** |
+| 08 | Open Office Design | Johnny Matthews | ok |
+| 09 | Lost Souls | Gregg Tielms | ok |
+| 10 | Colorblind | Kevin Reich | ok |
+| 11 | Cities | ilegível na textura; usamos "Jeremy & Gloria Reinstein" (a melhor leitura; o usuário aprovou) | ok por decisão |
+| 12 | Chrysanthemums (Photography) | Xiaohong Zhao (na lombada) | autor corrigido |
+| 13 | Theoretical Calculus | Dr. Albert Faraday | ok |
+| 14 | Data Structures and Programming | John W. Matthews | autor corrigido |
+| 15 | First Contact | Patric J. Picard (lido no atlas, não na malha) | ok |
+| 17 | Analytic Geometry | Dr. C. Marie Matthews | autor corrigido |
+| 20 | The Illusion of Democracy | Mark Cox | autor corrigido |
+| 21 | Treasure of Al-Saban | Joseph Phillips | título e autor corrigidos (`DT_SeedLoans` Seed02 também) |
+| 22 | Space Walk | Alex Leonov | ok |
+| 26 | The Lake Murders | Nathan Hughes | autor corrigido |
+| 29 | Cats and Their Humans | Freya Malcolm | ok |
+| 30 | cachorro amarelo, título em escrita não latina | ilegível | **fora do catálogo de propósito** (outro idioma) |
+| 31 | Fluffy Doggo | Johnny Matthews | linha nova (gênero Fantasy) |
+| 32 | "Kẹo Quốc…" (vietnamita) | Hồ Nhựt Châu | **fora do catálogo de propósito** (outro idioma) |
+
+## Armadilhas
+- Mudar o **título** na `DT_Books` exige mudar também `DT_SeedLoans` (o histórico guarda só o título).
+- Para fotografar as malhas: spawnar no céu (Z 30000), câmera a 30 cm olhando +X (a frente da capa aponta para -X). Luz do sol fica de costas e escurece as capas; uma `PointLight` de intensidade ~5 resolve. `CaptureViewport` **em paralelo desalinha a câmera**: chame uma por vez. O resultado base64 vem em arquivo; decodifique com Python.
+- O texto pequeno (autor da Cities, por exemplo) só tem a resolução do atlas: não dá para ler dando zoom.
+- `M_TmpAtlasView` (`/Game/Library/Debug`) é um material de depuração que mostra o atlas emissivo; pode ser apagado pelo Content Browser.
+
+## Livros estranhos (o `SM_Book_06`)
+- Regra do usuário: a maioria dos livros é fictícia, alguns de domínio público, e uns poucos "estranhos" aparecem ao longo do jogo (terror). As capas **lisas** (05 e 06) são as únicas em que o texto pode ser escolhido. A 05 ficou com o título comum; a 06 é o estranho.
+- **Como o texto dourado funciona:** `M_BookStrange` (`/Game/Library/Materials`) mostra o atlas e, só na face da frente (normal local -X), mistura a textura `T_Book06_Gold` (PNG com alpha, 832×1282) usando a **posição local do mesh** como UV (u = y/17,2035; v = 1 − z/26,4622). Não depende do UV do atlas, então serve para qualquer capa nova. O dourado também é metálico e mais liso. Para trocar o texto: gerar outro PNG (PowerShell + `System.Drawing`; Georgia Bold 74 px; centrado) e importar com **outro nome** (o `import_file` não sobrescreve).
+- O `BP_Book` identifica o livro pelo **nome da malha**. A cópia em `/Game/Library/Meshes/Books/SM_Book_06` mantém o nome `SM_Book_06`, então a linha da `DT_Books` vale. Para fazer o livro aparecer, coloque um `BP_Book` com essa malha; as estantes atuais não usam a 06.
+- O texto "ANONYMOUS" ficou pequeno; se incomodar, gerar outro PNG com fonte maior.
+
+## Livros novos com capas do atlas (feito em 2026-10-31)
+**28 livros novos**, sem gerar nenhuma imagem: cada um é uma malha `/Game/Library/Meshes/Books/SM_BookX_<Nome>` (cópia de uma malha do pacote) com um material `/Game/Library/Materials/Covers/MI_Cover_<Nome>` que mostra outra capa do atlas. A linha da `DT_Books` tem o mesmo nome da malha (`SM_BookX_<Nome>`) e título/autor **iguais aos impressos na capa**. Com os 22 anteriores são **50 linhas** na tabela. Nenhum está numa estante ainda.
+
+**Como funciona (`M_BookAtlas`):**
+- Parâmetros: `UScale`, `UOffset`, `VOffset` (deslocam e esticam o UV da malha) e `UMin/UMax/VMin/VMax` (janela da capa da malha-base). **Só o UV dentro da janela é deslocado**; fora dela (a textura de páginas, no canto inferior direito do atlas) fica intacta. Sem a janela, a borda das páginas pega lixo.
+- Orientação do atlas: o mosaico montado e girado 90° tem **U na horizontal e V na vertical (para baixo)**, texto em pé. Cada capa é uma jaqueta horizontal: verso (esquerda), lombada, frente (direita). As **linhas** são regulares (altura 339,2 px num atlas de 4004 px; linha k começa em y = k·339,2 + 1; a linha 10 é a faixa de rótulos de gênero). Em U, cada jaqueta tem largura própria (466–571 px).
+- Cada capa nova é definida por `(linha, borda direita R, largura W)` em px do mosaico. A malha-base é a malha do pacote cuja jaqueta tem largura mais parecida (jaquetas medidas das malhas: 01 R3750 W488 linha 3; 02 R3445/507/9; 03 R2932/477/9; 04 R2448/473/9; 08 R1965/510/9; 09 R527/509/8; 12 R2520/498/8; 13 R3015/493/8; 15 R2980/480/7; 17 R2002/487/7; 20 R527/522/7; 22 R1002/474/6; 26 R3475/505/6; 29 R2570/495/5). Com `k = W_alvo/W_base`: `UScale = k`, `UOffset = (R_alvo − k·R_base)/4004,3`, `VOffset = (linha_alvo − linha_base)·339,2/4004,3`; janela `UMin=(R_base−W_base−4)/4004,3`, `UMax=(R_base+4)/4004,3`, `VMin=(linha_base·339,2−4)/4004,3`, `VMax=((linha_base+1)·339,2+4)/4004,3`.
+- Usar uma malha-base de largura parecida dá tamanhos de livro variados e evita esticar o texto. Se a frente do alvo é mais larga que a média (caso de *Highways* e *Runaway*), superestime W (usei 600 e 560) para não cortar o título.
+- A lombada e a frente foram conferidas renderizando cada livro (frente e lombada). Pequenos desvios de lombada em jaquetas de espessura muito diferente são esperados.
+
+**Como o atlas foi lido:** plano 10×10 m no céu com `M_TmpAtlasView` (emissivo), câmera a 232 cm olhando para baixo (≈ 1 px por texel; hfov 90°, 4,004 px/cm), 15 capturas (5 linhas × 3 colunas) uma por vez; mosaico montado com `System.Drawing` (PowerShell) e girado 90°. Para achar a borda direita de cada jaqueta: leitura visual aproximada + ajuste para a borda vertical mais forte (código C# via `Add-Type`). Onde o fundo é claro a borda é fraca, então vale a leitura visual.
+
+### Catálogo dos livros novos (título e autor impressos)
+| Malha `SM_BookX_…` | Título | Autor | Gênero |
+|---|---|---|---|
+| CurveInThePlane | Curve in the Plane | Tommas Raibows | Novels |
+| Weather | Weather: Untamable Force | Jeff E. Storm | Science |
+| TheAttic | The Attic | Paul Torres | Novels |
+| JesterVampire | The Jester Vampire | Caroline Therrien | Fantasy |
+| FourthTarget | The Fourth Target | Jean-Gregoire Malvoisin | Sci-Fi |
+| Symmetry | Symmetry | Matthew Roberts | Science |
+| SkylandTales | Skyland Tales | Fynn G. | Fantasy |
+| SkylandStory | Skyland Story | Fynn G. | Fantasy |
+| SadRiseMountain | Sad Rise Mountain | Jason Adams | Novels |
+| PilotDreams | Pilot Dreams | Timothy Peterson | Novels |
+| PeepingTim | Peeping Tim | Timothy Peterson | Novels |
+| MorningDew | Morning Dew | Jonathan Campbell | Novels |
+| HoustonMurders | The Houston Murders | Daniel Hill | Novels |
+| Highways | Highways | John White | Novels |
+| FinalGamble | The Final Gamble | Nicholas Lopez | Novels |
+| FinalLight | Final Light | John D. Raster | Fantasy |
+| Escapee | Escapee | Michael Martinez | Novels |
+| DontBother | Don't Bother | Karl Lasch and Nick Hoff | Economy |
+| LeadingFromTheBack | Leading from the Back of the Line | Jessica Stuzzart | Economy |
+| Polaroid | Polaroid | Jack S. Toneg | Novels |
+| Runaway | Runaway | Midas Cole | Biography |
+| DSharpForBeginners | D## For Beginners | Lennon Sharpe | Science |
+| SaturnRecoiling | Saturn Recoiling | Joyce Smilecht (leitura aproximada: letra muito miúda) | Sci-Fi |
+| Mars | Mars | Mark Watney | Sci-Fi |
+| LakeMurdersII | The Lake Murders II | Nathan Hughes | Novels |
+| HuntingTechniques | Hunting Techniques | John H. Shotgun | Science |
+| HareApparent | Hare Apparent | Wilma Palmer | Novels |
+| Fuerteventura | Fuerteventura Travel Guide | Mike W. Traveler | History |
+
+### Revistas e o livro em francês (acrescentados depois, a pedido do usuário)
+Decisão do usuário: inglês, francês, espanhol e português entram; **vietnamita (e tailandês) ficam de fora** por parecerem estranhos. Novo gênero **Magazines**. Total agora: **61 linhas** na `DT_Books` (39 livros novos no total).
+
+Base das revistas: malha `SM_Book_30` (fina, 24,3×32,3×2,65 cm; jaqueta R 2075, W 533, linha 5), proporção parecida com a de uma revista. Frente-só: usei `W_alvo = largura_da_frente / 0,45` e `k = W_alvo/533`. A parte "verso" da janela mostra a arte vizinha (só se vê ao virar). A `La culture de la framboise` usou a malha 20 (R 540, W 535, linha 0).
+
+| Malha `SM_BookX_…` | Título | Autor | Gênero |
+|---|---|---|---|
+| Mag_Matsulki | Matsulki: Tetris Time | Vários autores | Magazines |
+| Mag_BringWaterproofs | Bring Waterproofs | Vários autores | Magazines |
+| Mag_IntlGeography | International Geography: Coffee | Vários autores | Magazines |
+| Mag_Glass | Glass | Vários autores | Magazines |
+| Mag_Business | Business | Vários autores | Magazines |
+| Mag_Liquid | Liquid: Mantaflow | Vários autores | Magazines |
+| Mag_Species | Species | Vários autores | Magazines |
+| Mag_EngineDoctor | Engine Doctor | Vários autores | Magazines |
+| Mag_Africa | Africa | Vários autores | Magazines |
+| Mag_MedicineToday | Medicine Today | Vários autores | Magazines |
+| Framboise | La culture de la framboise | Adrienne Renaud | Science |
+
+**Ficaram de fora de propósito:** capas em vietnamita/tailandês (Thế Giới Bánh, Tiếu Xanh, Hoạt hình nâng cao, Kẹo Quốc, Đôn Hổ, o cachorro amarelo). Também sobrou uma capa lisa de couro verde-oliva (linha 5, R≈3550) sem texto, boa para um livro estranho futuro. O autor aproximado de *Saturn Recoiling* ("Joyce Smilecht") fica como está, por decisão do usuário.
+
+## Próximos passos
+1. Colocar os livros novos nas estantes (hoje só as 20 malhas antigas aparecem; `Tools/shelf_populate.py` e a tabela de gêneros do SCENE_MAP). Gênero **Magazines** precisa de estante e plaquinha nova (ou um expositor de revistas).
