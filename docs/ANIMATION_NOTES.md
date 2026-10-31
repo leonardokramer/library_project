@@ -29,6 +29,21 @@ Diário técnico movido do ROADMAP em 2026-10-29. O ROADMAP guarda só o checkli
   - Cuidado ao testar devolução: o `ReturnChance` existe **nos dois** CDOs (`BP_Customer` e `BP_CustomerMH`, ambos 0,4). Mude e restaure nos dois.
 - **Falta:** jogador com MetaHuman; sortear variações de rosto/roupa (hoje todos são o mesmo `NpcMaleCharacter`); otimização (cabelo em cards, `r.Streaming.PoolSize`; RTX 2070 Super, 8 GB de VRAM).
 
+## Desempenho com MetaHumans (2026-10-31)
+
+Medido no PIE (RTX 2070 Super, 8 GB, ~1858×862), visão do `PlayerStart`, com 2 manequins MetaHuman andando e com livros, mais um cliente do spawner. GPU por quadro (`profilegpu`, 3 amostras estáveis por linha):
+
+| Configuração | GPU | Observação |
+|---|---|---|
+| Epic (antes) | 22,9 ms (~44 fps) | Lumen GI 5,4 · luzes/VSM 3,3 · TSR 3,2 · sombras 1,6 |
+| **High (padrão agora)** | **15,0 ms (~67 fps)** | Resolução interna 87% + TSR; visual quase igual (aprovado pelo usuário por foto) |
+| Lumen por software (em Epic) | igual ao hardware | Não compensa: ficou o RT por hardware |
+| Cabelo dos NPCs | ~0,6 ms | Os grooms já usam **cards** pelo `LODSync` (`HairCardsInterpolation`, sem passe de strands); trocar o asset não ganharia nada |
+
+- **O que mudou:** `Config/DefaultGameUserSettings.ini` e `Config/DefaultEditorSettings.ini` com `[ScalabilityGroups]` em High (`sg.*=2`, `sg.ResolutionQuality=87`). O editor não guarda a escalabilidade sozinho, então sem o `DefaultEditorSettings.ini` o PIE voltaria para Epic. Mais `r.Streaming.LimitPoolSizeToVRAM=1` em `[SystemSettings]` do `DefaultEngine.ini`.
+- **Para voltar a Epic:** troque os `2` por `3` nos dois arquivos (ou use o menu de escalabilidade do viewport, que vale só para a sessão).
+- **Armadilha de medição:** com o editor em **segundo plano** (usuário em outra janela), a GPU baixa o clock e **todas** as etapas ficam 2–3× mais lentas, de forma irregular (amostras de 24 a 79 ms no mesmo teste). Meça com a janela do Unreal em primeiro plano. Veja o `BP_PerfDriver` no MCP_WORKFLOW.
+
 ## Tentativa com Mixamo (descartada, 2026-10-27)
 
 Mantida só como histórico: o usuário achou o resultado ruim em jogo e os assets foram apagados. Hoje usamos o Lyra (seção acima).

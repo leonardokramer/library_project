@@ -260,6 +260,12 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **Como limpar com segurança:** (1) calcular a lista dos assets usados (BFS em `AssetTools.get_dependencies` a partir do nível e de `/Game/Library/**`, só dentro das pastas dos pacotes) e gravar em arquivo; (2) conferir que todos existem em disco; (3) **simulação**: listar o que seria apagado e procurar nela qualquer item em uso; (4) apagar com `rm` **pelo sistema de arquivos**, de preferência com o editor fechado; (5) conferir de novo a lista. Antes de qualquer apagamento em massa, copiar o que está em uso para fora do projeto.
 - **Se o editor foi aberto com assets faltando:** o nível carrega com as malhas vazias (`StaticMesh = None`) em memória, mesmo com o arquivo em disco intacto. Depois de restaurar os assets, recarregue com `SceneTools.load_level('/Game/Library/Maps/L_Library')` (ou File → Revert), **sem salvar antes**.
 
+### Medir desempenho (2026-10-31)
+- **`/Game/Library/Debug/BP_PerfDriver`** (fica no projeto, fora da cena): no BeginPlay roda `r.ProfileGPU.ShowUI 0`, aplica `ExtraCmd` (string, editável por instância; ex.: `scalability 2`, `r.Lumen.HardwareRayTracing 0`), espera 5 s e roda `profilegpu` 3 vezes (com 2 s entre elas), entre `PERF_BEGIN` e `PERF_END` no log. Coloque na cena, rode o PIE, espere o `PERF_END` e leia os blocos "GPU Profile for Frame" do `Saved/Logs/library_project.log` (um script que pega a coluna "Inclusive" e o nome resolve; a linha é larga demais para o `GetLogEntries`). Tire o ator da cena no fim.
+- **Peça ao usuário para deixar o Unreal em primeiro plano** durante a medição: em segundo plano, todas as etapas ficam 2–3× mais lentas de forma irregular.
+- `ExecuteConsoleCommand` **não** aceita vários comandos separados por `|`: só o primeiro roda. Um cvar mudado no PIE (ex.: `r.Lumen.HardwareRayTracing 0`) **continua valendo no editor** depois do PIE: desfaça na rodada seguinte.
+- `stat unit`/`stat gpu` não aparecem no `CaptureEditorImage`; o `profilegpu` com `ShowUI` ligado abre uma janela "GPU Visualizer" a cada chamada.
+
 ## O que só dá para fazer pela interface do editor (peça ao usuário)
 - Adicionar Feature Packs (First Person, Third Person): Content Drawer → **Add** → *Add Feature or Content Pack*.
 - Baixar assets da Fab ou do Quixel Bridge e criar MetaHumans (MetaHuman Creator).
