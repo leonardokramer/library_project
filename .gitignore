@@ -49,6 +49,9 @@ Plugins/*/Intermediate/
 /Content/Library/Characters/Metahumans/MH_Celeste.uasset
 /Content/Library/Characters/Metahumans/MH_Kelvin/
 /Content/Library/Characters/Metahumans/MH_Kelvin.uasset
+# Monstro das aparições (~200 MB): receita em docs/MONSTER_METAHUMAN.md
+/Content/Library/Characters/Metahumans/MH_Monster/
+/Content/Library/Characters/Metahumans/MH_Monster.uasset
 
 # Arquivos de IDE / solução (projeto é só Blueprints, mas por garantia)
 .vs/

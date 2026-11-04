@@ -154,6 +154,7 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 - [ ] Ambiente sonoro cozy (chuva, café, música)
 
 ## Etapa 4 — Inquietação (início do terror)
+- [x] **MetaHuman do monstro (2026-11-04):** `MH_Monster` montado e buildado (corpo Gaunt de 205 cm, rosto de idoso desnutrido, olhos e boca assimétricos). Receita e armadilhas do editor em [MONSTER_METAHUMAN.md](MONSTER_METAHUMAN.md). Falta integrar ao jogo como aparição (ator próprio, não é cliente).
 - [ ] Anomalias pequenas entre os dias: livro fora do lugar, luz piscando, cliente repetido
 - [ ] Variações de mapa ou de iluminação (`L_Library_Night`?)
 
