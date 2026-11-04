@@ -27,6 +27,29 @@ Plugins/*/Intermediate/
 # Para restaurar, baixe de novo pela biblioteca do Fab ("Add to Project").
 /Content/Fab/
 
+# MetaHumans montados (9 presets "MH_<nome>", ~2,4 GB) e o conteudo de MetaHuman novo gerado por eles:
+# estourariam a cota de LFS. O projeto esta no OneDrive (copia na nuvem). Para refazer: docs/SETUP.md.
+# (o que ja estava versionado em /Content/MetaHumans continua versionado.)
+/Content/MetaHumans/
+/Content/Library/Characters/Metahumans/MH_Ada/
+/Content/Library/Characters/Metahumans/MH_Ada.uasset
+/Content/Library/Characters/Metahumans/MH_Aera/
+/Content/Library/Characters/Metahumans/MH_Aera.uasset
+/Content/Library/Characters/Metahumans/MH_Aoi/
+/Content/Library/Characters/Metahumans/MH_Aoi.uasset
+/Content/Library/Characters/Metahumans/MH_Asha/
+/Content/Library/Characters/Metahumans/MH_Asha.uasset
+/Content/Library/Characters/Metahumans/MH_Bo/
+/Content/Library/Characters/Metahumans/MH_Bo.uasset
+/Content/Library/Characters/Metahumans/MH_Bruce/
+/Content/Library/Characters/Metahumans/MH_Bruce.uasset
+/Content/Library/Characters/Metahumans/MH_Cameron/
+/Content/Library/Characters/Metahumans/MH_Cameron.uasset
+/Content/Library/Characters/Metahumans/MH_Celeste/
+/Content/Library/Characters/Metahumans/MH_Celeste.uasset
+/Content/Library/Characters/Metahumans/MH_Kelvin/
+/Content/Library/Characters/Metahumans/MH_Kelvin.uasset
+
 # Arquivos de IDE / solução (projeto é só Blueprints, mas por garantia)
 .vs/
 .vscode/
