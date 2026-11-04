@@ -90,6 +90,12 @@
 | HareApparent | Hare Apparent | Wilma Palmer | Novels |
 | Fuerteventura | Fuerteventura Travel Guide | Mike W. Traveler | History |
 
+### Revistas maiores que o vão da prateleira (corrigido em 2026-11-04)
+- A malha das revistas tem 32,3 cm de altura (origem na base), mas o vão entre as tábuas da estante 26 é de **30 cm** (35 cm só na primeira fileira): as revistas atravessavam a tábua de cima (medido com `trace_world` para cima a partir de cada prateleira).
+- **Primeira tentativa (não serve):** escala 0,9 no componente `Mesh`. Mas o `Mesh` é a **raiz** do `BP_Book`, então a escala dele é a escala do ator, e o tick (`SetActorTransform` no estado 1 e 2) e o `Drop` voltam tudo para 1: a revista crescia ao ser pega e voltava grande.
+- **Correção definitiva:** variável `BP_Book.ExtraShrink` (float, instance editable; **0 = tamanho normal**, por isso os 1.632 livros comuns não mudam; as 102 revistas têm **0,1**). A escala efetiva é `escala × (1 − ExtraShrink)`: `BP_Book.ScaledTarget(T)` (aplicada ao alvo do estado 2 no tick, antes do `TInterpTo` e do `SetActorTransform` final), `ScaleHoldTransform` (estado 1: `HoldScale × (1 − ExtraShrink)`) e `Drop`. Altura da revista: 32,3 → 29,1 cm, e a base continua na prateleira. Testado no PIE (pegar e guardar): fica em 0,9.
+- ⚠️ `Tools/shelf_populate.py` recria as revistas com `ExtraShrink` 0: se repovoar a estante 26, ponha `ExtraShrink = 0.1` e escala 0,9 em cada revista. Outro livro grande demais para o vão: use o mesmo `ExtraShrink`. `GetBookExtents` ainda usa as dimensões da malha sem o encolhimento, então a posição na mão fica ~10% mais afastada (não incomoda).
+
 ### Revistas e o livro em francês (acrescentados depois, a pedido do usuário)
 Decisão do usuário: inglês, francês, espanhol e português entram; **vietnamita (e tailandês) ficam de fora** por parecerem estranhos. Novo gênero **Magazines**. Total agora: **61 linhas** na `DT_Books` (39 livros novos no total).
 

@@ -23,6 +23,10 @@ Plugins/*/Intermediate/
 /Content/SUBURBS/
 /Content/House_Decor/
 
+# Roupas de MetaHuman baixadas do Fab (WI_/OA_ em /Game/Fab/MetaHuman). Mesma razão: licença.
+# Para restaurar, baixe de novo pela biblioteca do Fab ("Add to Project").
+/Content/Fab/
+
 # Arquivos de IDE / solução (projeto é só Blueprints, mas por garantia)
 .vs/
 .vscode/
