@@ -155,6 +155,7 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 
 ## Etapa 4 — Inquietação (início do terror)
 - [x] **MetaHuman do monstro (2026-11-04):** `MH_Monster` montado e buildado (corpo Gaunt de 205 cm, rosto de idoso desnutrido, olhos e boca assimétricos). Receita e armadilhas do editor em [MONSTER_METAHUMAN.md](MONSTER_METAHUMAN.md). Falta integrar ao jogo como aparição (ator próprio, não é cliente).
+- [~] **Aparições (2026-11-05, em andamento):** `BP_ApparitionDirector` + `BP_Apparition` + `BP_ApparitionSpot` (+ `ABP_MonsterPeek`), detalhes em [MONSTER_METAHUMAN.md](MONSTER_METAHUMAN.md). Só à noite (≥ 19:30), 1/2/3+ por noite conforme o dia, surge na visão periférica espiando com meio rosto, segue o jogador com a cabeça, recua "pulando frames" se o jogador olha ou se aproxima, e o apagão (luzes piscando, escuro, ele some) se o jogador olha fixo e anda até ele. Feitos: os 3 pontos das gôndolas (em pé, rente ao chão, de cabeça para baixo). **Falta:** pontos do balcão, corrimão, colunas do mezanino, vão da escada e cantinho das revistas; teste em jogo do ciclo completo; mão agarrando a borda (precisa de uma pose feita no editor); sorriso.
 - [ ] Anomalias pequenas entre os dias: livro fora do lugar, luz piscando, cliente repetido
 - [ ] Variações de mapa ou de iluminação (`L_Library_Night`?)
 
