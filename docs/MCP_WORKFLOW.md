@@ -236,6 +236,7 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - `CaptureViewport` exige `annotations` (pode ir com tudo zerado e `classFilter: null`). A imagem vem em base64 grande demais e é salva num arquivo em `tool-results/`. Decodifique com Python para PNG no scratchpad e abra com Read. `CaptureEditorImage` funciona do mesmo jeito.
 - `StartPIE` costuma retornar "PIE ended before warmup completed" mesmo **com o PIE rodando**, porque o editor sem foco roda a 3 fps. Confirme com `IsPIERunning` e use `warmupSeconds: 0`. Durante o PIE, o `find_actors` enxerga o mundo do PIE.
 - O contador de atores do Outliner pode mostrar bem menos que o `find_actors` (2.559 contra 8.038), porque ele não conta os filhos de GroupActor. Não é perda de atores.
+- ⚠️ `add_to_scene_from_class`: o `xform` usa `location`/`rotation`/`scale` (rotator). Com `translation` o ator nasce em (0, 0, 0) **sem erro**. Confira com `get_actor_transform`.
 - `add_to_scene_from_class` usa o `name` como nome do objeto, mas o label nem sempre fica igual. Sempre chame `set_label` depois.
 - `AssetTools.duplicate` de um mapa cria o asset **na memória**. O `.umap` só aparece no disco depois de `save_assets`. O `_BuiltData` **não** é duplicado, mas com Lumen isso não pesa muito.
 - O NavMeshBoundsVolume tem um brush padrão de 200 cm. Para cobrir uma área, use a escala do ator (tamanho desejado ÷ 200).

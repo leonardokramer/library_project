@@ -96,7 +96,11 @@ Os raios são curtos (3–4 m), por isso **zonas locais funcionam**. Use distân
 ## 3. Fases (ordem recomendada)
 Cada fase termina com: teste próprio no PIE, fotos, `save_assets`, docs atualizadas e um pedido de teste ao usuário.
 
-### Fase 0 ☐: Escuridão (pré-requisito)
+### Fase 0 ☑ (núcleo pronto, aprovado pelo usuário em 2026-11-09; faltam só 2 itens que dependem de outras fases)
+**Feito e aprovado:** `BP_LightRig` (zona por caixa, fade, flicker, `Blackout`, `RestoreAll`, emissivo apagando junto), noite global (`NightPP` com bias 0,35 / shadow 0,85 / vinheta 0,6), luminárias acesas à noite (balcão e mezanino), escada menos escura via pendentes reais (`StairBoost`) e fog volumétrico atenuado (`VolScatter`). Tudo em MONSTER_METAHUMAN.md ("Fase 0 de escuridão") com valores e armadilhas.
+**Fica para depois, quando uma fase precisar:** (a) `BP_DarkZone` + `M_DarkVoid`/`M_DarkVoidFade` (0.3), a criar junto da Fase 2 (B, rosto no canto) com plano + fotos do lugar; (b) `FaceLight` (0.4), na Fase 1 com o `BP_MonsterStand`. (c) Migrar o Director (`StartBlackout`/`ChargeFlicker`/`IdleTick`) para o `BP_LightRig` (hoje o Director usa a própria lista de luzes e religa tudo com `Light_` no nome, inclusive as luzes de luminária).
+**Regras que o usuário reforçou:** toda luz nova precisa de fonte visível (luminária); nunca uma luz avulsa. **Próximo:** Fase 1 (infraestrutura: monstro em pé, `BP_ScareManager`, pose de apontar).
+
 **Objetivo:** à noite a loja fica mais escura de verdade, e certas **zonas** podem ficar quase pretas sob comando, sem mexer no `L_Lighting`.
 
 **0.1 `BP_LightRig`** (ator novo, 1 na cena, pasta `Gameplay/`): centraliza o comando das luzes.
