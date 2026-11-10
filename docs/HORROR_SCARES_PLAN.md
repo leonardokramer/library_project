@@ -409,7 +409,11 @@ Pedido do usuário: **estático**, **cabeça baixa**, braço direito esticado pa
 3. Fotos de frente, de perfil, **da vista do jogador a 5–7 m** e uma bem de perto da mão. Mostre ao usuário antes de seguir para a Fase 4.
 4. Teste o alvo em 4 lugares (à frente, 30° à direita, mais baixo, no chão) para conferir os limites de `D`.
 
-### Fase 2 ☐: B, rosto no canto escuro (o mais simples; valida HeadOnly, FaceLight e DarkZone)
+### Fase 2 ◐ (2026-11-10): B, rosto no canto escuro — redesenhada após testes do usuário
+**Estado:** `BP_Scare_B` pronto e testado pelo usuário (tecla **9** dispara todos os pontos de uma vez); 7 pontos na cena (`Gameplay/Scares/B`): atrás do PC (`ScareB_PC`), 5 frestas do térreo (`ScareB_Fresta_X95/X210/X395/X510/X697`, y 388) e 1 em pé (`ScareB_EmPe_Magazines`). Detalhes, valores e armadilhas em MONSTER_METAHUMAN.md ("Fase 2 dos sustos"). **O desenho mudou do texto abaixo:** o corpo inteiro aparece (o `HeadOnly` não esconde o tronco deste MetaHuman), sempre **de frente para o jogador** (reorienta a cada tick), e sai em **movimento aos saltos** (degraus de quadro, estilo The Mortuary Assistant): PC e em pé saem de lado; frestas saem **de ré** para a sombra (`bExitBack`). Sorteio por vez: parado ou saindo da quina (`EmergeChance`).
+**Pendente da Fase 2:** (1) `BP_DarkZone` + `M_DarkVoid`/`M_DarkVoidFade` e o ponto do **mezanino** escurecendo a sala ao nascer (via `BP_LightRig.ZoneLights`, luminária visível); (2) refazer os pontos do teto/chão das gôndolas e o baixo junto ao balcão; (3) opcional: `CanArm` pela escada; (4) o **ponto em pé nunca foi visto em movimento** pelo usuário; (5) integração automática com o `ScareManager.Pick` (hoje só a tecla 9 / `bTestOnStart`); (6) reverter o estado de teste da cena (ver CLAUDE.md "Para retomar").
+
+#### Texto do plano original da Fase 2
 **Lugar:** um vão de 10–25 cm, escuro, à altura de uma cabeça (150–175 cm) ou mais baixo (~100 cm, agachado), visto **de passagem** na periferia de um caminho que o jogador faz sempre. **Não coloque sem aprovação com foto.** Candidatos para fotografar:
 - a fresta entre a ponta de uma estante e uma coluna no térreo;
 - entre a `BP_BookShelfs36` e a `ColumnBigger2`, no mezanino;
