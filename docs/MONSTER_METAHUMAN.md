@@ -44,6 +44,28 @@ Tooth Length e Variation no máximo; Tooth Spacing, Overbite, Overjet, Polycanin
 Worn Down 0. Em Materials: dentes `C9B98A`, gengiva `7A4A52`, placa `5B4A22` com Plaque Amount 0,8.
 Boca aberta escancarada (Jaw Open na prévia) lê como cômico; fechada, com os dentes só pela fresta, assusta mais.
 
+## Visual "giz rachado" + sorriso (2026-11-10, referência: *The Mortuary Assistant*)
+A pele do Creator (seções acima) ficou saudável demais. Por cima dela, sem refazer o MetaHuman:
+- **Materiais próprios** em `/Game/Library/Materials/Monster/`: `M_MonsterSkin` (Default Lit: cor baked do MH dessaturada
+  e tingida `SkinTint` + rachaduras `T_MonsterCrack` (R = fenda, G = variação por placa) + normal `T_MonsterCrack_N` somada ao
+  normal baked + máscara `T_MonsterFaceMask` no UV da cabeça: R = órbitas pretas, G = boca/lábios, B = lágrima escura).
+  Parâmetros: `CrackTiling` (rosto 5, corpo 8), `CrackStrength`, `SocketStrength`, `MouthStrength`, `TearStrength`,
+  `DetailAmount`, `PlateMin`, `Roughness`/`RoughnessCrack`. Instâncias `MI_MonsterSkin_Face` (texturas `T_Head_LOD3_*_VT`) e
+  `MI_MonsterSkin_Body` (`T_Body_*_VT`, máscaras do rosto em 0). `M_MonsterTeeth` = dentes baked × 0,1 (boca preta).
+  `MI_MonsterEyeL/R` = filhos dos olhos baked com **Use Baked Material desligado**, íris sem saturação, pupila 0,05, esclera amarelada.
+- Texturas geradas por `Tools/monster_skin_textures.py` (Python + Pillow; `python Tools/monster_skin_textures.py <pasta>`).
+  UV da cabeça MH: olhos em (0,378; 0,372) e (0,622; 0,372), boca em (0,5; 0,583).
+- **Sorriso:** `/Game/Library/Characters/Metahumans/ABP_MonsterFace` = cópia do `ABP_Face` com um nó **Modify Curve** entre o
+  CopyPoseFromMesh e a saída. As curvas `CTRL_expressions_*` vão para o RigLogic do `ABP_Face_PostProcess` (funciona até no
+  editor parado): `mouthCornerPull` 1, `mouthStretch` 1, `mouthUpperLipRaise` 0,9, `mouthLowerLipDepress` 1, `eyeWiden` 1
+  (L e R), `jawOpen` 0,35. Para mudar: `set_properties` no nó com `{"Node":{"curveMap":{...}}}` e compilar.
+- **Onde está ligado:** nos componentes do `BP_MH_Monster` (CDO): `Face.AnimClass = ABP_MonsterFace`, `Face.OverrideMaterials`
+  (slots: 0 dentes, 1–2 olhos, 6–7 pele) e `Body.OverrideMaterials[0]`. ⚠️ Se o MetaHuman for re-montado (Assemble), o
+  `BP_MH_Monster` é regerado e isso se perde: refaça estes 3 passos.
+- **Armadilha `OverrideMaterials` pelo MCP:** a lista não aceita `null` nem mudar tamanho e elementos juntos ("ArrayAdd:
+  elements changed alongside the size change"); de vazia, cresça **um elemento por chamada** (`lst[:k]`, k = 1..8), com
+  `{"refPath": ...}` em cada item.
+
 ## No jogo: aparições (2026-11-05, em andamento)
 Tudo em `/Game/Library/Blueprints/Horror/`. Atores na pasta `Gameplay/` (Director) e `Gameplay/Apparitions` (spots).
 - **`BP_ApparitionDirector`** (1 na cena): só age com `BP_GameClock.GameMinutes` entre 1170 (19:30) e 1340; orçamento
