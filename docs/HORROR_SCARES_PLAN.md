@@ -485,7 +485,10 @@ Pedido do usuário: **estático**, **cabeça baixa**, braço direito esticado pa
 - Fotos em 3 instantes: parado, de ré e na curva.
 - Tecla **9**.
 
-### Fase 4 ☐: A, aponta para o livro bizarro
+### Fase 4 ◐ (2026-11-11): A, aponta para o livro bizarro
+**Estado:** `BP_Scare_A` (filho do `BP_Scare_B`) pronto e testado no PIE (nasce → visto → recua → aponta → some por tempo); falta o teste do usuário em jogo. **Lugar escolhido (aprovado com fotos):** ponta norte da mesa comprida da sala de leitura (mezanino). Ator `ScareA_MesaLeitura` em **(640, 190, 330)** (`Gameplay/Scares/A`); livro `ScareA_Livro` (`BP_Book` com `SM_Book_06`, pitch −90) fica deitado na ponta da mesa em (640, 125, 414,6). **Diferença do plano original:** o monstro não começa de costas: fica **de frente para a mesa, de cabeça baixa lendo o livro** (de quem vem do sul ele aparece de frente), recua **de ré** 155 cm para o norte (até Y 345, junto à estante 36, sem sair da pose de frente) e aponta de volta para o livro, a ~2,2 m. Detalhes, valores e armadilhas em MONSTER_METAHUMAN.md ("Fase 4 dos sustos"). Tecla de teste **5**. **Pendente:** piscar de luz ao chegar a < 130 cm (hoje só some), cabeça baixa enquanto lê (só na parte do apontar), ajuste fino do ângulo do dedo, teste do usuário.
+
+#### Texto do plano original da Fase 4
 Depende da **pose montada de apontar** (1.6) e dos **livros bizarros**. Enquanto o sistema dos livros bizarros não existir, use o `SM_Book_06` ("The Last Borrower", fora do catálogo; veja [BOOK_COVERS.md](BOOK_COVERS.md)) como livro-alvo.
 
 **Lugar:** uma área com fundo ou canto onde o recuo caiba. Opções:
