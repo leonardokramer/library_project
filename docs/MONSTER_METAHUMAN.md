@@ -72,6 +72,12 @@ A pele do Creator (seções acima) ficou saudável demais. Por cima dela, sem re
   `T_Monster2Text` (fichas de empréstimo datilografadas); os `T_MonsterPaper*`/`T_MonsterText` são a 1ª geração, sem uso).
   Escala das letras: `TextTiling` 1,0 no corpo e 0,35 no rosto (≈ 4 cm); com 1,7 (≈ 2 cm) o texto some a 1 m.
   Lição: depois de `set_scalar_parameter` num MI, a foto às vezes sai com o valor antigo; mude e fotografe no mesmo script.
+- **Contraste no escuro (2026-11-10, pedido do usuário):** `PaperTint` subiu para **(0,76; 0,73; 0,65)** nos dois MIs (com a
+  luz de noite o papel antigo se misturava ao fundo); esclera `Sclera Color Multiply` (1,3; 1,27; 1,17) nos `MI_MonsterEyeL/R`;
+  dentes agora no `MI_MonsterTeeth` (filho do `M_MonsterTeeth`, `Tint` 0,6; 0,56; 0,48, antes 0,1 = boca preta), no slot 0 do
+  rosto do `BP_MH_Monster`. **Texto em português:** `T_Monster3Text` (fichas de empréstimo em pt-BR, com acentos; gere só o
+  texto com `python Tools/monster_paper_textures.py <pasta> text`); `T_Monster2Text` (inglês) ficou sem uso.
+  Fotos de comparação: use **a 2ª captura** de um Simulate novo (a 1ª às vezes pega a loja ainda com a luz do dia).
 - **Armadilha `OverrideMaterials` pelo MCP:** a lista não aceita `null` nem mudar tamanho e elementos juntos ("ArrayAdd:
   elements changed alongside the size change"); de vazia, cresça **um elemento por chamada** (`lst[:k]`, k = 1..8), com
   `{"refPath": ...}` em cada item.
