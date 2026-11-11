@@ -448,7 +448,11 @@ Pedido do usuário: **estático**, **cabeça baixa**, braço direito esticado pa
 - Fotos no momento em que o rosto aparece (`CaptureEditorImage`).
 - Depois, o usuário testa com a tecla **6**.
 
-### Fase 3 ☐: E, fim do corredor (recua de ré e some na curva)
+### Fase 3 ◐ (2026-11-11): E, fim do corredor (recua de ré e some na curva)
+**Estado:** `BP_Scare_E` (filho do `BP_Scare_B`) pronto, posto na cena (`ScareE_CorredorSul`, (−250, −310, 10), yaw 0, pasta `Gameplay/Scares/E`) com a `DarkZone_CorredorSul` (`DimScale` 0,3, extent 300×100×170 em (−180, −320, 170)). Ciclo testado no PIE (nasce → aparece → visto → recua em 2 pernas → some) sem erros. **Pendente:** o usuário testar em jogo; ajustar a visibilidade (ver MONSTER_METAHUMAN, "Fase 3"); tecla própria do E (hoje só a **9**, que dispara todos).
+**Lugar escolhido (aprovado com mockup):** corredor sul (Y ≈ −310), ~14,5 m reto de X 760 até a Magazines (X −690), ~1,4 m de largura. A quina é o vão entre as gôndolas 38 e 37 (X ≈ −452…−290, centro −375): o monstro em X −250 recua 1,25 m para oeste e vira 90° para o norte; a gôndola 37 o tapa da vista de quem vem da porta. **Atualização (2026-11-11):** a pedido do usuário o ponto foi para o **lado da janela** (X 700, visto do oeste), sumindo atrás da ponta leste da gôndola 39, e a ré ficou rápida e "bugada" (rate 3, 12 fps em degraus); valores em MONSTER_METAHUMAN ("Fase 3 dos sustos"). Candidatos descartados: corredor central (largo e claro, abre para o balcão) e corredor norte (é o caminho dos clientes).
+
+#### Texto do plano original da Fase 3
 **Lugar:** um corredor comprido entre estantes (ou o corredor central do térreo) cujo **fim tem uma quina** para um lado (ponta de estante, coluna, recuo raso). Distância de quem vê: 8–15 m. Candidatos: os corredores entre as estantes do térreo vistos do lado da porta (X alto) para o oeste, ou um corredor do mezanino.
 
 **Componentes:**
