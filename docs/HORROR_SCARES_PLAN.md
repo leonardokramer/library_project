@@ -558,7 +558,7 @@ Se o jogador vier **de cima** (descendo), a mesma lógica vale.
 
 **Teste:** o driver sobe a escada (veja `BP_ApproachDriver`, que anda o jogador). Tecla **8**.
 
-### Fase 6 ☐: F, atrás de você no beco sem saída
+### Fase 6 ◐ (2026-11-11): F, atrás de você no beco sem saída (feito e testado no PIE; falta o teste do usuário; ver MONSTER_METAHUMAN, "Fase 6 dos sustos")
 **Lugar:** um fim de corredor fechado (estante + parede, ou o recuo de um corredor entre estantes encostadas na parede). O jogador precisa entrar **olhando para o fundo** e se virar para sair.
 
 **Componentes:**
