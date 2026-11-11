@@ -62,6 +62,16 @@ A pele do Creator (seções acima) ficou saudável demais. Por cima dela, sem re
 - **Onde está ligado:** nos componentes do `BP_MH_Monster` (CDO): `Face.AnimClass = ABP_MonsterFace`, `Face.OverrideMaterials`
   (slots: 0 dentes, 1–2 olhos, 6–7 pele) e `Body.OverrideMaterials[0]`. ⚠️ Se o MetaHuman for re-montado (Assemble), o
   `BP_MH_Monster` é regerado e isso se perde: refaça estes 3 passos.
+- **Variação "papel velho" (2026-11-10, APLICADA no `BP_MH_Monster`; o giz segue disponível trocando de volta os slots
+  6–7 do rosto para `MI_MonsterSkin_Face` e o 0 do corpo para `MI_MonsterSkin_Body`):** `M_MonsterPaperSkin` +
+  `MI_MonsterPaper_Face/_Body`. Escolhida para não parecer cópia do *Mortuary Assistant* (ligação com a biblioteca).
+  Rosto: `FaceMaskTex` = `T_MonsterFaceMaskInk2` (R órbitas irregulares, G boca, B **tinta escorrendo** dos olhos e dos cantos
+  da boca, A ênfase do texto na testa via `TextBoost` 0,5), `VeinStrength` 0, `TextStrength` 0,45. Corpo: `TextTiling` 0,8,
+  `TextStrength` 0,75, `VeinStrength` 0,3. `PaperTint` acinzentado (0,58; 0,55; 0,48) nos dois. Texturas de `Tools/monster_paper_textures.py`
+  (importadas como `T_Monster2Paper` (R vinco, G manchas, B veias de tinta, A sombreado do amassado), `T_Monster2Paper_N`,
+  `T_Monster2Text` (fichas de empréstimo datilografadas); os `T_MonsterPaper*`/`T_MonsterText` são a 1ª geração, sem uso).
+  Escala das letras: `TextTiling` 1,0 no corpo e 0,35 no rosto (≈ 4 cm); com 1,7 (≈ 2 cm) o texto some a 1 m.
+  Lição: depois de `set_scalar_parameter` num MI, a foto às vezes sai com o valor antigo; mude e fotografe no mesmo script.
 - **Armadilha `OverrideMaterials` pelo MCP:** a lista não aceita `null` nem mudar tamanho e elementos juntos ("ArrayAdd:
   elements changed alongside the size change"); de vazia, cresça **um elemento por chamada** (`lst[:k]`, k = 1..8), com
   `{"refPath": ...}` em cada item.
@@ -206,7 +216,8 @@ Tudo em `/Game/Library/Blueprints/Horror/`. **Nada foi colocado na cena.**
 - **Retarget (feito pelo usuário na UI):** `MM_Unarmed_Crouch_Idle` e `MM_Unarmed_Crouch_Walk_Bwd` → `MH_MM_Unarmed_Crouch_Idle` / `MH_MM_Unarmed_Crouch_Walk_Bwd` em `/Game/Library/Characters/Metahumans/`. Janela *Retarget Animations*: Source `SKM_Manny_Simple`, Target `SKM_NpcMaleCharacter_BodyMesh`, retargeter `RTG_Manny_to_MH`, botão **Export Animations** (o *Export Retarget Assets* fica cinza e não é o certo). As animações do Lyra (esqueleto `SK_Mannequin_Lyra`) aparecem na lista normalmente.
 - **`ScareB_Balcao_Agachado`:** (−440, 90, 10), yaw 0, `IdleAnim`/`BackAnim` por instância (variáveis agora instance-editable) com as `MH_` de agachar, `HideOffset` (−20, 225, 0) = recua de ré pelo corredor rente à frente do balcão até (−460, 315) (junto à `Column3`/base da escada), `exitDur` 0,9, `exitSteps` 6, `emergeChance` 0, `nearDist` 50, `spawnMin` 0, `spawnMax` 700 (o ponto fica a ~1,9 m do jogador sentado). Do lado do atendente o balcão (134 cm) esconde o agachado (~100 cm).
 - **Piscada ao nascer (todos os pontos):** o `BP_MonsterStand` mostra a malha em pé por ~0,1 s antes de a pose ser aplicada. `BSpawn` agora guarda `SpotPos`, joga o monstro 3000 cm abaixo e `BReady` o leva ao ponto (ou ao `HideOffset` se for emergir) já com pose e direção. Não confirmado a olho.
-- **Observação:** uma rodada de PIE deu ~27 erros `PoseAnim` None em `ClipWrap`; as duas seguintes, nenhum. Causa não achada.
+- **Observação:** uma rodada de PIE deu ~27 erros `PoseAnim` None em `ClipWrap`; as duas seguintes, nenhum. **Causa achada (2026-11-10):** o CDO do `BP_MonsterStand` tinha `AutoReceiveInput` Player0 com `InputPriority` 10, então **todo monstro criado por um susto** pegava as teclas de teste 1–7/0 antes do `BP_Scare_B`. Apertar 7 de novo para encerrar o susto chamava `MeasureStart` (erro `Anim` None) e os clipes de teste (erro `PoseAnim` None em `ClipWrap`). Corrigido: o CDO agora é `AutoReceiveInput` **Disabled**; para usar as teclas de teste, ligue Player0 **na instância** posta na cena.
+- **Monstro parado para inspeção:** `PoseAnim` e `PoseTime` do `BP_MonsterStand` agora são instance editable. Um `BP_MonsterStand` posto na cena com `PoseAnim` = `MH_MM_Idle` fica de pé parado, sem fugir (não há lógica de susto nele). O `TEST_MonstroParado` em `Gameplay/TEST` (−300, 215, 10), yaw 180, é temporário: remover e não salvar o mapa com ele.
 - **Limitação:** não há `Walk_Fwd` agachado (por isso `emergeChance` 0 no agachado).
 
 ### Fase 2: a "segunda cabeça" piscando (2026-11-10, noite)
