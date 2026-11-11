@@ -531,7 +531,8 @@ O livro fica numa mesa, em pé numa prateleira (meio puxado para fora) ou no ch�
 - Fotos do recuo (no meio) e do apontar.
 - Tecla **5**.
 
-### Fase 5 ☐: D, parado na escada (cabeça vira de sopetão, apagão)
+### Fase 5 ◐ (2026-11-11): D, parado na escada (cabeça vira de sopetão, apagão)
+**Feito:** `BP_Scare_D` (filho do B) + `ScareD_Escada` no degrau do meio; gatilho por proximidade 3D (cabeça→câmera < 200 cm), `SnapLook` 0,07 s, segura 0,35 s, `LightRig.Blackout` 2,5–4 s, some. Falta o teste do usuário em jogo. Detalhes em [MONSTER_METAHUMAN.md](MONSTER_METAHUMAN.md) ("Fase 5 dos sustos"). **Correção:** o pé da escada fica a **leste** (X −160) e o topo a oeste (a nota abaixo, "pé ≈ (−480, 360)", estava invertida).
 **Lugar:** a escada `StairHalf_02` (X −450…−164, Y 292…443, sobe de Z 10 a 434).
 - O monstro fica **num degrau do meio ou no patamar**, no caminho, de frente para quem sobe (ou de lado, olhando a parede).
 - O jogador costuma subir a partir do balcão. Confira a linha de visão do pé da escada (≈ −480, 360) e do mezanino (para quem desce).
