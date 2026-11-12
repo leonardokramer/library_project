@@ -585,7 +585,8 @@ Se o jogador vier **de cima** (descendo), a mesma lógica vale.
 - Log do ponto P, do dot e dos tempos; foto no instante em que ele vira.
 - Tecla **0**.
 
-### Fase 7 ☐: C, parado na passagem escura + empurrão (o mais complexo; por último)
+### Fase 7 ☑ (2026-11-12, falta o teste do usuário): C, parado na passagem escura + empurrão (o mais complexo; por último)
+**Feito:** `BP_Scare_C` na passarela sul do mezanino + `KnockDown` no jogador (sem `BP_CamKnock`); detalhes e valores em MONSTER_METAHUMAN.md ("Fase 7 dos sustos"). O texto abaixo é o plano original.
 Depende do **Push** (1.1), de uma **zona bem escura** (Fase 0) e da **queda do jogador** (7.2).
 
 **Lugar:** uma passagem que possa ficar escura e ser vista de 6–12 m, com um "fundo" onde o `M_DarkVoid` deixe tudo preto. Proponha 2–3 opções com foto antes. Candidatas:
