@@ -22,6 +22,7 @@ Unidades em cm, coordenadas do mundo. +X aponta para a porta de entrada (lado le
 | ~~Caixa registradora~~ | removida em 2026-10-29 | o computador ocupa o lugar dela. A papelaria e a caneca que ficavam sobre o balcão também foram retiradas |
 | Placa "Cashier" | `CashierSign` | X -506, Y de 150 a 221, Z de 261 a 290 |
 | Escada para o mezanino | `StairHalf_02` | X de -450 a -164, Y de 292 a 443, sobe de Z 10 até 434. **Medido com raios (2026-11-11): o pé fica a LESTE (X ≈ −160, Z 10) e o topo a OESTE (X ≈ −450, Z ≈ 330); sobe em direção a −X.** Degraus de ~26 cm de altura e ~25–30 de profundidade (degrau plano em X −330…−310 = Z 191,8); passagem andável Y 308–430 (corrimão aberto ao sul, parede a Y 430) |
+| `Scare_PC` (`Gameplay/Scares/PC`) | `BP_Scare_PC` | (−440, 280, −20), yaw 0: susto do computador (substituiu o `ScareB_PC`). Variantes por posição do jogador: 1 junto da parede (este ponto), 2 agachado em `P2` (−425, 250, 63), 3 em `P3` (−428, 226, 70); fuga agachada até (−448, 280, 10) atrás do monitor. Ver MONSTER_METAHUMAN, "Lapidação 1" |
 | `ScareD_Escada` (`Gameplay/Scares/D`) | `BP_Scare_D` | (−320, 395, 191,8), yaw 0: monstro parado no degrau do meio, de frente para o pé da escada (+X) |
 | Paredes atrás do balcão | `Wall24`, `Wall25` | X≈-740 |
 | ~~Café do mezanino~~ | removido em 2026-10-29 | balcões `CheckoutBlock_01/02`, máquina, 17 canecas, 12 pratos, 5 porta-guardanapos e a lousa foram apagados |
