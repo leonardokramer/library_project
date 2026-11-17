@@ -427,3 +427,20 @@ Pedido do usuário: a fuga ou perseguição não deve depender de tempo fixo, ma
 - **Armadilha:** depois que uma escrita do DSL falha no meio, o grafo pode ficar com uma chamada solta. Aconteceu no `BExit` (`BLeanOff`). Procure com `find_nodes` por título em todos os grafos e regrave a função.
 - **X210, cabeça atravessando o móvel (2026-11-16, foto do usuário):** o vão tem só ~35 cm em X (estantes a +15 e −20 cm do ponto, fundo a +42 cm em Y) e é aberto só para −Y. O componente −X do `LeanDir` jogava a cabeça para dentro da estante. Agora `LeanDir` (0, −1, 0) e `LeanDeg` 30: a cabeça sai ~35 cm para o corredor, passando da frente das estantes (Y ≈ 356), e fica dentro da faixa X do vão. **Regra:** antes de escolher o `LeanDir` de um ponto, meça a folga com raios em leque (0–330°) na altura da cabeça.
 - **X210 com perseguição (2026-11-16, pedido do usuário, pose aprovada):** `HoldDebug` desligado e os valores de corrida da X95 copiados (`RunChance` 1, `DarkZone_Perseguicao`, Jog_Fwd, 650 cm/s, `RunDist` 150, `RunMaxT` 4). Conferido no PIE: o jogador foi levado de 7 m para 3,3 m, dentro da `ReactDist` sorteada (4,9 m); a reação disparou e ela saiu do vão correndo (fase 30), primeiro ponto do caminho em (210, 310).
+- **Próxima fresta: X395 (`BP_Scare_B_C_15`, (395, 388), 2026-11-16).** A X210 foi aprovada e commitada (`8a05a50`) e teve o `bTestOnStart` desligado. A X395 está com `bTestOnStart` ligado, `TestDelay` 8, reação e entrada padrão, `RunChance` 0 e sem inclinação. Medida do vão a Z 170: estante a +21 cm em X e a −20 cm em −X, fundo a +42 cm em Y. Aberto para −Y e −X−Y; a quina da estante do lado +X avança até ~39 cm na diagonal +X−Y. Conferido no PIE: nasce no ponto e chega à fase 2.
+- **X395 inclinada (2026-11-16, pedido do usuário: "inclinar um pouco pra ele olhar mais pro player"):** `HoldDebug` ligado (sem saída, para ver a pose), `LeanDir` (−0,5, −1, 0), `LeanDeg` 30. A posição estimada da cabeça (pivô a 100 cm, tronco de 85 cm) foi checada com caixa de colisão de ±11 cm em seis combinações (−Y, −0,5X−Y e −X−Y, a 20° e 30°): todas livres. Escolhida a cabeça em (376, 350, 174). Foto do PIE de (60, 250): cabeça para fora do vão e olhos visíveis.
+- **Olhos só acesos no escuro (2026-11-16, pedido do usuário: apagar nos lampejos e debaixo de lâmpada acesa):**
+  - **`BP_LightRig.LightAt(Pos)`** soma a luz que chega no ponto. Para cada `LightComps` do tipo `LocalLightComponent`, visível e dentro do `AttenuationRadius`, faz um raio `Visibility` da luz até 30 cm do ponto (começando 20 cm depois da luz). Sem bloqueio, soma `Intensity × (1 − (d/R)⁴)² / (1 + d²/10000)`. Usa a intensidade atual, então já inclui `DarkZone`, lampejo e apagão. Função auxiliar: `LightOne`.
+  - **`BP_MonsterStand.EyeLight(Mid)`** mede no meio dos olhos (`Lux`) e mantém `LuxBase`: cai na hora quando a luz cai e sobe devagar (30 %/s), então um lampejo curto não chega a mover a base.
+  - O `PushEyes` acende (`EyeLit` → 1, a 12/s) só se `Lux` < `EyeLuxMax` (**600**, área iluminada) **e** `Lux` < `LuxBase × EyeFlashRatio` (**1,25**) + 20 (lampejo). `Shine` = `EyeLit` × fator de olhar.
+  - **Medidas na X395 (21:00):**
+
+    | Situação | `Lux` |
+    |---|---|
+    | escuro do vão | ~111 |
+    | lampejos | 207–313 |
+    | debaixo da pendente acesa perto do balcão | ~1960–1990 |
+
+  - **Testado no PIE:** escuro, olhos acesos (1); lampejo, apagam (0); debaixo da lâmpada, apagados; de volta ao vão, acesos.
+- **Ajuste (2026-11-16, usuário: "ficou estranho ele apagando e acendendo"):** a regra do lampejo foi desligada (`EyeFlashRatio` 1000 no CDO). Os olhos ficam acesos no escuro, inclusive durante os lampejos, e só apagam com `Lux` ≥ `EyeLuxMax` (600), ou seja, debaixo de lâmpada acesa (~1960). Os lampejos medidos ficam em 207–313.
+- **X395 com perseguição (2026-11-16, pedido do usuário):** `HoldDebug` desligado e os valores de corrida da X210 copiados (`RunChance` 1, `DarkZone_Perseguicao`, Jog_Fwd, 650 cm/s). Conferido no PIE: o jogador foi levado de 7,5 m para 3,1 m (`ReactDist` sorteada 4,3 m); ela reagiu, correu ~0,33 s até o jogador em (118, 245) e sumiu.
