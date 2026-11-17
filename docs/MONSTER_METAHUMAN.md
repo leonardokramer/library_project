@@ -405,3 +405,25 @@ Pedido do usuário: a fuga ou perseguição não deve depender de tempo fixo, ma
   - Afastar-se de costas não dispara; a reação vem assim que o jogador olhar de novo.
   - **Testado no PIE (X95, `RetreatDist` sorteado 266):** recuar 232 cm não reagiu; recuar 332 cm reagiu.
   - Quando o jogador está fora do NavMesh (ponto de teste colado na parede), a corrida não acha caminho e o monstro some em ~0,3 s. É o fallback do `BRunTarget`.
+- **Próxima fresta: X210 (`BP_Scare_B_C_14`, (210, 388), 2026-11-16).** A X95 foi aprovada e commitada (`0238ed7`) e teve o `bTestOnStart` desligado. A X210 ficou com `bTestOnStart` ligado, `TestDelay` 8, entrada padrão (0,5 s/5 saltos/10 fps), sistema de reação padrão e `RunChance` 0. Conferido no PIE: nasce no ponto.
+
+### Inclinação do tronco e olhos brilhando (2026-11-16, pedido do usuário na fresta X210)
+- **Inclinação ("pés no lugar, corpo inclinado para olhar"):**
+  - **ABP:** dois `ModifyBone` novos no `ABP_MonsterStand`, `spine_01` e `spine_03` (Additive, Component Space; alpha `LeanAlpha`, rotação `RotLean`), entre o `LocalToComponent_1` e o `spine_05`.
+  - **`BP_MonsterStand`:** variáveis `LeanDir` (direção no mundo) e `LeanDeg`. O `PushLean`, chamado no `TickMain`, calcula o eixo `Cross(Z, Normalize2D(LeanDir))`, leva para o espaço do componente (`InverseTransformDirection` do `BodyMesh`) e manda metade do ângulo para cada osso.
+  - **`BP_Scare_B`:** `LeanDir`/`LeanDeg` por instância (categoria "Look"). O `BLeanStep`, chamado no `BStep`, aplica a inclinação só nas fases 1 e 2 (parado no ponto) e zera nas outras (entrada, fuga, corrida).
+  - **X210:** `LeanDir` (−0,4, −1, 0), para o corredor e um pouco para o balcão, `LeanDeg` 30. Medido: 25° levam o corpo ~8 cm para −Y e baixam a cabeça ~10 cm. Os valores podem ser mudados ao vivo no PIE, na instância.
+- **Olhos de bicho no escuro (eyeshine):**
+  - **Material:** `M_EyeShine` (`/Game/Library/Materials`), Unlit + Additive. Emissão = `Color` (0,75; 1; 0,3) × `Intensity` 60 × `Shine` × (1 − Fresnel 1,5), um disco suave.
+  - **Componentes:** `EyeL`/`EyeR` no `BP_MonsterStand`, esferas da engine em escala 0,018 com o `M_EyeShine`, sem colisão e sem sombra.
+  - **`FindFace`:** acha o `Face` dentro do child actor e guarda em `FaceMesh`.
+  - **`PushEyes`**, chamado no `TickMain`:
+    - põe cada esfera em `FACIAL_L/R_Eye` + `EyeFwd` (1,3 cm) × frente do rosto. A frente é `Cross(Z, olho R − olho L)`, com sinal escolhido pelo vetor `head`→olhos;
+    - `Shine` = `max(0, frente·direção da câmera)^EyeExp` (4): brilha quando ele olha para você e some de perfil;
+    - a visibilidade segue o `Visual`.
+  - Vale para todos os sustos que usam o `BP_MonsterStand`.
+  - Foto do PIE às 21:00, a ~2,8 m: dois pontos verde-amarelados nítidos no rosto escuro.
+- **Teste da pose:** a X210 está com `HoldDebug` ligado (não foge nem persegue). Desligar depois.
+- **Armadilha:** depois que uma escrita do DSL falha no meio, o grafo pode ficar com uma chamada solta. Aconteceu no `BExit` (`BLeanOff`). Procure com `find_nodes` por título em todos os grafos e regrave a função.
+- **X210, cabeça atravessando o móvel (2026-11-16, foto do usuário):** o vão tem só ~35 cm em X (estantes a +15 e −20 cm do ponto, fundo a +42 cm em Y) e é aberto só para −Y. O componente −X do `LeanDir` jogava a cabeça para dentro da estante. Agora `LeanDir` (0, −1, 0) e `LeanDeg` 30: a cabeça sai ~35 cm para o corredor, passando da frente das estantes (Y ≈ 356), e fica dentro da faixa X do vão. **Regra:** antes de escolher o `LeanDir` de um ponto, meça a folga com raios em leque (0–330°) na altura da cabeça.
+- **X210 com perseguição (2026-11-16, pedido do usuário, pose aprovada):** `HoldDebug` desligado e os valores de corrida da X95 copiados (`RunChance` 1, `DarkZone_Perseguicao`, Jog_Fwd, 650 cm/s, `RunDist` 150, `RunMaxT` 4). Conferido no PIE: o jogador foi levado de 7 m para 3,3 m, dentro da `ReactDist` sorteada (4,9 m); a reação disparou e ela saiu do vão correndo (fase 30), primeiro ponto do caminho em (210, 310).
