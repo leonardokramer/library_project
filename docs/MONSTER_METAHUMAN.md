@@ -362,3 +362,46 @@ Pedido do usuário: ver todos os monstros do térreo parados no lugar, com a luz
   - com o jogador parado atrás do balcão (PlayerStart), a A3 correu 2,3 s e alcançou (−641, 174), sem atravessar o balcão;
   - com o jogador no mezanino em (−300, −250, 440) e a corrida forçada, subiu a escada e chegou a (−313, −251, 340) em 3,1 s.
   - Atenção: com `RunMaxT` 4 s, um spot longe da escada pode sumir no meio da subida.
+
+### Sistema de reação das aparições (`bReact`, 2026-11-16)
+Pedido do usuário: a fuga ou perseguição não deve depender de tempo fixo, mas de como o jogador olha e se aproxima. Fica no `BP_Scare_B`, ligado no CDO (`bReact` true). Vale para as gôndolas A1–A3, as frestas, Magazines e os cantos do mezanino, que são instâncias do próprio B. Os filhos com fase 2 própria (`Drag`, `PC`, `A`, `C`, `D`, `E`, `F`) têm `bReact` false no CDO e continuam como antes.
+- **Fluxo:**
+  - `BStep` chama `BPhase2Sel`: na fase 2 com `bReact`, roda `BReactStep`; senão, o `BPhase2` antigo, com `StareLimit`, `ShowMin/Max`/`SeenLimit` e o sumiço depois de 1,5 s com o olhar desviado.
+  - `BPhase1` chama `BRInit` ao passar para a fase 2: zera o alarme e sorteia `ReactAt` entre `ReactMin` e `ReactMax`.
+- **`BReactStep`** faz quatro coisas por quadro:
+  1. **`BRMeasure`:** distância 2D monstro→câmera (`CurDist`) e velocidade de aproximação suavizada (`Speed`, cm/s, positiva = chegando perto).
+  2. **`BRStop`:** se `Speed` passa de 80, o jogador está andando (`WasMoving`). Se depois fica abaixo de 25 por 0,35 s, ele parou para olhar e o `BRRoll` sorteia o desfecho. Com chance `QuickChance`, a reação vem em 0,1–0,5 s ("quick"). Senão, `ReactAt` sobe de 1,5 a 4 (`LingerMin/Max`) e ela demora mais ("linger").
+  3. **`BRAlarm`:** só com o monstro dentro da visão (`IsSeen` com `PeriphMin`, vale a periferia), o alarme cresce `Dt × (proximidade + Speed × ApproachGain)`. A proximidade vai de 0,6 (≥ `FarDist` 900) a 1,6 (≤ `CloseDist` 350). Fora da visão, nada cresce; só conta `UnseenT`.
+  4. **`BRDecide`:** `CurDist` < `NearDist` (200 cm nas instâncias, 450 nas Magazines) dispara `BExit` na hora, para o jogador nunca encostar. Alarme ≥ `ReactAt` também chama `BExit`, que escolhe entre correr atrás do jogador (`RunChance`) e recuar. Sem ser visto por `UnseenMax` (45 s), some quieto (`BDone`).
+- **`BRWait`:** esperando ser visto (fases 1 e 5) por mais de `UnseenMax`, também some quieto.
+- **Valores (CDO):**
+  - reação: `ReactMin/Max` 2,5–4,5, `FarDist` 900, `CloseDist` 350, `ApproachGain` 0,01, `QuickChance` 0,5, `LingerMin/Max` 1,5–4, `UnseenMax` 45;
+  - entrada bugada padrão: `EmergeChance` 1, `EmergeDur` 0,5, `EmergeSteps` 5, `ClipFPS` 10. As instâncias foram resetadas para esses valores.
+- **Ritmos de referência:**
+  - parado a 6,6 m: alarme ~1,0/s, reage em ~2,5–4,5 s;
+  - a 3,5 m: ~1,6/s;
+  - andando na direção dele a ~200 cm/s: +2/s, reage em ~1 s.
+- **Testado no PIE (fresta X95):** alarme a ~1,0/s com o jogador parado a 6,6 m; a aproximação (teleporte em passos) detectou `Speed` 360 e `WasMoving`. **Falta o teste do usuário jogando**, porque o PIE em segundo plano roda lento e o teleporte é grosseiro.
+- **Armadilhas:**
+  - a função se chama `BReactStep` porque `BReact` colidiu com a variável `bReact` (nomes ignoram maiúsculas);
+  - as variáveis na categoria "React" viram `Variables|React|Get...` no DSL.
+- **Aproximação por distância (2026-11-16, pedido do usuário: "1 s andando é pouco"):** a regra de `BRAlarm` em "Sistema de reação" mudou. Com o jogador vindo na direção do monstro (`Speed` > 80), o alarme sobe **só pela distância percorrida**: `Dt × Speed × ApproachGain`, com `ApproachGain` 0,01 = **1 unidade por metro**. Nesse trecho o termo de tempo/proximidade não soma. Parado ou andando de lado, vale o termo de tempo com proximidade (0,6–1,6/s). Com `ReactAt` 2,5–4,5, ele reage depois de 2,5–4,5 m de caminhada direta (menos o que já tinha acumulado olhando) ou ao chegar a `NearDist`.
+- **Tudo por distância e deslocamento (2026-11-16, pedido do usuário; substitui as regras de tempo acima):**
+  - `Alarm` agora é um **medidor de metros andados na direção do monstro** enquanto ele está à vista: `Dt × Speed × ApproachGain`, com sinal, então afastar-se desconta (mínimo 0). Parado ou andando de lado, não muda.
+  - `BRInit` sorteia por aparição `ReactAt` (`ReactMin/Max`, **2,5–4,5 m**) e `ReactDist` (`ReactDistMin/Max`, **300–500 cm**).
+  - `BRDecide` reage, em ordem:
+    1. `CurDist` < `NearDist` (200 cm), mesmo sem ser visto;
+    2. à vista e `CurDist` < `ReactDist`;
+    3. `Alarm` ≥ `ReactAt`;
+    4. à vista por mais de `StareMax` (20 s), rede de segurança para o jogador parado olhando de longe.
+  - Some quieto depois de `UnseenMax` (45 s) sem ser visto.
+  - **Parou depois de andar (`BRRoll`):** com `QuickChance` 0,5, reage na hora (`ReactAt` = `Alarm`). Senão, `ReactAt` sobe de 1 a 2,5 m (`LingerMin/Max`) e `ReactDist` cai 25 %: o jogador precisa chegar mais perto.
+  - `FarDist`/`CloseDist` ficaram sem uso.
+  - **Testado no PIE (X95):** parado a 6,6 m, o alarme ficou em 0 (só o `SeenT` contando). Levado a 3,34 m, com `ReactDist` sorteada de 3,38 m, reagiu na hora, e o medidor marcou 3,27 m.
+- **Fresta X95 (`BP_Scare_B_C_13`), entrada mais rápida e bugada (2026-11-16, pedido do usuário):** `EmergeDur` 0,35 s, `EmergeSteps` 7, `ClipFPS` 8, só nesta instância (o padrão continua 0,5/5/10).
+- **Fresta X95 com perseguição (2026-11-16, pedido do usuário):** `RunChance` 1,0, `RunZone` = `DarkZone_Perseguicao` (`BP_DarkZone_C_6`), `RunUseZone` true, `RunAnim` Jog_Fwd, `RunSpeed` 650, `RunDist` 150, `RunMaxT` 4 (copiados da A3). Conferido no PIE: o jogador foi levado a 3,8 m, o medidor de aproximação disparou a reação, ela correu 0,36 s até o jogador em (−227, 183) e sumiu.
+- **Afastamento (2026-11-16, pedido do usuário: "uma distância máxima antes de triggar a reação"):** o `BRMeasure` guarda a menor distância alcançada (`ClosestDist`), e o `BRInit` sorteia `RetreatDist` (`RetreatMin/Max`, **150–300 cm**).
+  - Com o monstro à vista e `CurDist` > `ClosestDist` + `RetreatDist`, o `BRDecide` dispara `BExit` (log "react:retreat"), que corre atrás ou recua conforme `RunChance`. Essa checagem vem depois da `ReactDist` e antes do medidor de aproximação.
+  - Afastar-se de costas não dispara; a reação vem assim que o jogador olhar de novo.
+  - **Testado no PIE (X95, `RetreatDist` sorteado 266):** recuar 232 cm não reagiu; recuar 332 cm reagiu.
+  - Quando o jogador está fora do NavMesh (ponto de teste colado na parede), a corrida não acha caminho e o monstro some em ~0,3 s. É o fallback do `BRunTarget`.
