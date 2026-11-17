@@ -276,3 +276,8 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 ## O que só dá para fazer pela interface do editor (peça ao usuário)
 - Adicionar Feature Packs (First Person, Third Person): Content Drawer → **Add** → *Add Feature or Content Pack*.
 - Baixar assets da Fab ou do Quixel Bridge e criar MetaHumans (MetaHuman Creator).
+- **Navegação pelo MCP (2026-11-16):**
+  - `trace_world` e `find_actors` com `collision_channels` mostram o que é físico, mas não o que o Recast enxerga. Uma malha pode apagar a navegação ao redor sem colidir com nada, como o balcão da Stationer. Para isolar a causa, tire o suspeito do lugar (`set_actor_transform` completo), rode o PIE em `Dynamic` e compare.
+  - Para mudar uma variável que não é instance-editable durante o PIE, torne-a editável por um instante (`set_variable_instance_editable`), compile e reverta depois.
+  - `remove_function_graph` usa o parâmetro `graph_name`.
+  - Booleanas com prefixo b, no DSL: `Variables|Default|GetTestOnStart`, não `GetbTestOnStart`.

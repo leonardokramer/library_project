@@ -50,6 +50,13 @@ O Recast gera NavMesh em qualquer superfície plana, inclusive mesas, balcões e
 - No térreo eles cobrem Z de 40 a 300, e no mezanino Z de 360 a 850. A navegação só existe rente aos pisos (Z≈10 e Z≈330).
 - O retângulo da escada (X de -480 a -134, Y de 262 a 473) fica **de fora** dos volumes. Por isso os volumes são 4 caixas por andar em volta dele.
 - Se aparecer outra área elevada que precise ser andável (rampa, palco), abra um buraco nos volumes ali.
+- **Balcão (2026-11-16):** a malha do balcão da Stationer (`SM_CheckoutBlock_02`, `StaticMeshActor_255`, X −538…−472, Y 44…292) apagava a navegação de toda a área do atendente, embora o colisor físico seja do tamanho dele. Os testes de colisão não acham nada: só tirando o balcão do lugar a malha aparecia. A correção ficou por instância, sem mexer no asset: `bCanEverAffectNavigation` desligado no `StaticMeshComponent0` dele e um 9º volume nulo, **`NavBlock_Counter`** (`NavModifierVolume_8`, X −540…−470, Y 42…294, Z −10…150), do tamanho exato do balcão, para nada atravessá-lo.
+- **`RecastNavMesh-Default` (2026-11-16):** `AgentRadius` **30** (era 35), `AgentMaxSlope` **50** (era 44), `NavMeshResolutionParams` com `cellSize` **10** e `agentMaxStepHeight` **55** nas 3 resoluções (era 38/19/19 e 35), `TileSizeUU` **500** (era 1000), `RuntimeGeneration` Static. Motivos:
+  - a escada (13 degraus de 26 × 26 cm, X −160…−470, Y ~310…427) virava "beirada" com passo 35;
+  - no pé da escada, duas colunas e dois rodapés deixam 96 cm livres, e com raio 35 e células de 19 a passagem fechava.
+  - **Agora térreo, atrás do balcão, escada e mezanino formam uma malha só.** Os caminhos dos clientes (porta → fila) foram conferidos.
+- **Como reconstruir:** digite `RebuildNavigation` no console do editor e salve o mapa. O log mostra 0,03 s, porque o build é assíncrono. Para conferir, aperte **P** na viewport.
+- **Diagnóstico sem ver a viewport:** gere em `Dynamic` + `bForceRebuildOnLoad` no PIE e use `ProjectPointToNavigation` (existe malha no ponto?) e `FindPathToLocationSynchronously` (caminho parcial termina no ponto mais próximo alcançável). Um limite reto e sem erosão (ex.: Y = 0 exato) indica modificador de área ou borda de tile, não obstáculo.
 
 ## Clientes: `BP_Customer` (`/Game/Library/Characters/`, pasta `Gameplay/NPCs`)
 Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
