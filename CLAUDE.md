@@ -85,7 +85,7 @@ Mapa dos Blueprints, convenções e como adicionar livro/tela: **[docs/ARCHITECT
   - área de nascimento com altura (`AreaExtent.z`);
   - `bTestNoForce` para testar sem forçar.
 - **E** (corredor sul) passou para o sistema novo. **C** (passarela): só nasce de costas e sai de dentro da estante. **D** (escada): sai da parede e os pés ficam no degrau. **F**, **PC** e **Drag**: aprovados como estavam.
-- **Zonas:** `DarkZone_Mezanino` a 0,3, só na altura do mezanino (Z 400–900). A `DarkZone_Terreo` ainda cobre a loja toda.
+- **Zonas:** cada andar escurece só o próprio andar: `DarkZone_Terreo`/`DarkZone_Frestas` em Z 0–360; `DarkZone_Mezanino` (0,3) e `DarkZone_PerseguicaoMezz` em Z 400–900.
 - **Próximo (outro chat):** o sistema que sorteia/spawna os sustos ao longo do jogo. Nenhum susto está com `bTestOnStart` ligado.
 
 **Visual do monstro (2026-11-10):** pele de **papel velho** acinzentado (manchas, dobras, fichas de empréstimo datilografadas sob a pele, tinta escorrendo dos olhos e da boca), órbitas e boca pretas, olhos claros e sorriso fixo (curvas faciais no `ABP_MonsterFace`), aplicados no `BP_MH_Monster` (a 1ª versão, giz rachado, ficou como alternativa); falta o teste do usuário em jogo. Detalhes em [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Visual giz rachado").
