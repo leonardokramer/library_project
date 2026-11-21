@@ -250,6 +250,8 @@ Overrides (testados no PIE, ver 2.1):
   Rode também o `MeasureClipSpeed` do `MH_MF_Unarmed_Walk_Bwd`.
 
 **1.4 `BP_ScareManager`** (1 na cena, `Gameplay/`). Decide quando um susto pode rodar e garante **um susto por vez**: nem susto novo nem aparição do Director enquanto outro roda.
+
+> **Atualizado em 2026-11-21:** o sorteio descrito abaixo (armar a cada 2 s, `MaxPerNight`, `LastDayUsed` diário, cooldown em segundos) foi **substituído** pelo sorteio por probabilidade: nada nos dias 1–3, chance por hora que sobe com o dia e a hora, só arma o que está pronto (`ReadyNow`: perto, fora da vista, com linha de visão), 3 dias fora depois de aparecer, fadiga da chance e da agressividade, sem cota por noite. Detalhes, valores e o estado de teste em [MONSTER_METAHUMAN.md](MONSTER_METAHUMAN.md) ("Sorteio dos sustos ao longo dos dias"). O texto abaixo fica como histórico.
 - `Scares[]`: os atores `BP_Scare_*` da cena (achados no BeginPlay).
 - **Regras para armar:**
   - noite (`BP_GameClock.GameMinutes` ≥ 1170, como o Director);

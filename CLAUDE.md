@@ -88,6 +88,31 @@ Mapa dos Blueprints, convenções e como adicionar livro/tela: **[docs/ARCHITECT
 - **Zonas:** cada andar escurece só o próprio andar: `DarkZone_Terreo`/`DarkZone_Frestas` em Z 0–360; `DarkZone_Mezanino` (0,3) e `DarkZone_PerseguicaoMezz` em Z 400–900.
 - **Próximo (outro chat):** o sistema que sorteia/spawna os sustos ao longo do jogo. Nenhum susto está com `bTestOnStart` ligado.
 
+**Sorteio dos sustos ao longo dos dias (2026-11-21, feito e testado no PIE; falta o teste do usuário):** o `BP_ScareManager` agora funciona por probabilidade:
+- nada nos dias 1–3 (`FirstScareDay` 4);
+- só à noite (19:30–22:00);
+- a chance por hora de jogo sobe com o dia e com a hora;
+- só arma o susto que está **pronto agora** (`ReadyNow`: perto, fora da vista, com linha de visão; PC = sistema aberto; C e F = jogador na área do gatilho);
+- conta só quando o monstro **nasce** (`NotifySpawn` → `OnSpawned`);
+- o mesmo susto fica **3 dias** fora;
+- a chance e a agressividade caem depois de cada aparição/corrida/empurrão e se recuperam com as horas;
+- sem cota por noite e nunca dois ao mesmo tempo.
+
+Correr ou fugir passou a seguir a `Aggression` do Manager nas 11 aparições do B e no E (`bCanChase`); Drag e C empurram (`bPusher`); a mesa de leitura está fora (`Weight` 0). O rastejante do `ApparitionDirector` está desligado (`bAutoSpawn` falso). Detalhes, valores, testes e armadilhas em [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Sorteio dos sustos ao longo dos dias").
+
+**Estado de teste (reverter antes de testadores):**
+- `BP_GameClock`: `SecondsPerGameMinute` 1 e `DebugStartMinutes` 1140 (cada dia começa às 19:00 e dura ~3 min);
+- `ScareManager`: `bSkipCalmDays` e `bDebugHUD` ligados;
+- `CustomerSpawner.maxCustomers` 0.
+
+A vitrine do `Mezz_Parede` foi revertida.
+
+**Depois do primeiro teste do usuário ("ficou bem interessante"):**
+- **Frequência:** subiu para `DayBase` 0,6, `DayStep` 0,15 e `DayCap` 1,6. A agressividade não mudou.
+- **Zonas do térreo:** agora também escurecem as 5 `Light_02` sobre o vão aberto (`bAtrium` no `BP_DarkZone`), que deixavam a A3, a A2, a A1 e as frestas claras em volta.
+
+Detalhes no [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Luminárias do vão nas zonas do térreo").
+
 **Visual do monstro (2026-11-10):** pele de **papel velho** acinzentado (manchas, dobras, fichas de empréstimo datilografadas sob a pele, tinta escorrendo dos olhos e da boca), órbitas e boca pretas, olhos claros e sorriso fixo (curvas faciais no `ABP_MonsterFace`), aplicados no `BP_MH_Monster` (a 1ª versão, giz rachado, ficou como alternativa); falta o teste do usuário em jogo. Detalhes em [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Visual giz rachado").
 
 **Monstro das aparições (2026-11-04):** `MH_Monster` (`/Game/Library/Characters/Metahumans/`, fora do git) já está montado e buildado. O usuário vai usá-lo nas aparições e começar as mecânicas de terror (Etapa 4 do ROADMAP). Receita, valores e armadilhas do editor de MetaHuman (Unlock Body Ranges, Masculine/Feminine negativo = feminino, Jaw Open só prévia) em [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md). Ele não é cliente: não entra na `DT_People`. O usuário pode trocá-lo por outro monstro depois, então mantenha a aparição desacoplada do asset (ator próprio com o visual como Child Actor ou mesh trocável).
