@@ -273,6 +273,12 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - `ExecuteConsoleCommand` **não** aceita vários comandos separados por `|`: só o primeiro roda. Um cvar mudado no PIE (ex.: `r.Lumen.HardwareRayTracing 0`) **continua valendo no editor** depois do PIE: desfaça na rodada seguinte.
 - `stat unit`/`stat gpu` não aparecem no `CaptureEditorImage`; o `profilegpu` com `ShowUI` ligado abre uma janela "GPU Visualizer" a cada chamada.
 
+### Fechar o editor sem "não foi fechado corretamente" (2026-11-22)
+- O MCP não tem comando de sair. Pare o PIE (`StopPIE`), salve (`save_assets` só com o que é nosso; nada de `/Game/Stationer`) e feche a janela principal pelo PowerShell: `(Get-Process UnrealEditor).CloseMainWindow()` e depois `WaitForExit(90000)`. É o mesmo que clicar no X.
+- Confira o fim de `Saved/Logs/library_project.log`: a saída limpa termina em `LogExit: Exiting.`. Matar o processo (`Stop-Process`/`taskkill`) é o que faz o editor acusar fechamento incorreto na próxima vez.
+- Se `WaitForExit` voltar falso, ficou um diálogo aberto (provavelmente "salvar conteúdo"): tire um print da tela antes de qualquer outra coisa.
+- Reabrir: `Start-Process library_project.uproject`.
+
 ## O que só dá para fazer pela interface do editor (peça ao usuário)
 - Adicionar Feature Packs (First Person, Third Person): Content Drawer → **Add** → *Add Feature or Content Pack*.
 - Baixar assets da Fab ou do Quixel Bridge e criar MetaHumans (MetaHuman Creator).
