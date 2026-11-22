@@ -194,17 +194,32 @@ Não há clientes colocados na cena: todos nascem pelo `BP_CustomerSpawner`.
 
   **Revisado em 2026-10-31** (59 títulos nas estantes; lista completa e genero de cada um na `DT_Books` e em [BOOK_COVERS.md](BOOK_COVERS.md)). O gênero Dictionaries deixou de existir (nenhum dicionário); as duas estantes viraram **Magazines** (26, térreo) e **Guides** (19, mezanino).
 
-  | Gênero | Estantes (rótulo `BP_BookShelfsN`) | Títulos |
+  **Regra (2026-11-21, pedido do usuário): um gênero fica todo junto, em estantes vizinhas e num andar só.** Antes Novels, Sci-Fi, Fantasy, Science, History e Economy tinham estantes nos dois andares, e o jogador decorava um andar. Agora Novels (o mais pedido) fica embaixo e o resto em cima, o que obriga a subir. Só separe um gênero se ele não couber nas estantes vizinhas.
+
+  **Geografia das estantes de livro:** térreo, parede sul (de oeste para leste) 28, 29, 30 · vão · 31, 4; térreo, parede norte 33 (sozinha); térreo, parede oeste 26. No mezanino, a parede oeste (de norte para sul 10, 9, 7, 8, 11), a quina 12 (sem livros) e a parede sul (de oeste para leste 14 … 24) formam uma fileira contínua de 16; a 36 fica sozinha na parede norte.
+
+  | Gênero | Estantes (rótulo `BP_BookShelfsN`), em sequência | Títulos |
   |---|---|---|
-  | Sci-Fi | 11, 8 (mezanino), 30, 31 (térreo) | 5: First Contact, Space Walk, The Fourth Target, Saturn Recoiling, Mars |
-  | Science | 7, 9, 22 | 6: Theoretical Calculus, Analytic Geometry, Chrysanthemums, Weather, Symmetry, La culture de la framboise |
-  | History | 10, 23 | 3: Cities, The Illusion of Democracy, Colorblind |
-  | Novels | 14, 15, 24 (mezanino), 28, 29 (térreo) | 18: os 3 originais, Classic Poems, Lost Souls e 13 novos (Peeping Tim, Pilot Dreams, The Attic...) |
-  | Fantasy | 16, 17 (mezanino), 4, 33 (térreo) | 5: Treasure of Al-Saban, The Jester Vampire, Skyland Tales, Skyland Story, Final Light |
-  | Economy | 18, 36 | 2: Don't Bother, Leading from the Back of the Line |
-  | Biography | 20, 21 | 4: Diary of Ms. Rose (02, 07), Cats and Their Humans, Runaway |
-  | **Guides** (novo) | 19 (mezanino) | 6: Book Covers Guide, Open Office Design, Data Structures, D## For Beginners, Hunting Techniques, Fuerteventura Travel Guide |
-  | **Magazines** (novo) | 26 (térreo) | 10 revistas em inglês (~100 exemplares, são finas) |
+  | Novels | 28, 29, 30, 31, 4 (térreo, parede sul) | 18: os 3 originais, Classic Poems, Lost Souls e 13 novos (Peeping Tim, Pilot Dreams, The Attic...) |
+  | Biography | 33 (térreo, parede norte) | 4: Diary of Ms. Rose (02, 07), Cats and Their Humans, Runaway |
+  | **Magazines** | 26 (térreo, parede oeste) | 10 revistas em inglês (~100 exemplares, são finas) |
+  | Science | 10, 9, 7, 8 (mezanino, parede oeste) | 6: Theoretical Calculus, Analytic Geometry, Chrysanthemums, Weather, Symmetry, La culture de la framboise |
+  | History | 11, 14 (quina do mezanino) | 3: Cities, The Illusion of Democracy, Colorblind |
+  | Sci-Fi | 15, 16, 17, 18 (mezanino, parede sul) | 5: First Contact, Space Walk, The Fourth Target, Saturn Recoiling, Mars |
+  | **Guides** | 19 (mezanino, parede sul) | 6: Book Covers Guide, Open Office Design, Data Structures, D## For Beginners, Hunting Techniques, Fuerteventura Travel Guide |
+  | Fantasy | 20, 21, 22, 23, 24 (mezanino, parede sul) | 5: Treasure of Al-Saban, The Jester Vampire, Skyland Tales, Skyland Story, Final Light |
+  | Economy | 36 (mezanino, parede norte) | 2: Don't Bother, Leading from the Back of the Line |
+
+  **Estantes "usadas" (2026-11-21, pedido do usuário):** todas as 24 estantes foram refeitas com **`Tools/shelf_organic.py`** (o `shelf_populate.py` ficou como histórico). Cada gênero é uma sequência só, na ordem de leitura de quem olha de frente (estante por estante, da esquerda para a direita; prateleira de cima para baixo; e cada prateleira da esquerda para a direita, que é o **x local positivo → negativo**). Cada título fica num trecho só, com cota recalculada a cada troca, então o jogador tem que ir até a estante daquele título. Por cima disso, o "uso":
+  - cada prateleira tem preenchimento sorteado (10 % cheia, senão de 8 a 60 %; no térreo ×0,85), começando num ponto sorteado;
+  - buracos de 4 a 10 cm;
+  - 30 % dos livros um pouco para fora ou para dentro e girados ±1,5°;
+  - livros perdidos: 2,5 % de outro gênero e 2 % de outro título do mesmo gênero;
+  - tombados (pitch ±14–28°) com o topo encostado na face do vizinho;
+  - em 1/3 das prateleiras, uma pilha deitada (pitch −90) de 2 a 5 livros tortos (yaw ±9°, ±1,5 cm), com 30 % de outros gêneros;
+  - revistas com escala 0,9 e `ExtraShrink` 0,1.
+
+  Total: ~1.860 livros, e todo título tem 10 ou mais exemplares. Os parâmetros ficam no topo do script, que é determinístico (`SEED`). Os livros tombados e as pilhas não se refazem ao guardar: ao ser guardado, o livro volta em pé.
 
   Não colocados em nenhuma estante: `SM_Book_06` (The Last Borrower, livro estranho) e `SM_Book_31` (Fluffy Doggo).
 

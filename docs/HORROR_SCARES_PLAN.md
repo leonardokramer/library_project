@@ -123,7 +123,7 @@ Cada fase termina com: teste próprio no PIE, fotos, `save_assets`, docs atualiz
   - Isso **nunca** é salvo no `L_Lighting`.
 - **Depois**, num passo separado e só com o LightRig já testado: migrar o Director para usar o `BP_LightRig` (`StartBlackout`, `ChargeFlicker`, `IdleTick`), para não haver dois donos das luzes.
 
-**0.2 Noite mais escura (global).** `PP_Night` é um `PostProcessVolume` **nosso** no `L_Library`: unbound, `Priority` 5 (acima do `PostProcessVolume_1`; o `DarkPP` fica com prioridade maior ainda). O `BlendWeight` é controlado pelo `BP_GameClock`: 0 até 19:00, subindo até 1 às 20:00.
+**0.2 Noite mais escura (global).** `PP_Night` é um `PostProcessVolume` **nosso** no `L_Library`: unbound, `Priority` 5 (acima do `PostProcessVolume_1`; o `DarkPP` fica com prioridade maior ainda). O `BlendWeight` é controlado pelo `BP_GameClock`: 0 até 18:00, subindo até 1 às 19:00 (era 19:00–20:00 até 2026-11-21).
 
 Overrides (testados no PIE, ver 2.1):
 - `AutoExposureBias` **0** (hoje +1). Nos dias finais, pode descer até −0,75. Com −1,5 o balcão fica escuro demais. Mantenha Min = Max Brightness (exposição fixa).

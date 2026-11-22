@@ -69,7 +69,18 @@ GEN = {
                    'EngineDoctor', 'Africa', 'MedicineToday')],
 }
 # escala None = automatica: 0,5 no terreo (z < 100) e 0,6 no mezanino
-PLAN = {'S16': ('Fantasy', None)}
+# Layout de 2026-11-21: cada genero em estantes vizinhas, num andar so (veja docs/SCENE_MAP.md).
+# Nao repovoadas: S7/S9 (Science), S19 (Guides), S26 (Magazines, precisa de ExtraShrink), S36 (Economy).
+PLAN = {
+    'S10': ('Science', None), 'S8': ('Science', None),
+    'S11': ('History', None), 'S14': ('History', None),
+    'S15': ('Sci-Fi', None), 'S16': ('Sci-Fi', None), 'S17': ('Sci-Fi', None), 'S18': ('Sci-Fi', None),
+    'S20': ('Fantasy', None), 'S21': ('Fantasy', None), 'S22': ('Fantasy', None), 'S23': ('Fantasy', None),
+    'S24': ('Fantasy', None),
+    'S33': ('Biography', None),
+    'S28': ('Novels', None), 'S29': ('Novels', None), 'S30': ('Novels', None), 'S31': ('Novels', None),
+    'S4': ('Novels', None),
+}
 # (z relativo, fração da largura ocupada): meio e baixo cheios, topo quase vazio
 LEVELS = [(20, 0.6), (60, 0.65), (95, 0.65), (130, 0.5), (165, 0.25), (200, 0.12), (235, 0.08)]
 
@@ -147,3 +158,5 @@ def process(sid, genre, scale):
 
 def run():
     return {s: process(s, g, sc) for s, (g, sc) in PLAN.items()}
+
+
