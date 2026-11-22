@@ -45,6 +45,9 @@ Unidades em cm, coordenadas do mundo. +X aponta para a porta de entrada (lado le
 
 **Corredor de clientes:** os traces mostram livre o trecho de Y 170 a 290 entre o balcão e a porta. Há expositores baixos em Y 10–166 (ex.: `Bookshelf_6`); a escada começa em Y 292 e a `Column3` fica em (-460, 300). A fila fica em Y 170 e a saída em Y 250–255.
 
+### Pontos de despertar da abdução (2026-11-22, sem atores)
+`WakePts`/`WakeYaws` no CDO do `BP_Scare_B` (e filhos), Z = piso + 100: térreo (−360,−300), (360,−300), (660,−240), (900,0), (60,−180), (0,300), (660,180); mezanino (−600,−240), (−60,−300), (600,−240), (840,120), (660,240), (−600,180). Achados por varredura de raios (chão a ±8 cm, 240 cm livres acima, 75 cm em 8 direções a 40/100/170 cm). Detalhes em [MONSTER_METAHUMAN.md](MONSTER_METAHUMAN.md) ("Abdução na perseguição"). `DarkZone_Loja` (`BP_DarkZone_C_8`, `Gameplay/Scares`) escurece os dois andares enquanto há clientes içados.
+
 ### NavMesh sem ilhas em cima dos móveis (pasta `Gameplay/NavModifiers`)
 O Recast gera NavMesh em qualquer superfície plana, inclusive mesas, balcões e estantes. Para evitar isso, há 8 `NavModifierVolume` com `AreaClass = NavArea_Null` (`NavBlock_{Ground,Upper}_{A..D}`):
 - No térreo eles cobrem Z de 40 a 300, e no mezanino Z de 360 a 850. A navegação só existe rente aos pisos (Z≈10 e Z≈330).

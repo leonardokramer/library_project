@@ -537,7 +537,9 @@ As 11 aparições do B (gôndolas A1–A3, 5 frestas, Magazines, 2 cantos do mez
 ### Estado de teste (pedido do usuário) — **reverter antes de testadores**
 - `BP_GameClock`: `SecondsPerGameMinute` **1** (era 30; jogo 2) e `DebugStartMinutes` **1140** (cada dia começa às 19:00; jogo 0).
 - `ScareManager`: `bSkipCalmDays` **verdadeiro** (o dia 1 conta como dia 4) e `bDebugHUD` **verdadeiro**.
-- `CustomerSpawner.maxCustomers` 0 (jogo 3). `ApparitionDirector.bAutoSpawn` falso (fica assim até os pontos do rastejante serem refeitos).
+- `CustomerSpawner.maxCustomers` **3** desde 2026-11-22 (para testar os NPCs içados; já é o valor de jogo).
+- `AbductChance` **1,0** nas 12 instâncias que perseguem (11 do B + E; jogo 0,35, o valor do CDO).
+- `ApparitionDirector.bAutoSpawn` falso (fica assim até os pontos do rastejante serem refeitos).
 - A vitrine do `Mezz_Parede` foi revertida (2026-11-21) conforme a nota "Vitrine temporária": ela nascia sozinha fora do sorteio.
 
 ### Teste feito no PIE (2026-11-21, `BP_TestDriver` com roteiro de posições, fora da cena depois)
@@ -555,3 +557,47 @@ As 11 aparições do B (gôndolas A1–A3, 5 frestas, Magazines, 2 cantos do mez
 - **Correção:** `BP_DarkZone` ganhou a segunda caixa opcional `bAtrium` + `AtriumCenter` (19, 88, 682) ± `AtriumExtent` (380, 130, 60), que pega só essas cinco; função `Atrium(Scale, Fade)` chamada no `Activate`, no `Deactivate` e nos dois ramos do `FlickerStep` (o lampejo grava a escala sorteada em `FlashS` para as duas caixas usarem o mesmo valor). Ligada em `DarkZone_Terreo` (C_1), `DarkZone_Frestas` (C_5), `DarkZone_Perseguicao` (C_6) e `DarkZone_Corrida` (C_3). As zonas do mezanino já cobrem Z 400–900 e escurecem essas luminárias por conta própria.
 - **Conferido no PIE** (A3 forçada, jogador em (368, 260) olhando para o sul): as cinco caem para 0,3 junto com o térreo, as demais `Light_02` continuam 1,0; a A3 vira silhueta e o chão/prateleiras do corredor perdem a luz de cima. Fotos antes/depois no PIE.
 - **Para conferir uma luz:** `SceneTools.trace_world` de cada luminária reta para baixo diz em que piso ela cai; `BP_LightRig.LightComps`/`LightCur` (no PIE) mostra o fator aplicado a cada componente (as luzes ficam no subnível `L_Lighting`).
+
+## Abdução na perseguição (2026-11-22, feita e testada no PIE; falta o teste do usuário)
+Pedido do usuário: quem persegue às vezes empurra o jogador, arrasta até tudo escurecer, e ele acorda caído em outro lugar da livraria.
+
+- **Quem:** as 11 aparições do `BP_Scare_B` que correm (fim da corrida no `BRunStep`) e a corrida do E (`EAfter` no `EventBPhase3` do `BP_Scare_E`).
+- **Gatilho:** `BRunReach` troca o `BRunEnd` do fim da corrida. Se o monstro chegou perto (< `RunDist` + 40) e `AbCan` passa (jogador fora de queda, `WakePts` preenchido, sorteio com **`AbductChance`**), chama `AbStart`; senão some como antes.
+- **Fluxo (fases 40–44 no `BStep`, via `AbStep`):**
+  1. **40 empurrão:** `AbStart` fecha o sistema do PC (`CloseUI`), `ReportAggro`, clipe `MH_A_Mixamo_Push` (1,4 a partir de 0,73) e `FaceLight` 150; o contato vem em 0,32 s.
+  2. **`AbKnock`:** guarda o chão sob o jogador (`AbFloor`) e sorteia **cada livro da mão**: 50 % fica no chão onde ele caiu (o `DragBegin`/`KnockDown` solta), 50 % some e vai para o lugar onde ele acorda (`AbBooksSplit`). Em seguida `AbPlan` escolhe o corredor.
+  3. **`AbPlan`:** 24 direções (começo aleatório) × 3 deslocamentos laterais (0, +25, −25 cm). `AbClear(Dir, Org)` faz sweeps de esfera de 30 cm atrás até 580 cm à frente, a Z +40 (r 32), +80 e +125 (r 46: as mãos do monstro e a perna erguida ficam a até ~38 cm do eixo) e +175 (r 32). Confere o chão a cada 40 cm (raio para baixo; piso a ±12 cm). Fica a direção com mais espaço; o arrasto é `AbDragLen` 280 (mín. 120) depois dos `AbHeadAhead` 230 do corpo.
+  4. **41 agarrão (0,7 s) e 42 arrasto:** igual ao Drag (`AbTrail` = `DTrail` com variáveis `Ab*`; puxões em 5 degraus, `AbDragSpeed` 240). A tela vai a **preto total em 85 % do arrasto** (`StartCameraFade` com hold), antes do fim do trecho validado.
+  5. **43 (`AbBlack`):** sorteia um `WakePts` a > 8 m da queda (`AbWakePick`), chama `BP_LibraryCharacter.WakeAt` (deitado no escuro, `KnockPhase` 2 → o fade e o levantar de sempre), espalha os livros do despertar no chão a 50–90 cm (`AbPlaceBooks`, com raio para não entrar em móvel), esconde o monstro, desliga a zona da corrida e `BDone`.
+  6. **Versão curta (44):** sem corredor com ≥ 120 cm de arrasto, `KnockDown` normal → 0,6 s de preto → mesmo despertar.
+- **Pontos de despertar:** `WakePts`/`WakeYaws` no CDO do `BP_Scare_B` (e copiados nos CDOs dos filhos, que vinham zerados). São 13 pontos, sem atores na cena, achados por varredura de raios (chão, 240 cm livres acima, 75 cm em 8 direções): térreo (−360,−300), (360,−300), (660,−240), (900,0), (60,−180), (0,300), (660,180); mezanino (−600,−240), (−60,−300), (600,−240), (840,120), (660,240), (−600,180). Z = piso + 100; o yaw olha para o centro da loja.
+- **Medido:**
+  - `AbProbe` em 232 pontos de queda (grade de 80 cm, os dois andares): **arrasto em 67 %** (térreo 75 %, mezanino 57 %), versão curta no resto (cantos apertados, beira do mezanino, entre cadeiras e expositores baixos).
+  - Auditoria `bAbAudit` (raio do eixo do corredor até cabeça, pélvis, pés e mãos do jogador e do monstro, a cada quadro visível): com raio 30 houve 22 batidas (mão do monstro 2 cm dentro da estante 13); com 46 cm, **0 batidas** em 3 abduções (A2 em tempo normal e em `slomo 0,12`, e E). Na estante do mezanino entrou a versão curta.
+  - Livros: 2 ficaram no chão da queda e 1 no chão do mezanino, onde ele acordou.
+- **Valores:** `AbductChance` CDO 0,35; **instâncias que perseguem em 1,0 (modo teste)**. `bAbAudit` desligado. `AbProbe(Pos)` registra o plano no log (`[AB]`).
+- **Armadilhas:** o `%` (módulo) não existe no DSL (use ângulos > 360, `Cos`/`Sin` são periódicos). Parâmetro novo numa função chamada por outra: esvazie a que chama, compile, e só então reescreva. `CaptureEditorImage` sai alguns segundos atrasado: para fotografar fases rápidas use `slomo` (`Development|ExecuteConsoleCommand`) no driver.
+
+## NPCs içados durante a aparição (2026-11-22, feito e testado no PIE; falta o teste do usuário)
+Pedido do usuário: com uma aparição na loja, os clientes ficam travados flutuando em poses estranhas, aparecendo e voltando aos trancos; os livros da mão flutuam junto.
+
+- **Quando:** `ScareManager.OnSpawned` → `FreezeAll`; `OnScareDone` → `ReleaseAll`; `FzGuard` (no `Pick`, a cada 2 s) congela quem entrar com o susto nascido e solta tudo se o Manager não estiver ocupado. `CustomerAtCounter` agora devolve sempre falso: os sustos podem acontecer com clientes na loja.
+- **Luz:** `DarkZone_Loja` (`BP_DarkZone_C_8`, `Gameplay/Scares`, centro (0,150,450), extent (1500,700,600)): `DimScale` 0,25, piscando (escuro 2–5 s, lampejo 0,05–0,15 s a 0,6–1,0), pendente da fila (`Light_32`) acesa por `KeepOn`. Fica ligada enquanto houver cliente içado (`CustZone` no Manager). Com 0,15 o cliente içado não aparecia na foto.
+- **Pose (calculada; não há animação baixada):** `MH_ABP_Customer` ganhou 18 `ModifyBone` aditivos em component space (pélvis, `spine_01/03/05`, `neck_01`, `head`, clavículas, braços, antebraços, coxas, panturrilhas e pés) entre a pose de segurar livro e o `ComponentToLocal`. São controlados por `FloatAlpha` e `R_*`. Convenção medida: roll + inclina para a frente (e joga a perna para trás); pitch + ergue o braço esquerdo para o lado (o direito usa −).
+- **4 poses** em `FzPoses` (72 rotadores, pose × 18, nos CDOs de `BP_Customer` e `BP_CustomerMH`):
+  - 0 içado para cima (arco para trás, cabeça jogada para trás, joelhos dobrados para trás, pés esticados), sobe 40–90 cm;
+  - 1 de ponta-cabeça (pélvis roll 165), sobe 60–80 cm;
+  - 2 crucificado, 30–55 cm;
+  - 3 boneca quebrada.
+- **`FzChoose`:** sorteia a ordem e aceita a primeira pose com folga:
+  - teto por raio, com o topo do corpo + 10 cm;
+  - lados a 60 cm de altura, com a distância até o cliente mais próximo − 45 cm (os clientes não bloqueiam o canal `Visibility`): 58/58/92/78 cm;
+  - na ponta-cabeça, raios em leque para baixo e para fora (`FzDownOK`), porque as mãos entravam no tampo do balcão.
+  - Na fila apertada caem na pose 0; a 2 e a 3 aparecem com o cliente sozinho.
+- **Animação bugada:** `FzStepAlpha` anda a cada 0,09 s (~11 fps) na direção do alvo com fator sorteado entre −0,3 e 0,95 (recua às vezes); `FzTwitch` dá trancos de 0,7–0,88 a cada 0,8–2,6 s. A subida é `SetActorLocation` com sweep da cápsula.
+- **Livros:** `FzGrabBooks` solta os livros presos ao cliente (guarda o socket e a transform relativa); eles flutuam ~40 cm acima, oscilando, e `FzEnd` os prende de volta exatamente onde estavam. Testado: o cliente de devolução foi solto e pôs o livro no balcão normalmente.
+- **Cliente travado:** `Freeze` para o movimento (`StopMovement`, `MOVE_Flying`, sem tick do `UpdateWalk`) e o `Interact` ignora cliente congelado; `FzEnd` volta a andar (`RetryMove` nos estados 1/4).
+- **Teste:** `FzForcePose` (CDO, −1 = sorteio) força uma pose. Para testar sem susto, ponha o Manager em `bBusy` (senão o `FzGuard` solta tudo em 2 s). Clientes colocados à mão no mapa ficam na pose de referência (o `LinkMHPose` só funciona pelo caminho do spawner, que chama `ApplyPersona`): teste com `TrySpawn`.
+- **Não testado:** o ciclo inteiro com um susto de verdade sorteado pelo Manager com clientes na loja (as partes foram testadas separadas).
+- **Para testar de manhã:** comece um dia (já começa às 19:00, sustos desde o dia 1); os clientes entram a cada 3–6 min (o primeiro em 5 s). Para ver a abdução, deixe uma aparição de gôndola ou fresta correr atrás de você (corredor aberto: arrasto; canto apertado: versão curta) com livros na mão.
+- **Ideias de pose para depois (sugestões ao usuário):** trocar as poses calculadas por animações do Mixamo retargetadas (*Falling Idle*, *Floating*, *Hanging Idle*, *Zombie Agonizing* e *Dying* congelada num quadro), e/ou novas poses calculadas: "pendurado pelo pescoço" (corpo mole, cabeça caída de lado, pés apontando para baixo), "dobrado ao contrário" (tronco para trás até as mãos quase tocarem os calcanhares), "girando lentamente no ar" (yaw contínuo do ator) e "olhando para o jogador" (só a cabeça segue a câmera, de cabeça para baixo).
