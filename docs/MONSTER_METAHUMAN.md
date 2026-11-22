@@ -578,6 +578,8 @@ Pedido do usuário: quem persegue às vezes empurra o jogador, arrasta até tudo
 - **Valores:** `AbductChance` CDO 0,35; **instâncias que perseguem em 1,0 (modo teste)**. `bAbAudit` desligado. `AbProbe(Pos)` registra o plano no log (`[AB]`).
 - **Armadilhas:** o `%` (módulo) não existe no DSL (use ângulos > 360, `Cos`/`Sin` são periódicos). Parâmetro novo numa função chamada por outra: esvazie a que chama, compile, e só então reescreva. `CaptureEditorImage` sai alguns segundos atrasado: para fotografar fases rápidas use `slomo` (`Development|ExecuteConsoleCommand`) no driver.
 
+- **Sorteio do despertar (2026-11-22, pedido do usuário: "nasci nos mesmos pontos"):** 30 pontos (lista no [SCENE_MAP.md](SCENE_MAP.md)). O `AbWakePick` sorteia até 80 vezes um ponto a > 8 m da queda que **não esteja entre os 3 últimos** (`BP_LibraryCharacter.WakeHist`, copiado em `AbHist`). Em 40 % das vezes exige o **outro andar** nas primeiras 40 tentativas. Testado num laço de 2,5 min: 26 ataques, 10 aparições diferentes, alternando de andar.
+
 ## NPCs içados durante a aparição (2026-11-22, feito e testado no PIE; falta o teste do usuário)
 Pedido do usuário: com uma aparição na loja, os clientes ficam travados flutuando em poses estranhas, aparecendo e voltando aos trancos; os livros da mão flutuam junto.
 
@@ -601,3 +603,21 @@ Pedido do usuário: com uma aparição na loja, os clientes ficam travados flutu
 - **Não testado:** o ciclo inteiro com um susto de verdade sorteado pelo Manager com clientes na loja (as partes foram testadas separadas).
 - **Para testar de manhã:** comece um dia (já começa às 19:00, sustos desde o dia 1); os clientes entram a cada 3–6 min (o primeiro em 5 s). Para ver a abdução, deixe uma aparição de gôndola ou fresta correr atrás de você (corredor aberto: arrasto; canto apertado: versão curta) com livros na mão.
 - **Ideias de pose para depois (sugestões ao usuário):** trocar as poses calculadas por animações do Mixamo retargetadas (*Falling Idle*, *Floating*, *Hanging Idle*, *Zombie Agonizing* e *Dying* congelada num quadro), e/ou novas poses calculadas: "pendurado pelo pescoço" (corpo mole, cabeça caída de lado, pés apontando para baixo), "dobrado ao contrário" (tronco para trás até as mãos quase tocarem os calcanhares), "girando lentamente no ar" (yaw contínuo do ator) e "olhando para o jogador" (só a cabeça segue a câmera, de cabeça para baixo).
+
+## Roteiros de teste da abdução e dos NPCs içados (2026-11-22, `BP_TestDriver`)
+O ator fica **fora da cena**. Para testar: ponha um `BP_TestDriver` no mapa, rode o PIE e tire o ator no fim.
+
+- **Laço de abduções** (EventGraph atual):
+  - `PickNear` escolhe a aparição com `bCanChase` mais perto do jogador, no mesmo andar (|dz| < 150) e a > 2,5 m; se não houver, a mais longe do mesmo andar.
+  - `ArmIt` no Manager + `bForce` + `NoEmerge` (`EmergeChance` 0 só no PIE); 1,5 s depois de nascer (fase 1, 2 ou 5) chama `BExit`.
+  - `KeepAggro` trava `Aggression`/`AggrFatigue` em 1 e o `Cooldown` do Manager em 9999, para o sorteio normal não atrapalhar. O spawner fica com `MaxCustomers` 0 só no PIE.
+  - `Pausa` = segundos entre o jogador levantar e o próximo ataque.
+- **Versões anteriores, a reescrever se precisar:**
+  1. Cliente de devolução + A1 forçado 4 s depois de ele entrar, segurado com `HoldDebug` por `Espera` s.
+  2. `bSoNPC`: o cliente é içado direto, sem monstro e com as luzes acesas.
+  3. Vitrine: 8 `BP_CustomerMH` criados pelo driver (`ApplyPersona` liga o corpo), parados de frente para o balcão, com `FzForcePose` + `bFzShowcase` (força a pose sem conferir o espaço); 4 com livro via `SetupReturn`; `Freeze` e `Release` direto nos clientes.
+- **Armadilhas:**
+  - Sem o Manager ocupado, o `FzGuard` solta os clientes em 2 s.
+  - Aparição de outro andar não alcança o jogador.
+  - Monstro nascido escondido (fase 5) espera o jogador olhar.
+  - A agressividade cai pela metade a cada ataque (`AggrMul`).
