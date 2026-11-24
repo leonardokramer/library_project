@@ -76,3 +76,6 @@ Desktop.ini
 # Ferramentas locais
 .gamemaker-mcp/
 .claude/settings.local.json
+
+# Originais dos sons (Freesound); os cortes em RawAudio/Door vão para o git
+RawAudio/**/src/

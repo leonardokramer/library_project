@@ -621,3 +621,106 @@ O ator fica **fora da cena**. Para testar: ponha um `BP_TestDriver` no mapa, rod
   - Aparição de outro andar não alcança o jogador.
   - Monstro nascido escondido (fase 5) espera o jogador olhar.
   - A agressividade cai pela metade a cada ataque (`AggrMul`).
+
+## Sustos da porta (2026-11-24, etapa 5; testados no PIE, falta o teste do usuário)
+- **`BP_Scare_Door`** (`/Game/Library/Blueprints/Horror/`) é uma **cópia do `BP_Scare_Drag`** (filho do `BP_Scare_B`). Reaproveita empurrão, agarrão, arrasto e `DTrail`; o original do balcão não foi mexido. Ator `ScareDoor_Calcada` (`Gameplay/Scares/Door`) em **(1120, 215, 10), yaw 180**, na calçada. `Weight` 0 (o sorteio do Manager nunca o escolhe), `AbductChance`/`EmergeChance` 0, `bUseZone` + `DarkZone` = `DarkZone_Perseguicao` (`BP_DarkZone_C_6`, térreo piscando).
+- **Início (`BeginDoor(V)`):**
+  - marca o Manager como ocupado (`SetBusy`) e o susto como gerenciado (`bManaged`), e chama `Arm`;
+  - `SpawnMonster` faz o `NotifySpawn` → o Manager congela os clientes (içados) e liga a `DarkZone_Loja`;
+  - liga a zona escura do susto e o escuro de fora (`OutsideFog.SetForceDark(1)`);
+  - acende a `FaceLight` e entra na fase 50.
+  - No fim (`EndDoor`/`DFinish`): `SetForceDark(0)`, `ResetTries` e `BDone` (o Manager solta os clientes e fica livre).
+- **Variantes (`DVar`):**
+  - **0, insistiu** (`StartInsist`, chamado por `BP_ShopDoor.Insist` quando as tentativas do E batem o sorteio de 6–10): só entre 19:30 e 22:10 e **sem clientes na loja** (ou com `bDoorTest`). A porta abre sozinha devagar (`OpenTo(95, 0.9)`), com o sininho. Fase 50: o monstro espera a porta passar de 55° → `DPushDoor` (fase 51, clipe `MH_A_Mixamo_Push`) → contato em `PushHit` → `KnockDown(−X)` → fase 52: a porta bate em 0,9 s, o monstro some em 1,1 s e o susto termina em 3 s.
+  - **2, empurra de fora** (fuga): igual à 0, mas o empurrão vem 0,35 s depois de nascer e a porta não é fechada pelo susto (o cliente ainda a segura).
+  - **1, puxa pela perna** (fuga): fase 53 espera **0,2 s** (o corpo do monstro precisa existir; sem a espera, as mãos são lidas em (0,0,0), o `DTrail` inverte e o monstro "empurra na animação de puxar") → `DKnockDoor`: o monstro vai para `DFrom` = (câmera.x − 90, 212), **de frente para o corpo do jogador** (cabeça `HeadAhead` 150 cm para fora), e recua de costas até `DragEnd` (760, 212), puxando pelo tornozelo (fases 21/22 do Drag). Conferido no PIE e por foto (yaw do monstro ≈ 0, cabeça do jogador em X 1107).
+- **Gatilho da fuga (`BP_ShopDoor.EscapeCheck`, no tick da porta):** porta > 35° e jogador no vão (X 1005…1130, Y 158…258) **andando para fora** (vel. X > 10) **ou** passando de X 1015 virado para a rua (cos(yaw) > 0,5). Sorteio 50/50 (`ForceVar` −1); `ForceVar` 1/2 força.
+- **Testes:**
+  - A: o driver apertando E a cada 0,4 s; o jogador foi lançado de X 960 para 694, caiu e a porta fechou.
+  - B2: o cliente que segurava a porta ficou içado e o jogador foi empurrado.
+  - B1: foto do arrasto (corpo do jogador de costas e o monstro atrás dos pés, olhando para ele).
+- **Armadilhas:**
+  - Com o driver apertando E durante o susto, as tentativas acumulavam e o susto disparava de novo assim que terminava. Agora o `EndDoor` zera as tentativas e o `TouchDoor` ignora o E com o jogador caído (`KnockPhase` ≠ 0).
+  - `Running` já existe no `BP_Scare_B` (corrida): a flag do susto da porta é `bDoorBusy`.
+  - Um sorteio puro (`RandomBool`) usado duas vezes dá dois valores: guarde em variável (`DVar`).
+- **Estado de teste (reverter antes de testadores):** `ScareDoor_Calcada.bDoorTest` **ligado** (a variante A ignora horário e clientes).
+
+### Refeito depois do teste do usuário (2026-11-24, testado no PIE; falta o teste do usuário)
+O usuário achou a primeira versão ruim. Mudou assim:
+- **Insistiu (DVar 0), agora em 3 tempos:**
+  1. **`BeginQuiet`** (fase 60): a porta abre sozinha e **fica aberta**, com o sininho, o escuro de fora (`OutDark 1`) e a zona piscando. **Ainda não há monstro.** O jogador vê a rua preta pelo vão.
+  2. **`D60`:**
+     - se o jogador passa da soleira (X > 1012, |Y − 212| < 70), chama `RunStart`;
+     - se ele recua (X < 930 depois de 1,5 s) ou passam 25 s, chama `QuietEnd`: a porta fecha, a luz volta e o susto termina sem monstro. Isso não conta como aparição para o Manager, porque o `NotifySpawn` só vem no `SpawnMonster`.
+  3. **`RunStart` → `D61`, a corrida bugada:**
+     - o monstro nasce em **(1500, 212)**, dentro da névoa, com `ArmsOn` e o clipe de corrida;
+     - ele avança **aos saltos de 35 cm a cada 0,07 s** (teleporte, sem interpolar), o que dá ~0,7 s de corrida;
+     - a < 115 cm, chama `ArmsOff` e `DPushDoor` (o empurrão de antes).
+  - **Fase 52:** `D52Flee` leva o monstro **de ré** para fora (+45 cm a cada 0,06 s por 0,9 s). Aos 0,3 s, `BP_ShopDoor.Slam` **bate a porta** (fecha a 16 rad/s, com o rangido de fechar em pitch 0,55 e volume 2,5; é um placeholder até chegar o som de batida forte).
+  - À noite, o monstro aparece quase só como **dois olhos brilhando** vindo do escuro (foto no PIE às 21:00).
+- **Puxa pela perna (DVar 1):**
+  - `MoveAside` tira do caminho os clientes no corredor da porta (X 600…1150, |Y − 212| < 95): vão para Y 320, ou para X 1095 se estiverem na faixa da parede, e atualizam o `FzBase` do içamento.
+  - O jogador cai **de bruços** (`BP_LibraryCharacter.DragUpZ` −1, ligado no Z do vetor "para cima" do `DragPlace`; o `DFinish` volta para 1).
+  - O arrasto vai até **(640, 212)** a `DragSpeed` **200**.
+  - `DTrail`: o olhar começa **para a frente** (para a rua) e, de 1,5 s a 2,2 s depois do agarrão (`DragStartT`), **gira 180°** até o monstro (o ponto gira em volta da cabeça; o `Lerp` usa bl⁴).
+  - `FadeAt` 0,1 no CDO: o preto do agarrão some logo.
+  - À noite, o trecho olhando para a frente é quase todo preto (a rua está preta).
+- **Armadilha:** `FadeAt` não é editável na instância (o `set_properties` falha): mude no CDO (`Default__BP_Scare_Door_C`).
+
+### Segundo teste do usuário (2026-11-24, testado no PIE)
+- **Noite de fora menos preta:**
+  - `NightColor` do `M_OutsideFog` e do `M_OutsideGroundFog` foi de 0,004 para **(0,11; 0,12; 0,14)**;
+  - `GroundNight` foi de 0,002 para **(0,045; 0,047; 0,055)**;
+  - com a exposição da noite, a névoa fica cinza-ardósia escura e a silhueta do monstro aparece contra ela. Valores em torno de 0,04 ainda saíam pretos na tela.
+- **O jogador não passa da soleira:**
+  - `LockMove` (`SetIgnoreMoveInput` no controller) entra no `RunStart` e no `BeginDoor`;
+  - `FreeMove` (`ResetIgnoreMoveInput`) roda no instante do empurrão (`D51`, antes do `KnockDown`, que tem o próprio `DisableInput`) e no `QuietEnd`, no `EndDoor` e no `DFinish`;
+  - a câmera continua livre.
+- **Corrida mais rápida:** 50 cm a cada 0,06 s, dando ~0,55 s de corrida.
+- **Sempre cai dentro:** no `D51`, antes do `KnockDown`, o jogador vai para X ≤ 990 e Y entre 180 e 245. O `KnockDown` escurece a tela em 0,12 s, então o salto não aparece.
+  - Sem isso, com o jogador em X 1075, o `Slam` fechava a folha (a `LeafBox` bloqueia) antes de o lançamento passar o vão, e ele ficava do lado de fora.
+  - Teste segurando "para frente": parou em X 1012 e caiu em X 876, e a porta bateu depois.
+- **Sem pisca-pisca:** a instância tem `bUseZone` falso, e o escuro de fora já basta.
+
+### Terceira versão (2026-11-24, testada no PIE com fotos pausadas; falta o teste do usuário)
+O "abre e fica aberta" com corrida (fases 60/61, `BeginQuiet`/`RunStart`/`D60`/`D61`) **saiu do fluxo** (as funções continuam no BP, sem uso).
+
+- **Insistir (DVar 0):**
+  1. **Armar:** o `BP_LibraryCharacter.TouchDoor` chama `Door.Insist` quando a tentativa bate o sorteio **ou** quando faltam ≤ 2 tentativas (`Tries ≥ TriesNeeded − 2`).
+     - O `StartInsist` sempre chama `PreArmifIdle`. Esse chama o `PreArm`, que usa as mesmas condições de noite e loja vazia (ou `bDoorTest`), e o `PreSpawn` faz o monstro nascer **atrás da porta fechada**, em (1085, 212), virado para dentro. Isso é a fase 70.
+     - Se o jogador parar de tentar, o `D70` faz o monstro sumir depois de 15 s e chama o `EndDoor`.
+  2. **Estourar:** com `Tries ≥ TriesNeeded`, o `BurstifArmed` chama o `Burst`:
+     - `LockMove`, `OutDark 1`, porta com `OpenTo(95, 9)` (~0,3 s) e sininho;
+     - o monstro vai para X = clamp(jogador.x + 95, 1040, 1095).
+     - Fase 71 → `DPushDoor` aos 0,12 s.
+  3. **`D51`:** empurrão com `PushDir` **−1,45** (era −1). No teste, o jogador foi de X 975 para 743.
+  4. **`D52Pull`**, fase 52, só para DVar 0:
+     - `DShortBlack` encurta o preto do `KnockDown` (aos 0,2 s, põe `KnockT` 2,45 no jogador, que pula para a fase 3, fade-in de 1 s; de lado no chão, ele vê a porta);
+     - aos 0,55 s, clipe `PullHeavyObject` em laço;
+     - de 0,55 s a 1,6 s, `DSnapDoor` a cada 0,09 s: a porta vai para 95·(1 − k) com **25 % de chance de voltar +14°** e o monstro recua 60 cm junto, aos trancos;
+     - aos 1,6 s, `Slam`; o monstro some aos 1,9 s e o `EndDoor` vem aos 3 s.
+  - **Nome:** o DSL chama `PreArmIfIdle` de **`PreArmifIdle`** (o "If" vira minúsculo, e o mesmo vale para `BurstifArmed`): `Class|BPScareDoor|PreArmIfIdle does not exist`.
+- **Fuga pela fresta: sempre o puxão (DVar 1).** O `StartEscape` não sorteia mais.
+  - **Sem tela preta:** o `DKnockDoor` não chama `StartCameraFade` e põe `FadeBack` verdadeiro.
+  - **`DFall(Look)`** é chamado no fim do `DTrail` e sobrescreve o `DragCam`/`DragLook` do jogador:
+    - de 0 a 0,08 s, **tranco** de 14 cm para baixo;
+    - de 0,08 a 0,45 s, **queda** do ponto da câmera em pé (`FallFrom`) até o chão (curva f², olhar para a frente, +X, com um leve mergulho);
+    - **impacto** aos 0,45 s: tremida de 7 cm que some em 0,4 s;
+    - durante o arrasto (fase 22), tremida de 1,2 cm.
+  - O giro para o monstro continua de 1,5 s a 2,2 s.
+  - Fotos pausadas:
+    - caindo, tombado, olhando a rua (com mergulho de −180 a própria cabeça deitada aparecia; o mergulho ficou em −60);
+    - no chão, linha do horizonte da névoa;
+    - arrastado, com o batente da porta entrando no quadro e a mão do cliente segurando a porta.
+- **Ajustes depois do teste do usuário (2026-11-24):**
+  - **Mão atravessando a porta (insistir):** a cada tranco, o `DSnapDoor` move o monstro pela diferença entre a maçaneta de fora (`Door.HandleWorld(false)`) e o meio das mãos (sockets `hand_l`/`hand_r`), com X ≥ 1000. As mãos ficam na beirada da porta, do lado de fora (foto pausada).
+  - **Puxão aparecia na porta e piscava:** o `StartEscape` põe o monstro logo **atrás do jogador** (câmera.x − 250) e o **esconde** (`SetActorHiddenInGame`) até o `DKnockDoor`, que o mostra.
+  - **Caía colado na porta (parecia bug com a névoa):** `DFrom` = câmera.x − 250, então a cabeça cai ~1 m para dentro. A queda ficou mais rápida (0,3 s, de 0,06 a 0,36 s) e a tremida do impacto é de 9 cm por 0,45 s. `DragEnd` passou para **(450, 212)**, no caminho dos clientes até o balcão, e o `MoveAside` cobre X 400…1150.
+  - Fotos: antes do agarrão, nada na porta; no tranco, o vão encolhendo e inclinado; no arrasto, a porta virou um retângulo claro no fundo.
+  - **Driver:** com o PIE a ~3 fps (editor em segundo plano), cada quadro pula 0,33 s. O `Walk` agora dá `slomo 0.15` quando o susto começa, para a pausa cair no momento certo.
+- **Virada com tudo e mais tempo vendo o monstro (2026-11-24):**
+  - Não há câmera livre: o `DragBegin` desliga o input e o `DragCamStep` força a rotação todo quadro.
+  - O `DTrail` olha para a frente até **1,6 s** depois do agarrão e **vira em 0,25 s**, com e = 1 − (1 − bl)³ (rápida no começo, freando no fim); o `Lerp` para o monstro usa e².
+  - `DragSpeed` **110** na instância (era 200): de X ~760 a 450 são ~2,8 s de arrasto, quase 2 s vendo o monstro depois da virada.
+  - Foto pausada logo depois da virada: o monstro no centro, com o rosto aceso pela `FaceLight`.
+- **Driver:** o `BP_DoorTestDriver` tem `PausePh`/`PauseT` no CDO; o `Walk2` dá `pause` no PIE quando o susto chega nessa fase e nesse tempo, para fotografar. O `PIE` rodou a ~3 fps com o editor em segundo plano.

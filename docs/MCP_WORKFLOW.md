@@ -295,3 +295,15 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
   - Para mudar uma variável que não é instance-editable durante o PIE, torne-a editável por um instante (`set_variable_instance_editable`), compile e reverta depois.
   - `remove_function_graph` usa o parâmetro `graph_name`.
   - Booleanas com prefixo b, no DSL: `Variables|Default|GetTestOnStart`, não `GetbTestOnStart`.
+
+## Armadilhas de material e áudio (2026-11-23, porta)
+- ⚠️ **Nunca mude `AttributeSetTypes` de um `SetMaterialAttributes` por `set_properties`:** a lista `Inputs` do nó não acompanha, e o editor cai (`Array index out of bounds: 1 into an array of size 1`). Os mestres do Stationer (`MM_MainMaterial`) usam **Material Attributes** (`bUseMaterialAttributes`): a saída `MP_OpacityMask` solta é ignorada. Para mexer na opacidade deles, use outro caminho (ex.: `BreakMaterialAttributes` → `MakeMaterialAttributes`).
+- **Nó `Custom` (HLSL):** para criar entradas, mande a lista `Inputs` inteira com os itens já existentes copiados do `get_properties` e **um item novo por vez** (mandar só os nomes dá "insertion points are ambiguous").
+- `set_vector_parameter` aceita valores negativos, apesar do schema dizer mínimo 0.
+- **Importar WAV:** não há tool. Copie o `.wav` para a pasta certa dentro de `Content/` e o editor mostra "changes to source content files... import?". Clique em **Import** pelo `SlateInspectorToolset` (`Snapshot` com `maxDepth` 1 mostra o botão) e depois apague o `.wav` de `Content/` (os cortes ficam em `RawAudio/`).
+- **Atenuação sem asset:** o MCP não cria `SoundAttenuation`; use `AudioComponent` com `bOverrideAttenuation` e `AttenuationOverrides`.
+- **Reconstruir o NavMesh sem console:** `SlateInspectorToolset`: `Snapshot(ref '', maxDepth 30)` acha `button "Build"`; `Click`; numa **segunda** chamada, `Snapshot` de novo acha `generic "Build Paths"`; `Click`. Confira no log `LogNavigationDataBuild ... total execution time`. O Build abre uma janela "Message Log" (Map Check) que tapa o `CaptureEditorImage`: feche com `Windows(action 'close')`.
+- **Fotografar um instante rápido no PIE:** cada chamada do MCP trava o jogo, e o quadro seguinte vem com um passo de tempo enorme (a ação "pula"). O `TimeDilation` do WorldSettings não é editável pelo MCP, e o botão de pausa chega atrasado. Saída: um multiplicador de velocidade no próprio BP (ex.: `BP_ShopDoor.SpeedMul` 0,0001) que congela a ação; foto; volte o valor.
+- **Instâncias de AnimBP no PIE:** o AnimInstance fica em `<ator>.CharacterMesh0.<ABP>_C_0` (ex.: `MH_ABP_Customer_C_0`); dá para ler as variáveis com `get_properties`.
+- **Read-back do DSL mostra classes erradas quando o nome da função se repete** (`ComboBox|IsOpen`, `MenuAnchor|Close`, `BPLightRig|SetNight`): confira o pino `self` com `get_node_infos` antes de achar que está errado.
+- Setters de variável de **outra classe** no DSL: `(Class|MHABPCustomer|SetDoorHand valor alvo)` (posicional, valor primeiro). Booleanas sem o `b`: `Variables|Default|SetDoorIn`.

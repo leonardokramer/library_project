@@ -124,8 +124,8 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 - [ ] Trocar a caixa registradora por um computador/monitor de verdade (asset da Fab) e mover o `BP_LibrarySystem` para lá
 - [ ] Talvez: histórico de empréstimos visível no sistema (os dados já ficam em `LoanDocs`/`LoanTitles`)
 - [ ] Salvar cadastro e empréstimos entre sessões (SaveGame)
-- [ ] Porta que abre de verdade: hoje a folha está fundida na `SM_WallwDoor01`, e o NPC surge e some do lado de dentro
-- [ ] Som do sininho da porta (gancho `PlayBell` vazio, o projeto não tem sons)
+- [x] Porta que abre de verdade (2026-11-23): `BP_ShopDoor` (recorte por material, sem mexer no asset); o cliente nasce lá fora e abre com a mão (IK). Ver SCENE_MAP
+- [x] Sons da porta (2026-11-23): sininho, rangidos de abrir/fechar e trancada (`/Game/Library/Audio/Door`)
 - [x] Devolução de livros + histórico de empréstimos (Etapa 2e, 2026-10-26):
   - **Histórico por livro** no `BP_LibrarySystem`: o array `Loans` de `S_LoanRecord` (`No` = nº do empréstimo, `Doc`, `Title`, `Returned`, `Book` = o ator do livro; antes eram 5 arrays paralelos `H*`, migrados em 2026-10-29). `ConfirmLoan` chama `RecordLoan`, que grava um registro por exemplar emprestado via `AddHistory` (acha o ator no balcão por título); `MarkReturned(Index)` marca como devolvido.
   - **Livros emprestados não são mais destruídos:** ao sair, o cliente chama `BP_Book.Stash` (solta da mão, oculto, sem colisão, `State 6`). `BuildRequest` agora só pede livros com `State 0`. Estoque (`BuildCatalog`) continua contando `State 0` fora do balcão.
