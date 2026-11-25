@@ -100,10 +100,7 @@ Mapa dos Blueprints, convenções e como adicionar livro/tela: **[docs/ARCHITECT
 
 Correr ou fugir passou a seguir a `Aggression` do Manager nas 11 aparições do B e no E (`bCanChase`); Drag e C empurram (`bPusher`); a mesa de leitura está fora (`Weight` 0). O rastejante do `ApparitionDirector` está desligado (`bAutoSpawn` falso). Detalhes, valores, testes e armadilhas em [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Sorteio dos sustos ao longo dos dias").
 
-**Estado de teste (reverter antes de testadores):**
-- `BP_GameClock`: `SecondsPerGameMinute` 1 e `DebugStartMinutes` 1140 (cada dia começa às 19:00 e dura ~3 min);
-- `ScareManager`: `bSkipCalmDays` e `bDebugHUD` ligados;
-- `CustomerSpawner.maxCustomers` 0.
+**Estado de teste: revertido em 2026-11-25 (jogo no fluxo normal).** `BP_GameClock` com `SecondsPerGameMinute` 2, `DebugStartMinutes` 0 e `bShowDebugClock` falso; `ScareManager` com `bSkipCalmDays` e `bDebugHUD` falsos; `CustomerSpawner.maxCustomers` 3; `ScareDoor_Calcada.bDoorTest` falso; `AbductTest_TEMP` e `DoorTestDriver_TEMP` fora da cena. Auditoria das 19 instâncias de susto: nenhum `bTestOnStart`/`HoldDebug`/`bDebugLog` ligado, `AbductChance` 0,35 nas que perseguem, `Scare_PC.bDebugEveryOpen` falso, `ApparitionDirector` sem flags de teste (`bAutoSpawn` falso é decisão de jogo). Para testar de novo, ligue o que precisar e anote aqui.
 
 A vitrine do `Mezz_Parede` foi revertida.
 
@@ -137,7 +134,7 @@ Detalhes no [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Luminárias
 - **Terceira versão (2026-11-24, testada no PIE; falta o teste do usuário):** insistir no E arma o monstro **atrás da porta** a 2 tentativas do fim; na última, a porta abre de supetão, ele empurra mais forte (~2,3 m), o preto fica curto e ele **puxa a porta aos trancos** até bater. A fuga pela fresta do cliente **sempre puxa pela perna**, sem tela preta: tranco, queda para a frente, tremida no impacto e no arrasto. Detalhes no MONSTER_METAHUMAN ("Terceira versão").
 - **Ajustes (2026-11-24):** no insistir, as mãos do monstro seguem a maçaneta de fora (sem atravessar a porta); no puxão, o monstro já nasce escondido atrás do jogador e o tranco o arranca ~1 m para dentro antes do arrasto até X 450.
 - **Caminhada (2026-11-24):** pernas menos abertas (coxas −3°/+3° no `MH_ABP_Customer`) e sem escorregar (`PlayRate` 0,926). Medições no ANIMATION_NOTES.
-- **Estado de teste da porta (reverter antes de testadores):** `AbductTest_TEMP` (laço de abduções, 2026-11-25) e `DoorTestDriver_TEMP` na cena (pasta `Debug`), `BP_GameClock.DebugStartMinutes` 1170 (19:30; era 1140) e `ScareDoor_Calcada.bDoorTest` ligado.
+- **Estado de teste da porta:** revertido em 2026-11-25 (drivers fora da cena, `bDoorTest` falso).
 - **Falta:** etapa 6 (sons nos sustos: a batida da porta e o sininho desafinado do estouro estão feitos em 2026-11-25; e, também em 2026-11-25, som de queda (`S_BodyFall`) em todo `KnockDown`/`DragBegin`, arrasto (`S_Drag_01..03`) em cada puxão e tremida de câmera em todos os arrastos (igual à da porta: 1,2 cm, 9 no agarrão, 4 por puxão), tudo no `BP_LibraryCharacter`; MONSTER_METAHUMAN, "Sons de queda e arrasto") e o teste do usuário em jogo. No puxão pela perna, a porta agora fica presa aberta pelo susto até o fim do arrasto e a câmera mira o vão antes de virar; no fim do arrasto a porta **bate** com o `S_DoorSlam` e reabre sozinha se um cliente ainda a segura (MONSTER_METAHUMAN, "Puxão pela perna: olhar na porta aberta" e "a porta bate no fim").
 - Detalhes no [docs/SCENE_MAP.md](docs/SCENE_MAP.md) ("Porta que abre e lado de fora" e "Cliente abre a porta com a mão"). Armadilhas no MCP_WORKFLOW.
 - **Atenção:** mudar componentes de um BP que já está na cena exige recolocar o ator.

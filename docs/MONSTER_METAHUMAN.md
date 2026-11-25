@@ -767,4 +767,6 @@ O "abre e fica aberta" com corrida (fases 60/61, `BeginQuiet`/`RunStart`/`D60`/`
   - `DragCamStep`: soma à câmera uma tremida aleatória de (1 + `DragKick`) cm; o `DragKick` cai 12 cm/s. Ou seja: 1 cm sempre no arrasto, 8 cm no agarrão e 4 cm a cada puxão.
 - **Porta:** o `DFall` do `BP_Scare_Door` tinha a própria tremida de 1,2 cm na fase 22; foi zerada (literal `K2Node_CallFunction_86`) para não somar com a do jogador. O impacto de 9 cm dele (na queda olhando a rua) continua.
 - **Tremida igual à da porta (2026-11-25, pedido do usuário):** `DragCamStep` com 1,2 cm contínuo e `DragKick` caindo 20 cm/s; `DragFxBegin` põe `DragKick` 9 (agarrão, some em ~0,45 s); cada puxão põe `DragKick` ≥ 4 (~0,2 s).
-- **Roteiro de teste na cena:** `AbductTest_TEMP` (`BP_TestDriver`, pasta `Debug`, Z −2000) roda o laço de abduções no térreo desde o Play, a cada ~9 s. **Tirar antes de testadores.**
+- **Roteiro de teste:** o laço de abduções do `BP_TestDriver` foi usado como `AbductTest_TEMP` e tirado da cena em 2026-11-25 (fluxo normal do jogo).
+
+- **2026-11-25:** todo o estado de teste da cena foi revertido para o fluxo normal (lista no CLAUDE.md, "Estado de teste").
