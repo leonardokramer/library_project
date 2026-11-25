@@ -656,7 +656,7 @@ O usuário achou a primeira versão ruim. Mudou assim:
      - o monstro nasce em **(1500, 212)**, dentro da névoa, com `ArmsOn` e o clipe de corrida;
      - ele avança **aos saltos de 35 cm a cada 0,07 s** (teleporte, sem interpolar), o que dá ~0,7 s de corrida;
      - a < 115 cm, chama `ArmsOff` e `DPushDoor` (o empurrão de antes).
-  - **Fase 52:** `D52Flee` leva o monstro **de ré** para fora (+45 cm a cada 0,06 s por 0,9 s). Aos 0,3 s, `BP_ShopDoor.Slam` **bate a porta** (fecha a 16 rad/s, com o rangido de fechar em pitch 0,55 e volume 2,5; é um placeholder até chegar o som de batida forte).
+  - **Fase 52:** `D52Flee` leva o monstro **de ré** para fora (+45 cm a cada 0,06 s por 0,9 s). Aos 0,3 s, `BP_ShopDoor.Slam` **bate a porta** (fecha a 16 rad/s). O som da batida (`S_DoorSlam`) toca quando a folha **chega ao batente**, não no `Slam`: veja "Som da batida" abaixo.
   - À noite, o monstro aparece quase só como **dois olhos brilhando** vindo do escuro (foto no PIE às 21:00).
 - **Puxa pela perna (DVar 1):**
   - `MoveAside` tira do caminho os clientes no corredor da porta (X 600…1150, |Y − 212| < 95): vão para Y 320, ou para X 1095 se estiverem na faixa da parede, e atualizam o `FzBase` do içamento.
@@ -724,3 +724,47 @@ O "abre e fica aberta" com corrida (fases 60/61, `BeginQuiet`/`RunStart`/`D60`/`
   - `DragSpeed` **110** na instância (era 200): de X ~760 a 450 são ~2,8 s de arrasto, quase 2 s vendo o monstro depois da virada.
   - Foto pausada logo depois da virada: o monstro no centro, com o rosto aceso pela `FaceLight`.
 - **Driver:** o `BP_DoorTestDriver` tem `PausePh`/`PauseT` no CDO; o `Walk2` dá `pause` no PIE quando o susto chega nessa fase e nesse tempo, para fotografar. O `PIE` rodou a ~3 fps com o editor em segundo plano.
+
+
+## Som da batida (2026-11-25)
+- **Asset:** `/Game/Library/Audio/Door/S_DoorSlam` ("massive wooden door shut", Tomlija, Freesound 110104, CC BY 3.0, crédito no `RawAudio/Door/CREDITS.md`). Corte mono de 2,4 s com o eco (original `.aiff` em `RawAudio/Door/src/`, fora do git).
+- **Quando toca:** `BP_ShopDoor.SlamHit`, chamada no `DoorStep` logo depois do `EscapeCheck`: se `bSlamming` e `Angle` < 0,5, troca o som do `CloseSnd` para `S_DoorSlam` (pitch 1, volume 1) e toca. O `if` seguinte do `DoorStep` zera `bSlamming`. Assim a batida cai no instante em que a porta fecha, inclusive quando o monstro puxa a porta aos trancos.
+- **`Slam`** agora só liga `bSlamming` e põe `Target` 0 (o rangido grave em pitch 0,55 saiu).
+- **`Close`** devolve o som do `CloseSnd` para `S_DoorClose` antes de tocar.
+- Testado no Simulate: `Angle` 95 → `bSlamming` + `Target` 0, a porta fechou e o `CloseSnd` passou a `S_DoorSlam`; sem erro no log. Falta o teste do usuário (volume e se o eco combina com a loja).
+- **Armadilha do DSL:** `Audio|Components|Audio|SetVolumeMultiplier` é ambíguo na escrita (o read-back mostra esse nome, mas a escrita não liga o `self`). Use `Class|AudioComponent|SetVolumeMultiplier :self comp :VolumeMultiplier v`. Booleana `bSlamming` na escrita: `Variables|Default|GetSlamming`.
+
+## Puxão pela perna: olhar na porta aberta (2026-11-25)
+- **Problema do teste do usuário:** às vezes a tela ficava toda preta no puxão; só dava para ver a porta aberta quem saía bem de frente. A porta podia fechar no meio do arrasto (o cliente soltava) e o olhar "para a frente" era só uma direção (+X), não a porta.
+- **Porta presa:** o `DKnockDoor` chama `Door.Hold(self)` no fim (a porta vai a 95° e o susto vira um dos `Holders`); o `DFinish` chama `Door.Unhold(self)` no começo. Com o cliente também soltando, a porta fecha só no fim do arrasto.
+- **Olhar no vão:** no `DTrail`, o ponto de olhar para a frente passou por um `Lerp(Vector)` novo (`K2Node_CallFunction_14`): A = **(1100, 210, 75)** (meio baixo do vão, do lado de fora), B = o ponto que gira, Alpha = e² (o mesmo da virada). Antes da virada a câmera mira a porta; durante a virada vai para o monstro.
+- **Mais tempo olhando a porta:** a virada começa a **1,9 s** (era 1,6) e o `D22` termina `DDur` + **0,6 s** (era 0,3), para manter ~2 s vendo o monstro.
+- Teste no PIE com o `BP_DoorTestDriver` (tick temporário chamando `Walk`/`Walk2`, já removido): pausa na fase 22 aos 0,6 s mostra o vão com a névoa no centro do quadro, `Angle` 94,6 e `Holders` = cliente + susto. Falta o teste do usuário entrando em ângulos diferentes.
+
+## Sininho desafinado (2026-11-25)
+- **Asset:** `/Game/Library/Audio/Door/S_DoorBellOff`, gerado a partir do `door_bell.wav` (`RawAudio/Door/door_bell_off.wav`): duas cópias, uma 1,6 semitom abaixo e descendo mais 6 % em 2 s com vibrato lento, e outra ~45 cents acima dela (batimento). 1,9 s, mono.
+- **`BP_ShopDoor.PlayBellOff`:** troca o som do `Bell` para `S_DoorBellOff` e toca. O `PlayBell` agora sempre volta para `S_DoorBell` antes de tocar.
+- **Onde toca:** no `Burst` do `BP_Scare_Door` (a porta estoura no insistir), no lugar do `PlayBell`. Compilado sem erro; falta ouvir em jogo.
+
+## Puxão pela perna: a porta bate no fim (2026-11-25)
+- **Pedido do usuário:** no puxão, a porta também bate com o som alto.
+- **`DFinish`:** depois do `Door.Unhold(self)` chama `Door.Slam`. A porta fecha a 16 rad/s e o `SlamHit` toca o `S_DoorSlam` quando a folha chega ao batente. O jogador está ~6 m dentro (X 450), então o som chega um pouco atenuado.
+- **Cliente que ainda segura a porta:** o `SlamHit` agora, depois de tocar a batida, verifica os `Holders`: se ainda tem alguém (o cliente que estava entrando), põe `Target` 95 e `OpenSpeed` 3,2 (sem `OpenTo`, para não tocar o rangido por cima da batida). A porta reabre sozinha, como se o cliente empurrasse de novo, e ele termina de entrar. Sem isso, o cliente ficava parado do lado de fora em `DoorPh` 3 com a porta fechada na frente.
+- Testado no PIE: a porta foi de 95° a 0° com `S_DoorSlam`, reabriu a 95° com o cliente como único `Holder`, o cliente passou de X 1082 para 838 (`DoorPh` 0) e a porta fechou normal depois. O tick temporário do `BP_DoorTestDriver` foi removido.
+- **Correção (2026-11-25, depois do teste do usuário: "bateu alto e depois fechou normal"):**
+  - `BP_ShopDoor.bQuietClose` (novo): o `SlamHit` liga quando reabre para um cliente; o `Close` seguinte (quando o cliente passa e solta) fecha **sem som** e desliga a flag.
+  - O `DFinish` não chama mais `Unhold` (que chamava `Close` e começava o rangido antes da batida): tira o susto direto dos `Holders` (`Array.RemoveItem(Door.Holders, self)`) e chama `Slam`.
+  - Só compilado e lido de volta (`read_graph_dsl`); duas rodadas de PIE não chegaram ao puxão porque um susto aleatório da noite içou o cliente na calçada. Falta o teste do usuário.
+
+## Sons de queda e arrasto + tremida em todos os arrastos (2026-11-25)
+- **Assets** (`/Game/Library/Audio/Body/`, cortes em `RawAudio/Body/`, originais em `RawAudio/Body/src/`, fora do git; créditos em `RawAudio/Body/CREDITS.md`):
+  - `S_BodyFall`: a 1ª queda do Freesound 440583 (blouhond, CC BY 4.0), 0,30–1,75 s. O impacto cai ~0,3 s depois do começo.
+  - `S_Drag_01..03`: três arrastos do Freesound 221650 (abbahoot, CC0), 3,55–4,65 / 5,60–6,75 / 7,65–8,85 s, **sem as batidas de pé** que vêm antes de cada arrasto.
+- **Tudo no `BP_LibraryCharacter`** (vale para todos os sustos que empurram ou arrastam, sem mexer em cada um):
+  - `FallSound`: `PlaySound2D(S_BodyFall)` com pitch 0,94–1,04; no máximo uma vez por segundo (`LastFallT`). Chamado no começo do `KnockDown` (empurrões: C, porta, abdução curta) e do `DragBegin` (via `DragFxBegin`: Drag do balcão, abdução, puxão da porta).
+  - `DragFxBegin`: `FallSound`, `DragKick` 7 (tranco do agarrão), `DragYankCD` 0,5 (ignora o salto inicial das mãos), zera `DragSpdNow`/`DragMaxSpd`/`DragYanks`.
+  - `DragAudio(Hands)`, chamado no começo do `DragPlace` (todo quadro do arrasto): velocidade das mãos do monstro (`Hands`, média dos sockets) em cm/s. Na **subida** acima de `YankSpd` (180, CDO) e sem `DragYankCD`: toca um `DragSnds` aleatório (pitch 0,9–1,08, volume 0,9), `DragYankCD` 0,3, `DragKick` ≥ 3 e `DragYanks` +1 (contador de depuração). Os puxões são os degraus do `SnapToGrid` + `VInterpTo` dos sustos: o pico a 60 fps passa de 700 cm/s; com o editor em segundo plano (~3 fps) cada degrau vira um salto de ~210 cm/s, por isso o limite é 180.
+  - `DragCamStep`: soma à câmera uma tremida aleatória de (1 + `DragKick`) cm; o `DragKick` cai 12 cm/s. Ou seja: 1 cm sempre no arrasto, 8 cm no agarrão e 4 cm a cada puxão.
+- **Porta:** o `DFall` do `BP_Scare_Door` tinha a própria tremida de 1,2 cm na fase 22; foi zerada (literal `K2Node_CallFunction_86`) para não somar com a do jogador. O impacto de 9 cm dele (na queda olhando a rua) continua.
+- **Tremida igual à da porta (2026-11-25, pedido do usuário):** `DragCamStep` com 1,2 cm contínuo e `DragKick` caindo 20 cm/s; `DragFxBegin` põe `DragKick` 9 (agarrão, some em ~0,45 s); cada puxão põe `DragKick` ≥ 4 (~0,2 s).
+- **Roteiro de teste na cena:** `AbductTest_TEMP` (`BP_TestDriver`, pasta `Debug`, Z −2000) roda o laço de abduções no térreo desde o Play, a cada ~9 s. **Tirar antes de testadores.**
