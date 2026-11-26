@@ -167,3 +167,6 @@ Vamos avançar devagar, em etapas pequenas e jogáveis. Marque com [x] o que est
 
 ## Etapa 6 — Personagens finais
 - [ ] Trocar os manequins por MetaHumans
+- [ ] **Clientes novos (2026-11-25, em andamento):** trocar os 9 presets `MH_*` por MetaHumans próprios (misturas de presets), com idade, corpo e roupa da época. Plano aprovado, tabela das personas, roupas da Fab e cuidados em [CUSTOMERS_METAHUMAN.md](CUSTOMERS_METAHUMAN.md). Primeiro só o traje principal; 2–3 trajes por persona depois (variar por dia; susto futuro: alguém voltar com a roupa de um dia que já passou).
+- [ ] **Elenco de 13 (aprovado em 2026-11-25): 9 regulares + 4 de história** (13 é simbólico: o sistema registra 12 pessoas e a décima terceira não deveria existir). Os 9 regulares aparecem bastante para o jogador decorar os rostos; os 4 de história aparecem raramente e com regra própria. A `DT_People` vai a 13 linhas e o `ChooseVisual`/`ListCandidates` passa a separar regular de história (hoje é por índice, com `idx != 4`).
+- [ ] **Os 4 de história (ideias, não criar ainda):** a Lúcia (P05);  alguém que pega livros e nunca devolve; um entregador (caixas de livros novos, reposição); o 13º, um "cliente" que não está no cadastro, que o sistema não reconhece.
