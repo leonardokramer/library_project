@@ -42,6 +42,32 @@ Idosos na lista: Sook-ja (mulher, leste asiático), Grace (mulher, cabelo branco
 - **Mistura e rosto: usuário, no Creator** (Head & Body → Blend com o segundo preset; corpo em Body Params). Pelo MCP não dá: o clique simulado não abre o Blend, a aba Presets do editor vem vazia e o Blend pede arrastar na viewport.
 - Depois: roupa (Hair & Clothing, um `WI_` por vez, foto de frente/lado/andando para ver se atravessa), rig, Assembly para `/Game/Library/Characters/Metahumans/Customers/`, ligar no `BP_CustomerMH.ChooseVisual`. Os `MH_*` antigos ficam até o novo ser testado.
 
+## Traje principal aplicado (2026-11-26, substitutos até as peças da etapa 3)
+| Persona | Traje | Substitui (falta na biblioteca) |
+|---|---|---|
+| Helena | Sweater, Slim Jeans, Flats | cardigan, saia/calça social |
+| Marcos | Hoodie, Jeans, Hightops | |
+| Beatriz | Shirt V-neck (`Shirt_01`), Slim Jeans, Loafers | |
+| Tomás | Crew Neck T (Clumsy Boy), Clarkston Carpenter Pants, Boots | |
+| Rafael | T manga 3/4 (`Tshirt3QSlv`), Jeans, Running Shoes | |
+| Clara | Sleeveless Turtleneck, Slim Jeans, Chelsea Boots | cardigan |
+| Otávio | Shirt com bolso, Slim Jeans escuro, Oxfords | camisa social, calça social |
+| Isadora | Tucked T, Slim Jeans, Casual Sneakers | |
+| Joaquim | T manga longa (`TshirtLngSlv`), Jeans, Loafers | colete de tricô, calça social |
+
+A 5.9 saiu só como **Preview** (2026-11-26); o usuário decidiu esperar a 5.9.0 final antes de converter o projeto (motivo: alvo web para Blueprint-only). Checkpoint antes da conversão: commit `4415ee8`.
+
+## Estado em 2026-11-26 (sessão sem supervisão, parada no limite de uso)
+- **Vestidos e salvos (9/9):** Helena (suéter bege, jeans, sapatilha), Marcos (moletom marrom, jeans, cano alto), Beatriz (manga longa oliva por dentro, jeans, mocassim), Tomás (camiseta marinho, Clarkston cáqui, bota Tactical), Rafael (3/4 bordô, jeans, tênis claro), Clara (gola alta sem manga ferrugem, jeans, tênis), Otávio (suéter cinza-azulado, calça grafite, mocassim), Isadora (manga 3/4 mostarda por dentro, jeans, cano alto), Joaquim (manga longa taupe, calça, mocassim). Pendente: cor secundária azul nos sapatos de Marcos e Beatriz.
+- **Montados (9/9, 2026-11-26):** Assembly UE Optimized, Medium, em `Customers/MH_<Nome>/BP_MH_<Nome>`. Helena e Marcos pela interface; os outros 7 por script Python (`Tools/mh_build.py`, uma persona por execução, ~5 min cada; `Tools/mh_build_all.ps1` abre o editor com `-ExecutePythonScript="Tools/mh_build.py <Nome> quit"` em sequência, sem mouse). **Ligados no jogo:** os 9 `SetChildActorClass` do `BP_CustomerMH.ChooseVisual` apontam para os novos (os `MH_*` antigos continuam no disco). Testado no PIE: a Helena nova entra, chega ao balcão e deixa o livro.
+- **Ligar no jogo:** `BP_CustomerMH.ChooseVisual` é uma cadeia de if por `PersonaIdx` chamando `SetChildActorClass(MHVisual, BP_MH_<preset>_C)`; trocar as 9 classes (índices 0..9, sem o 4). `LinkMHPose` liga em leader pose todos os SkeletalMesh sem AnimClass. Os antigos ficam até testar.
+- **Armadilhas aprendidas:** (1) o botão **Remove** tira TODAS as peças ainda selecionadas: remova o `WI_DefaultGarment` **antes** de vestir; (2) a pasta de roupas arrastada para "Outfit Clothing" não persiste entre sessões do editor (arraste de novo; `wardrobePaths` nas configurações não funcionou, slot errado); (3) o editor tem só 16 GB: reinicie a cada 1–2 MetaHumans (estourou memória uma vez); abra com `/Engine/Maps/Entry`; (4) Chelsea, Oxfords e Casual Sneakers não terminaram de baixar; (5) a camisa `Shirt_05` não tem ajuste de cor (verde/preta); (6) `presetsDirectories` agora aponta para os presets da engine (`Config/DefaultMetaHumanCharacter.ini`), então a galeria de presets do Creator funciona.
+
+## Economia de tokens (aprendido em 2026-11-26)
+- **Python no editor em vez de cliques:** `py "<arquivo>.py" args` no console do editor (computer use só para digitar), ou `-ExecutePythonScript` na linha de comando. Resultado por arquivo de log em `Saved/`, esperado por um comando em segundo plano. A API `unreal.MetaHumanCharacterEditorSubsystem` tem `try_add_object_to_edit`, `request_auto_rigging` (blocking), `request_texture_sources`, `can_build_meta_human` e `build_meta_human`.
+- Python **não** cria atores no mundo do PIE/Simulate (`GameplayStatics` sem spawn deferred). No mundo do editor o `BP_CustomerMH` aparece deitado (pose só no jogo) e `PersonaIdx` não é editável por instância: teste com o PIE de verdade.
+- Fotos: decodifique o PNG do `CaptureEditorImage` direto para arquivo e veja uma cópia reduzida.
+
 ## Roupas da biblioteca da Fab (37 itens, levantados em 2026-11-25)
 Galeria com fotos: https://claude.ai/artifact/FtTvfE2QiYAcSeG1WP3wsi (privada). Instaladas em `/Game/Fab/MetaHuman` (fora do git, ver SETUP): T Shirt Variants, Crew Neck (Clumsy Boy), Shirt V-neck, Sleeveless Shirt/Turtleneck, Jeans, Slim Jeans, Cargo, Boots, Running Shoes, Tactical Boots, Techwear, Survivor, Half T-Shirt, Casual Wear Female, Streetwear 12. Na biblioteca, não instaladas: Tucked T, Sweater, Hoodie, Crop Top, Custom T, Shirt com bolso, Singlet, Clarkston Carpenter Pants, Basic Sweatpants (talvez = `BasicOutfit`), Yoga Pants, Shorts, Casual Shorts, Loafers, Oxfords, Chelsea, Flats, Hightops, Casual Sneakers, FlipFlops, Performance Runner, Streetwear 01.
 

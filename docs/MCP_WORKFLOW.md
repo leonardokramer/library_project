@@ -309,3 +309,5 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - **Instâncias de AnimBP no PIE:** o AnimInstance fica em `<ator>.CharacterMesh0.<ABP>_C_0` (ex.: `MH_ABP_Customer_C_0`); dá para ler as variáveis com `get_properties`.
 - **Read-back do DSL mostra classes erradas quando o nome da função se repete** (`ComboBox|IsOpen`, `MenuAnchor|Close`, `BPLightRig|SetNight`): confira o pino `self` com `get_node_infos` antes de achar que está errado.
 - Setters de variável de **outra classe** no DSL: `(Class|MHABPCustomer|SetDoorHand valor alvo)` (posicional, valor primeiro). Booleanas sem o `b`: `Variables|Default|SetDoorIn`.
+
+- **`set_pin_value` + `save_assets` pode não gravar (2026-11-26):** a troca de valor de pino não marcou o `BP_CustomerMH` como alterado, então `save_assets` devolveu true sem escrever o arquivo (o PIE usava a versão em memória). Confira a data do `.uasset` ou force com `py unreal.EditorAssetLibrary.save_asset('<caminho>', False)` no console do editor.
