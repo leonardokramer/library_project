@@ -21,8 +21,11 @@ try:
     rp.set_editor_property('rig_type', pick(unreal.MetaHumanRigType, 'BLEND'))
     rp.set_editor_property('blocking', True)
     rp.set_editor_property('report_progress', False)
-    sub.request_auto_rigging(ch, rp)
-    log('rigged')
+    if 'norig' in sys.argv:
+        log('rig skipped')
+    else:
+        sub.request_auto_rigging(ch, rp)
+        log('rigged')
     tp = unreal.MetaHumanCharacterTextureRequestParams()
     try:
         tp.set_editor_property('blocking', True)

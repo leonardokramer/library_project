@@ -63,6 +63,12 @@ A 5.9 saiu só como **Preview** (2026-11-26); o usuário decidiu esperar a 5.9.0
 - **Ligar no jogo:** `BP_CustomerMH.ChooseVisual` é uma cadeia de if por `PersonaIdx` chamando `SetChildActorClass(MHVisual, BP_MH_<preset>_C)`; trocar as 9 classes (índices 0..9, sem o 4). `LinkMHPose` liga em leader pose todos os SkeletalMesh sem AnimClass. Os antigos ficam até testar.
 - **Armadilhas aprendidas:** (1) o botão **Remove** tira TODAS as peças ainda selecionadas: remova o `WI_DefaultGarment` **antes** de vestir; (2) a pasta de roupas arrastada para "Outfit Clothing" não persiste entre sessões do editor (arraste de novo; `wardrobePaths` nas configurações não funcionou, slot errado); (3) o editor tem só 16 GB: reinicie a cada 1–2 MetaHumans (estourou memória uma vez); abra com `/Engine/Maps/Entry`; (4) Chelsea, Oxfords e Casual Sneakers não terminaram de baixar; (5) a camisa `Shirt_05` não tem ajuste de cor (verde/preta); (6) `presetsDirectories` agora aponta para os presets da engine (`Config/DefaultMetaHumanCharacter.ini`), então a galeria de presets do Creator funciona.
 
+## Correções depois da vitrine (2026-11-26)
+- **Tomás:** a calça Clarkston atravessava a barra da camiseta; trocada pela camiseta para dentro (`WI_OA_CrewnecktTk`, azul-marinho 2E3A4F).
+- **Clara:** o jeans atravessava a gola alta sem manga (o jeans slim também atravessa); trocada pela camiseta de manga dobrada para dentro (`WI_OA_TshirtTkPushCufSlv`, verde-petróleo 2F5D5A).
+- Regra prática: peça de cima **solta** sobre calça de cintura alta atravessa; prefira as versões `Tk` (para dentro). Remontar sem refazer o rig: `Tools\mh_build_all.ps1 -Names Tomas,Clara -NoRig`.
+- No Python, `unreal.Rotator(a, b, c)` é (roll, pitch, yaw): use `unreal.Rotator(roll=0, pitch=0, yaw=180)`; o MetaHuman olha para +Y.
+
 ## Economia de tokens (aprendido em 2026-11-26)
 - **Python no editor em vez de cliques:** `py "<arquivo>.py" args` no console do editor (computer use só para digitar), ou `-ExecutePythonScript` na linha de comando. Resultado por arquivo de log em `Saved/`, esperado por um comando em segundo plano. A API `unreal.MetaHumanCharacterEditorSubsystem` tem `try_add_object_to_edit`, `request_auto_rigging` (blocking), `request_texture_sources`, `can_build_meta_human` e `build_meta_human`.
 - Python **não** cria atores no mundo do PIE/Simulate (`GameplayStatics` sem spawn deferred). No mundo do editor o `BP_CustomerMH` aparece deitado (pose só no jogo) e `PersonaIdx` não é editável por instância: teste com o PIE de verdade.
