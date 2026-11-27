@@ -27,8 +27,22 @@ BLOCKS = {
     'BlockSouth': ((700, -2400, 200), (760, 60, 200)),
 }
 
-def run():
-    open(LOG, 'w').close()
+# Caixa fechada (2026-11-27): o FogFar vira um cubo de dois lados que envolve a cidade inteira
+# (sem frestas por onde o ceu aparecia); as outras paredes e o teto ficam ocultos.
+BOX_LOC, BOX_SCALE = (1450, 0, 1350), (132.0, 184.0, 29.0)
+
+def apply_box(c, name):
+    if name == 'FogFar':
+        c.set_editor_property('static_mesh', unreal.load_asset('/Engine/BasicShapes/Cube'))
+        c.set_editor_property('relative_location', unreal.Vector(*BOX_LOC))
+        c.set_editor_property('relative_rotation', unreal.Rotator(0, 0, 0))
+        c.set_editor_property('relative_scale3d', unreal.Vector(*BOX_SCALE))
+        c.set_editor_property('cast_shadow', False)
+    elif name in ('FogNorth', 'FogSouth', 'FogTop'):
+        c.set_editor_property('visible', False)
+        c.set_editor_property('hidden_in_game', True)
+
+def run():    open(LOG, 'w').close()
     bp = unreal.load_asset(BP)
     sds = unreal.get_engine_subsystem(unreal.SubobjectDataSubsystem)
     handles = sds.k2_gather_subobject_data_for_blueprint(bp)
@@ -44,6 +58,7 @@ def run():
             obj.set_editor_property('relative_location', unreal.Vector(*loc))
             obj.set_editor_property('relative_scale3d', unreal.Vector(*sc))
             log('set', name, loc, sc)
+        apply_box(obj, name)
         if name in BLOCKS:
             loc, ext = BLOCKS[name]
             obj.set_editor_property('relative_location', unreal.Vector(*loc))
@@ -74,6 +89,8 @@ def run():
             if n in LAYOUT:
                 c.set_editor_property('relative_location', unreal.Vector(*LAYOUT[n][0]))
                 c.set_editor_property('relative_scale3d', unreal.Vector(*LAYOUT[n][1]))
+            if isinstance(c, unreal.StaticMeshComponent):
+                apply_box(c, n)
             if isinstance(c, unreal.LocalFogVolumeComponent):
                 c.set_radial_fog_extinction(0.22); c.set_height_fog_extinction(0.35); c.set_height_fog_falloff(700.0); c.set_fog_albedo(unreal.LinearColor(0.62, 0.66, 0.72, 1.0))
         a.modify()
@@ -85,6 +102,7 @@ try:
     run()
 except Exception:
     log(traceback.format_exc())
+
 
 
 

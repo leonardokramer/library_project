@@ -5,7 +5,7 @@ import unreal, math, traceback
 LOG = r'C:\Users\krame\OneDrive\Documentos\Unreal Projects\library_project\Saved\town_cars.log'
 BODIES = ('SM_Car_24a', 'SM_Wagon_01a', 'SM_Van_02a')
 # (corpo, x, y, yaw do carro na rua). Rua: X 1364..2164; meio-fio da livraria em 1364, do outro lado 2164.
-TARGETS = [('SM_Car_24a', 1480, -1050, 90), ('SM_Wagon_01a', 1480, 2400, 90), ('SM_Van_02a', 2045, -2350, -90)]
+TARGETS = [('SM_Car_24a', 1560, -1050, 90), ('SM_Wagon_01a', 1600, 2400, 90), ('SM_Van_02a', 2045, -2350, -90)]
 
 def log(*a):
     with open(LOG, 'a') as f:
@@ -61,4 +61,5 @@ try:
     run()
 except Exception:
     log(traceback.format_exc())
+
 

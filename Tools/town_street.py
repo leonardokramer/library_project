@@ -1,4 +1,4 @@
-﻿"""Monta a rua em frente a livraria no subnivel /Game/Library/Maps/Town/L_Library_Street.
+"""Monta a rua em frente a livraria no subnivel /Game/Library/Maps/Town/L_Library_Street.
 Idempotente: apaga os atores com rotulo 'ST_' do subnivel e recria tudo.
 Rodar no console do editor: py "<caminho>/town_street.py"
 Coordenadas: fachada leste da livraria em X 1048, soleira Z 10. A rua corre em Y (norte = +Y).
@@ -25,9 +25,9 @@ SIDE_Z = -11          # base das placas de calcada (topo = Z 10, na soleira)
 STREET_Z = -11        # superficie do asfalto
 CURB_X = 1349         # comeco do meio-fio da calcada da livraria
 STREET_X0, STREET_X1 = 1364, 2164
-Y0, Y1 = -3200, 3200  # extensao das calcadas
-STREET_Y0, STREET_Y1 = -8000, 8000
-SEGS = [(Y0, Y1), (4100, 7700)]   # calcadas: antes e depois do cruzamento da Elm Street (Y 3300..4100)
+Y0, Y1 = -6400, 3100  # extensao das calcadas (Main Street densa, 2026-11-27 noite)
+STREET_Y0, STREET_Y1 = -8000, 9600
+SEGS = [(Y0, Y1), (4300, 8000)]   # calcadas: antes e depois do cruzamento da Elm Street (Y 3300..4100)
 
 
 def mi(name, parent, scalars):
@@ -110,10 +110,8 @@ def run():
             put(PLANE, (cx + dx, 0, STREET_Z + 0.4), 0, (0.10, (STREET_Y1 - STREET_Y0) / 100.0, 1), 'CenterLine', yellow)
     # chao geral (estacionamento, terrenos), um pouco abaixo da rua
     put(PLANE, (6000, 0, STREET_Z - 1), 0, (90.0, 160.0, 1), 'Ground', m_ground)
-    # gramado dos lotes das casas (oeste da Main Street e norte da Elm Street)
-    grass = mi('MI_Town_Grass', FIND.get('MI_Grass_01a', '/Game/BUILDINGS/VOL13_Sidewalks/Materials/MI_Grass_01a'), {'Texture Coord': 8.0})
-    for (gx0, gx1, gy0, gy1) in ((-2400, 1048, 1700, 3300), (-2400, 1048, 4100, 7700), (2480, 8000, 4100, 7700)):
-        put(PLANE, ((gx0 + gx1) / 2.0, (gy0 + gy1) / 2.0, STREET_Z - 0.5), 0, ((gx1 - gx0) / 100.0, (gy1 - gy0) / 100.0, 1), 'Lawn', grass)
+    # sem gramado (Main Street densa): chao de terra/concreto a oeste, atras da livraria e dos predios
+    put(PLANE, (-3250, 800, STREET_Z - 1), 0, (95.0, 200.0, 1), 'GroundWest', m_ground)
 
     les.set_current_level_by_name('L_Library')
     log('spawned', n[0])

@@ -13,6 +13,8 @@ HOUSES = {
     'L_Town_House_C': ((-310, 2510, 0), 90),
     # trailer (Meridian 14 Widow Street, frente para -X): terreno cercado ao sul da loja do sul, frente para a Main Street
     'L_Town_Trailer': ((-1527, -4050, 0), 180),
+    # Main Street, lado leste, ao sul do King Wash, frente para a rua (-X); preenche o horizonte da direita
+    'L_Town_House_D': ((3858, -3900, 0), -90),
 }
 KEEP = ('Roof', 'Wall', 'Floor', 'Window', 'Door', 'Glass', 'Siding', 'Trim', 'Gutter', 'Chimney', 'Porch', 'Stair',
         'Foundation', 'Column', 'Railing', 'Building_55a', 'Exterior', 'Fence', 'Mailbox', 'Blinds', 'Curtain')

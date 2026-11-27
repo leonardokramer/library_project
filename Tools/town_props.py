@@ -75,15 +75,36 @@ def run():
         light('spot', (WX + 30, y, 372), (-100, 0), 90, 360, label='SignLampLight', cone=(30, 55))
 
     # postes de madeira com luminaria de rua (lado da livraria e lado de la)
-    poles = [(1325, -1500, 0), (1325, 1700, 0), (2200, 250, 180), (2200, -3000, 180), (2200, 3300, 180)]
+    # luminaria de rua de braco com lampada acesa (Blender, Tools/blender/cobra_light.py); a 61e parecia um megafone
+    cobra_path = '/Game/Library/Meshes/Town/SM_Town_CobraLight'
+    if not unreal.EditorAssetLibrary.does_asset_exist(cobra_path):
+        t = unreal.AssetImportTask(); t.filename = r'C:\Users\krame\OneDrive\Documentos\Unreal Projects\library_project\Saved\TownFBX6\SM_Town_CobraLight.fbx'
+        t.destination_path = '/Game/Library/Meshes/Town'; t.automated = True; t.replace_existing = True; t.save = True
+        unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([t])
+    cobra = unreal.load_asset(cobra_path)
+    FIND['SM_Town_CobraLight'] = cobra_path
+    MATD = '/Game/Library/Materials/Town/'
+    lens = unreal.load_asset(MATD + 'MI_Town_LampLens')
+    if not lens:
+        lens = unreal.AssetToolsHelpers.get_asset_tools().create_asset('MI_Town_LampLens', MATD[:-1], unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+        lens.set_editor_property('parent', unreal.load_asset(MATD + 'M_Town_Glow'))
+        unreal.MaterialEditingLibrary.set_material_instance_vector_parameter_value(lens, 'Color', unreal.LinearColor(1.0, 0.72, 0.42, 1))
+        unreal.MaterialEditingLibrary.set_material_instance_scalar_parameter_value(lens, 'Intensity', 30.0)
+        unreal.EditorAssetLibrary.save_asset(MATD + 'MI_Town_LampLens', False)
+    for i, s in enumerate(cobra.static_materials):
+        k = str(s.material_slot_name)
+        cobra.set_material(i, lens if k.startswith('M_Lens') else unreal.load_asset(MATD + ('MI_Town_TLBody' if k.startswith('M_Head') else 'MI_Town_Metal')))
+    unreal.EditorAssetLibrary.save_asset(cobra_path, False)
+    # postes em fila dos dois lados (como nas referencias: varios postes e fios sumindo na nevoa)
+    poles = [(1325, y, 0) for y in (-2950, -1500, 100, 1700)] + [(2200, y, 180) for y in (-3000, -1650, -250, 1150, 2500)]
     for x, y, yaw in poles:
         a, b = put('SM_Electric_Poles_Set_01a', x, y, yaw, label='Pole')
         top = SIDE_TOP + (b.max.z - b.min.z)
-        hz = top - 260
+        hz = top - 230
         sgn = 1 if yaw == 0 else -1
-        put('SM_Light_Set_NN_61e', x + sgn * 10, y, yaw, z=hz, label='StreetHead')
-        light('spot', (x + sgn * 95, y, hz - 15), (-80, yaw), 900, 2600, color=(1.0, 0.72, 0.42),
-              shadows=(y == 250 or y == -1500), label='StreetLight', cone=(30, 62))
+        put('SM_Town_CobraLight', x + sgn * 8, y, yaw, z=hz, label='StreetHead')
+        light('spot', (x + sgn * 188, y, hz + 15), (-90, yaw), 900, 2600, color=(1.0, 0.72, 0.42),
+              shadows=(y == 250 or y == -1500), label='StreetLight', cone=(35, 65))
     # objetos de calcada (lado da livraria)
     put('SM_BookReturn', 1105, 330, 0, label='BookReturn', folder='Town/Facade')
     put(pick('SM_Fire_Hydrant'), 1300, -620, 30, label='Hydrant')
