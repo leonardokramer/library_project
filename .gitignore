@@ -82,5 +82,6 @@ RawAudio/**/src/
 
 # Clientes MetaHuman novos (2026-11-25, misturas de preset; ver docs/CUSTOMERS_METAHUMAN.md). Mesmo motivo: tamanho e licenca.
 /Content/Library/Characters/Metahumans/Customers/
+/Content/Library/Characters/Metahumans/Protagonist/
 # Rascunhos de presets (apagar quando a etapa terminar)
 /Content/Library/Characters/Metahumans/_Scratch/

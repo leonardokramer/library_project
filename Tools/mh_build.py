@@ -11,7 +11,7 @@ def pick(enum_cls, *keys):
     raise RuntimeError('enum %s %s not in %s' % (enum_cls, keys, [k for k in dir(enum_cls) if k.isupper()]))
 
 name = sys.argv[1]
-base = '/Game/Library/Characters/Metahumans/Customers'
+base = '/Game/Library/Characters/Metahumans/Protagonist' if name == 'Protagonista' else '/Game/Library/Characters/Metahumans/Customers'
 try:
     log('--- ' + name)
     ch = unreal.load_asset('%s/MHC_%s' % (base, name))
