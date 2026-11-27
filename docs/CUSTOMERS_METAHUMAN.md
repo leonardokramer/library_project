@@ -86,3 +86,21 @@ Galeria com fotos: https://claude.ai/artifact/FtTvfE2QiYAcSeG1WP3wsi (privada). 
 ## Beatriz: ombros e cabeça (2026-11-26)
 - O usuário achou a Beatriz "ombruda", com a cabeça desproporcional. O pescoço dela estava com 28,3 cm, abaixo do mínimo do Creator (31). Ajustei por script: `Neck` 32, `Neck Base` 35 e `Across Shoulder` 25 (era 27,1). Depois remontei com `Tools\mh_build_all.ps1 -Names Beatriz`.
 - **Medidas de corpo por Python:** `Tools/mh_body.py <Nome>` lista as medidas e `Tools/mh_body.py <Nome> "Neck=32" ...` aplica e salva. A armadilha: `get_body_constraints` devolve structs por cópia, então é preciso editar a lista e devolvê-la com `set_body_constraints`. A flag se chama `is_active`.
+
+## Proporções no jogo e livro na mão (2026-11-26, conferido no Simulate; falta o teste do usuário)
+- **Problema (visto pelo usuário com a Isadora):** no jogo, quem anima o cliente é o `CharacterMesh0` invisível
+  (`SKM_NpcMaleCharacter_BodyMesh`, um homem médio), e o corpo do MetaHuman copia a pose por *leader pose*, que copia
+  **também o comprimento dos ossos**. Todo cliente ficava com as proporções daquele homem; a Isadora (baixa e magra)
+  ficava esticada. Na fila/vitrine (BP_MH_* com o próprio esqueleto) ela era normal.
+- **Correção:** `BP_CustomerMH.LinkMHPose` primeiro troca a malha do `CharacterMesh0` pela malha do `Body` do próprio
+  MetaHuman (`SetSkeletalMeshAsset`; todos usam o `metahuman_base_skel`, então o `MH_ABP_Customer` continua servindo) e
+  depois liga o *leader pose*. Conferido: Isadora cliente com a mesma altura e proporções da Isadora da fila.
+- **Livros:** a posição antiga (`FixBooks`: ponto fixo (−28, 16,5, 128,5) no espaço do corpo) era do corpo do homem; num
+  corpo menor o livro flutuava na altura do rosto. Agora `FixBooks` → `FixOneBook(Bk, I, H)`: enquanto o livro está preso
+  ao cliente e ainda **não** está no socket `hand_r`, ele é posto a cada Tick na transformação da mão
+  (`GetSocketTransform(hand_r)`) composta com o deslocamento medido no corpo antigo, já preso à mão: posição
+  (12,49; 10,29; 7,21), rotação (roll −155,41, pitch 17,29, yaw −96,33), +3 cm por livro na pilha (eixo Z do livro). Livros
+  que saíram do cliente (balcão) não são tocados. Conferido de frente na Isadora (livro na mão, na cintura). Falta ver
+  vários livros, a devolução no balcão e os outros 8 corpos andando.
+- **Teste:** `BP_CustomerMH` posto na cena com o `ChildActorClass` do `MHVisual` trocado na instância (o `PersonaIdx` não é
+  editável) + `DebugWalk`/`DebugBooks`.

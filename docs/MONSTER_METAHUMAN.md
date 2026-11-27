@@ -136,6 +136,62 @@ nova por cima das fichas antigas, e o mais atrasado vira um **carimbo VENCIDO** 
     e ver onde a linha aparece.
 - Fotos: frente (esterno do peito ao umbigo), costas (coluna da nuca à cintura), os dois pulsos e a virilha lisa.
 
+## Corpo de páginas se abrindo (2026-11-26, conferido no Simulate de dia e às 21:00; falta o teste do usuário)
+Ideia do usuário: o corpo é um monte de páginas juntas, **se abrindo em certas partes**, espalhado, e também no rosto.
+- **Malhas** (`/Game/Library/Meshes/Monster/`, esqueléticas, com os pesos da pele copiados no Blender):
+  - `SKM_MonsterBodyPages` (esqueleto `metahuman_base_skel`): 35 aberturas, 5 grandes (12–18 cm: peito, costas,
+    barriga, coxas) e 30 pequenas, mais 24 pontinhas de pele descolando.
+  - `SKM_MonsterFacePages2` (esqueleto `Face_Archetype_Skeleton`): cantos da boca rasgados esticando o sorriso, trás do
+    crânio, bochecha esquerda, têmpora direita, abaixo do olho direito, lado do pescoço e 10 pontinhas. A fenda no alto
+    do crânio com um tufo de páginas foi **tirada a pedido do usuário** ("parecia cabelo punk").
+  - Cada abertura: fenda escura em forma de olho, pilha de bordas de páginas dentro, lábios da pele-papel descascando
+    para os dois lados e folhas soltas em leque.
+- **Material `M_MonsterProp`:** dois lados; as pontas tremulam (`FlutterAmp`/`FlutterSpeed`/`FlutterTip`, onda dupla
+  em World Position Offset, mais forte quanto maior o V da UV). `MI_MonsterProp_Page` (páginas internas claras,
+  (0,86; 0,78; 0,6), tremor 0,45 cm), `MI_MonsterProp_Flap` (cor da pele, 0,25 cm), `MI_MonsterProp_Slit` (quase
+  preto, sem tremor).
+- **Onde liga:** `BP_MonsterStand.PropPages` e `PropFacePages` (começam invisíveis). `SetupBody` → `AttachProps`:
+  prende `PropPages` no corpo e `PropFacePages` no componente cujo nome contém "Face", cada um com
+  `SetLeaderPoseComponent` (seguem a pose; o rosto segue o sorriso/boca). Aparecem/somem com o `Visual`; o
+  `SetVisibility` do `HeadOnly` propaga.
+- **Como gerar de novo:**
+  1. Exportar: `Tools/ue_export_body.py <saida.fbx> [asset]` roda no editor via `py`. O `Debug/BP_PyRunner`, posto
+     temporariamente, executa o `Cmd` no BeginPlay do Simulate. Log em `Saved/ue_export_body.log`.
+  2. `blender -b --python Tools/blender/monster_flaps.py -- <MonsterBody.fbx> <pasta> 3` (corpo, lista `SITES`) e
+     `... -- <MonsterFace.fbx> <pasta> 5 face` (rosto, lista `FACE_SITES`: osso facial, deslocamento, direção, eixo).
+  3. Testar com `import_file(skeleton=None)` numa pasta Debug: `get_bone_names` tem que começar em `root`, `pelvis`.
+  4. Importar com o esqueleto certo e **outro nome** (não por cima de asset em uso), trocar no componente.
+- **Armadilhas:**
+  - ⚠️ Raiz errada no FBX fez o Unreal recriar o `metahuman_base_skel` na memória (2026-11-26). Fechamos o editor sem
+    salvar e o arquivo ficou intacto (ver MCP_WORKFLOW).
+  - Na importação no Blender a junta `root` vira o **objeto** da armature e a ponta do osso não é a junta seguinte
+    (`NEXT`).
+  - No rosto, os nomes dos materiais vêm embaralhados: a pele é a seção com mais faces.
+  - Na frente do alto do peito e no pescoço a pele é da malha do rosto (o raio do corpo atravessa).
+- **Tentativas rejeitadas pelo usuário:** livro aberto nas costas e fitas marcadoras ("muito grande", "rabo mal
+  colado"); folhas estáticas presas a um osso ("voando").
+- **Limpeza pendente (editor recém-aberto, nunca logo depois de um PIE):** `SKM_MonsterPages` (versão de 20
+  aberturas) e `SKM_MonsterFacePages` (com o tufo), sem uso. As pastas `Debug/SkelTest*` foram criadas na memória e não salvas: na hora de fechar o editor,
+  não salve.
+- **Riscos:** onde o monstro encosta em parede ou estante as folhas podem atravessar (são curtas); ~21 mil vértices a
+  mais no total.
+
+## Variante comprida, guardada para outro monstro (2026-11-26; NÃO está ligada no monstro atual)
+O monstro atual ficou com as **proporções originais**: alongar o esqueleto deslocava os sustos já refinados (posição da
+cabeça, mãos, apontar). Decisão do usuário: guardar a versão comprida para um monstro futuro e testar as animações nele.
+- **Asset:** `/Game/Library/Characters/Metahumans/Variants/ABP_LongMonster_PostProcess`, cópia do `ABP_Body_PostProcess`
+  comum dos MetaHumans (esse nunca foi mexido). Para usar: ponha no `PostProcessAnimBlueprint` da malha do corpo do monstro
+  novo (o do monstro atual voltou ao `/Game/MetaHumans/Common/Body/ABP_Body_PostProcess`).
+- **Como funciona:** entre o `BlendListByBool_0` e a saída, `LocalToComponent` → 43 `Transform (Modify) Bone` (translação
+  aditiva no espaço do osso pai, eixo X do osso; +X no lado esquerdo, −X no direito) → `ComponentToLocal`. **O valor que
+  vale é o do pino `Translation`** (o pino fica exposto; mudar só `Node.translation` não tem efeito): grave os dois.
+- **Valores (cm):** `lowerarm` 10 (braço), `upperarm_twist_01/02` 3/6,5, `hand` 16 (antebraço), `lowerarm_twist_01/02`
+  10,5/5; dedos `*_01` 1,8, `*_02` 2,6, `*_03` 2,2; `thumb_02/03` 1,4; `neck_02` 3, `head` 2,5 (com 6/5 o pescoço parecia
+  +25 cm, a malha do rosto copia a pose); `clavicle_r` (0, 0, −8) em espaço do componente (ombro direito mais baixo).
+  Metade dos valores de braço quase não aparecia.
+- **Resultado no Simulate:** mão caída no meio da coxa, dedos longos, pele do antebraço estica sem amassar, cabeça ~5,5 cm
+  mais alta. Num monstro novo, confira apontar, empurrar, arrastar e as posições de rosto dos sustos.
+
 ## No jogo: aparições (2026-11-05, em andamento)
 Tudo em `/Game/Library/Blueprints/Horror/`. Atores na pasta `Gameplay/` (Director) e `Gameplay/Apparitions` (spots).
 - **`BP_ApparitionDirector`** (1 na cena): só age com `BP_GameClock.GameMinutes` entre 1170 (19:30) e 1340; orçamento
