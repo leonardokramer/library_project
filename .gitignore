@@ -85,3 +85,12 @@ RawAudio/**/src/
 /Content/Library/Characters/Metahumans/Protagonist/
 # Rascunhos de presets (apagar quando a etapa terminar)
 /Content/Library/Characters/Metahumans/_Scratch/
+
+# Pacotes da Dekogon para a rua (2026-11-27), fora do git como os outros
+/Content/MERIDIAN/
+/Content/BUILDINGS/
+/Content/LIGHTING/
+/Content/REALISTIC_MATERIALS/
+/Content/VEHICLES/
+/Content/FOLIAGE/
+/Content/Signage/

@@ -170,9 +170,8 @@ Ideia do usuário: o corpo é um monte de páginas juntas, **se abrindo em certa
   - Na frente do alto do peito e no pescoço a pele é da malha do rosto (o raio do corpo atravessa).
 - **Tentativas rejeitadas pelo usuário:** livro aberto nas costas e fitas marcadoras ("muito grande", "rabo mal
   colado"); folhas estáticas presas a um osso ("voando").
-- **Limpeza pendente (editor recém-aberto, nunca logo depois de um PIE):** `SKM_MonsterPages` (versão de 20
-  aberturas) e `SKM_MonsterFacePages` (com o tufo), sem uso. As pastas `Debug/SkelTest*` foram criadas na memória e não salvas: na hora de fechar o editor,
-  não salve.
+- **Limpeza feita (2026-11-27):** `SKM_MonsterPages` (versão de 20 aberturas) e `SKM_MonsterFacePages` (com o tufo) foram
+  apagadas no disco com o editor fechado; reabriu sem erros de carregamento.
 - **Riscos:** onde o monstro encosta em parede ou estante as folhas podem atravessar (são curtas); ~21 mil vértices a
   mais no total.
 
