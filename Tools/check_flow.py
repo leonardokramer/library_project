@@ -5,7 +5,7 @@ def log(s):
     with open(LOG, 'a') as f:
         f.write(str(s) + '\n')
 NORMAL = {
-    'BP_GameClock_C': {'DebugStartMinutes': 0.0, 'SecondsPerGameMinute': 2.0, 'bShowDebugClock': False},
+    'BP_GameClock_C': {'DebugStartMinutes': 0.0, 'SecondsPerGameMinute': 2.0, 'bShowDebugClock': True},
     'BP_CustomerSpawner_C': {'maxCustomers': 3},
     'BP_Scare_Door_C': {'bDoorTest': False},
     'BP_ScareManager_C': {'bSkipCalmDays': False, 'bDebugHUD': False},
