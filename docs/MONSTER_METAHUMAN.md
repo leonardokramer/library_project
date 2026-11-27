@@ -112,6 +112,30 @@ nova por cima das fichas antigas, e o mais atrasado vira um **carimbo VENCIDO** 
 - Ator de vitrine `TEMP_SkinTest` (`BP_MH_Monster` em (−350, 170, 20)) deixado na cena **a pedido do usuário, sem salvar
   o mapa**; o texto novo só aparece com Play/Simulate. Tire antes de salvar a `L_Library`.
 
+## Corpo de boneco e costuras de encadernação (2026-11-26, conferido por foto no editor; falta o teste do usuário)
+- **Sem cueca:** a cueca do MetaHuman é só pintura na textura do corpo (cor e normal), não malha. `T_MonsterUnderwearMask2`
+  (UV do corpo, branco = cueca + elástico das costas) vem de `Tools/monster_underwear_mask.py`, que lê a miniatura 256² do
+  `T_Body_BC_VT` (`CaptureAssetImage`), pega o cinza (saturação < 0,12), espelha a metade esquerda (a miniatura tem o selo
+  "VT" no canto) e soma à mão a linha do elástico. No material: `CleanMaskTex` × `CleanStrength` leva o detalhe da cor a 1
+  (papel liso) e o normal a (0, 0, 1). `CleanStrength` 1 no corpo, 0 no rosto.
+- **Costuras (o corpo como livro):** lombada na **coluna**, o vinco do livro aberto no **esterno** e um anel em cada **pulso**,
+  em ponto cruz de linha encerada escura (`T_MonsterStitch2`, de `Tools/monster_stitch_texture.py`: R linha, G furos e o
+  corte, B repuxado). Não usam UV: o nó `Custom` "StitchCoords" recebe a **posição pré-skinning** (`PreSkinnedPosition` →
+  `VertexInterpolator`, pois o nó só existe no vertex shader), então a costura acompanha o corpo animado. Espaço local do
+  corpo: +Y = frente (`StitchFrontSign` 1), X = lado, Z = altura a partir dos pés.
+  - Centro (|x| < `StitchHalfW`): esterno se y > 0 e z entre `StitchZ`.r/.g (128–175), coluna se y < 0 e z entre .b/.a
+    (112–172), com 3 cm de esmaecimento nas pontas.
+  - Pulsos: plano perpendicular ao antebraço (`WristDir` (0,77; 0; −0,64)) por `WristPos` (52, 17, 118) com |x| espelhado,
+    raio de busca `WristPos.w` 14 (o antebraço fica ~17 cm à frente do tronco na pose de referência; com raio < 9 o anel
+    some). A coordenada ao longo do anel é a largura vista de frente (`dot(rad, a1)`), não o ângulo (o ângulo esticava os
+    pontos porque o eixo real não é conhecido). Pontos do pulso com 60 % do tamanho (`wk` no código).
+  - `StitchSpacing` 2,9 cm, `StitchHalfW` 2,3 cm, `ThreadColor` (0,035; 0,028; 0,022), `StitchStrength` 1 no corpo, 0 no rosto.
+  - **Como as medidas foram achadas:** o monstro de teste (pose de referência, em (−350, 170, 20), yaw −90) dá local =
+    (−(Y−170), X+350, Z−20). As fotos do `CaptureViewport` têm campo de visão menor que 90°: distâncias laterais estimadas
+    supondo 90° saem ~25 % grandes. O jeito confiável foi varrer planos (ex.: `WristDir` (1,0,0), raio enorme, x = 30/45/55)
+    e ver onde a linha aparece.
+- Fotos: frente (esterno do peito ao umbigo), costas (coluna da nuca à cintura), os dois pulsos e a virilha lisa.
+
 ## No jogo: aparições (2026-11-05, em andamento)
 Tudo em `/Game/Library/Blueprints/Horror/`. Atores na pasta `Gameplay/` (Director) e `Gameplay/Apparitions` (spots).
 - **`BP_ApparitionDirector`** (1 na cena): só age com `BP_GameClock.GameMinutes` entre 1170 (19:30) e 1340; orçamento

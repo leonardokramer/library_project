@@ -318,3 +318,10 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
   - Função nova do BP é **impura**: um `CallFunction|X` criado com `create_node` só roda se o `execute` estiver na sequência (senão a saída vem vazia, sem erro).
   - Material: a saída `""` de um `VectorParameter` é **RGB** (3 canais); para `ComponentMask` de B/A use a saída `RGBA`. `CustomRotator` é função de material, não classe: gire a UV na mão (sin/cos com `Period` 2π).
   - `add_expression` devolve o refPath do nó novo: use **sempre** ele. Montar nomes (`ComponentMask_0`) pega nós que já existiam (aconteceu: religuei um nó do material original por engano e tive de restaurar).
+- **Aprendizados das costuras (2026-11-26):**
+  - `PreSkinnedPosition` só existe no vertex shader: passe por um `VertexInterpolator` (entrada `VS`, saída `PS`) antes de usar no pixel shader.
+  - Nó `Custom` (HLSL): `Code`, `OutputType` `CMOT_Float4` e `Inputs` crescendo **um elemento por chamada** (ler a lista, somar um, gravar); depois `connect_expressions` pelo `InputName`. Para editar o código, leia `Code`, troque o trecho e grave (confira que o trecho antigo existia).
+  - `set_vector_parameter` aceita valores negativos, apesar de o esquema dizer mínimo 0.
+  - Mudança em parâmetro de MI às vezes não aparece na foto seguinte: mude e fotografe **no mesmo** `execute_tool_script` (devolva a base64 de cada foto no dict e, localmente, decodifique cada string base64 longa do resultado).
+  - `ScreenCoordsToWorld` não acerta malha esquelética (sem colisão): devolve o fundo.
+  - Mapear o UV de um corpo: material temporário Unlit com uma grade rotulada (`col,linha`) aplicado só no `OverrideMaterials` do componente do ator de teste; devolva o material original no fim.
