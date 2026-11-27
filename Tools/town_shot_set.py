@@ -14,7 +14,7 @@ SHOTS = [
     ('igreja',     (1500, 1500, 170),  (20, -27)),
     ('hotel',      (1750, 4800, 170),  (4, 90)),
     ('cinema',     (1750, -2600, 170), (4, -90)),
-    ('caixa_agua', (2300, 200, 170),   (27, -132)),
+    ('caixa_agua', (1750, -1000, 170), (36, -138)),
 ]
 import unreal
 ts.run(SHOTS, delay=float(getattr(unreal, 'SHOT_DELAY', 0.0)))

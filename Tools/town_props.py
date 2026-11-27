@@ -97,12 +97,21 @@ def run():
     unreal.EditorAssetLibrary.save_asset(cobra_path, False)
     # postes em fila dos dois lados (como nas referencias: varios postes e fios sumindo na nevoa)
     poles = [(1325, y, 0) for y in (-2950, -1500, -330, 1700)] + [(2200, y, 180) for y in (-3000, -1650, -250, 1150, 2500)]   # o oeste de Y 100 tapava a vista da porta (2026-11-27 noite)
+    DEAD = {(2200, -1650)}   # 2026-11-27 noite: uma luminaria queimada
     for x, y, yaw in poles:
         a, b = put('SM_Electric_Poles_Set_01a', x, y, yaw, label='Pole')
         top = SIDE_TOP + (b.max.z - b.min.z)
         hz = top - 230
         sgn = 1 if yaw == 0 else -1
-        put('SM_Town_CobraLight', x + sgn * 8, y, yaw, z=hz, label='StreetHead')
+        h = put('SM_Town_CobraLight', x + sgn * 8, y, yaw, z=hz, label='StreetHead')
+        if (x, y) in DEAD:
+            # luminaria queimada: lente apagada e sem luz (um buraco escuro entre as pocas de luz)
+            dead = unreal.load_asset('/Game/Library/Materials/Town/MI_MS_NeonDead')
+            hh = h[0] if isinstance(h, tuple) else h
+            for i, nm in enumerate(hh.static_mesh_component.get_material_slot_names()):
+                if str(nm).startswith('M_Lens') and dead:
+                    hh.static_mesh_component.set_material(i, dead)
+            continue
         light('spot', (x + sgn * 188, y, hz + 15), (-90, yaw), 900, 2600, color=(1.0, 0.72, 0.42),
               shadows=(y == 250 or y == -1500), label='StreetLight', cone=(35, 65))
     # objetos de calcada (lado da livraria)

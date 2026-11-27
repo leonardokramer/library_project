@@ -173,6 +173,16 @@ Custo: 17,4 ms na vista do balcão. Detalhes no SCENE_MAP ("Bairro"). Falta: igr
 
 Pacotes novos fora do git: `MERIDIAN`, `BUILDINGS`, `LIGHTING`, `REALISTIC_MATERIALS`, `Vehicles`. Fotos antes/depois em `Saved/NightPhotos`. Detalhes e números em [docs/SCENE_MAP.md](docs/SCENE_MAP.md) ("Rua e vilarejo"); o diário da noite está em [docs/NIGHT_2026-11-27_PLAN.md](docs/NIGHT_2026-11-27_PLAN.md); as armadilhas do Python do editor, no MCP_WORKFLOW ("Python do editor pelo console").
 
+**Main Street densa (noite de 2026-11-27, sem supervisão; falta o teste do usuário):** depois do 4º teste ("cheia de construção, opressora, mas que faça sentido como vilarejo"), a rua virou o centrinho de uma cidade pequena americana. Tudo foi feito depois de uma pesquisa de referências: Silent Hill e Main Streets reais (resumo em [docs/TOWN_ART_PASS.md](docs/TOWN_ART_PASS.md)).
+- **Prédios:** fileiras contínuas de prédios comerciais de tijolo de 2 a 4 andares, gerados no Blender (`Tools/blender/main_street.py`) e montados por `Tools/town_mainstreet.py` (`MS_`).
+- **Pontas da rua:** fecham em T, com o cinema STATE ao sul e o hotel ao norte.
+- **Cidade em volta:** igreja Sacred Pines atrás da fileira leste (`L_Town_Church`), caixa-d'água com farol, King Wash e casas mudados para a Elm Street (`Tools/town_sublevels.py`).
+- **Luz e letreiros:** neon falhando (DINER, BAR, HOTEL), vitrines e janelas acesas fracas, letreiros de lojas que fazem sentido.
+- **Névoa:** a caixa virou uma cúpula sem arestas. A planta da porta era um arbusto do `town_clutter.py` e saiu.
+- **Desempenho:** GPU de 15,5–16 ms na vista do balcão (antes, 17,4).
+- **Onde está cada coisa:** coordenadas no [docs/SCENE_MAP.md](docs/SCENE_MAP.md) ("Main Street densa"); vigia de scripts (`Tools/ed_watch.py`) e armadilhas no MCP_WORKFLOW.
+- **Estado de teste:** o `WalkOutTest_TEMP` continua na cena.
+
 **Variante comprida (2026-11-26, guardada, não usada):** braços, dedos e pescoço alongados e ombro torto ficaram em `Variants/ABP_LongMonster_PostProcess` para um monstro futuro; o monstro atual voltou às proporções originais (alongar deslocava os sustos refinados). Detalhes no [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Variante comprida").
 
 **Corpo de boneco e costuras (2026-11-26, conferido por foto; falta o teste do usuário):** a cueca pintada do MetaHuman foi apagada no material (`CleanMaskTex`, corpo liso tipo Ken) e o corpo ganhou costuras de encadernação em ponto cruz na coluna, no esterno e nos pulsos, calculadas pela posição pré-skinning (não pelo UV). Detalhes em [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Corpo de boneco e costuras de encadernação").
