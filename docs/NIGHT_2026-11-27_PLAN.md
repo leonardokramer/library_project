@@ -53,3 +53,17 @@ Pedido do usuário (antes de dormir): enriquecer o interior, montar o exterior (
   apagar 1.008 objetos internos do King Wash, 53 decalques, sombras das luzes e do strip mall, vento da vegetação.
   Crash 1x: duplicar mapa + abrir na mesma chamada (vazamento de mundo). `open_application` do Unreal abre outra
   instância: não usar.
+- 04:40–04:55 — letreiro trocado para "LANTERN & LETTERS" (nome da placa da porta); carrinho de devolução e capacho
+  na entrada; 3 carros e 21 fios entre os postes; cliente testado entrando pela porta nova (ok); 72 Blueprints
+  compilam sem erro; M_BulbGlow e M_OutsideGround (documentados sem uso) apagados; fluxo normal conferido
+  (`check_flow.py`); commit `3fbf61c` + push.
+- Limpeza: downloads cancelados; pacotes novos enxutos de 33 GB para 12 GB (`Tools/pack_deps.py` + `pack_trim.ps1`,
+  editor reaberto sem nenhuma referência quebrada); projeto `FabStaging` (34 GB) e cache do Launcher (49 GB) apagados.
+
+## Para o usuário testar / decidir
+- Fotos em `Saved/NightPhotos` (antes/depois da fachada e da entrada, rua de dia e de noite).
+- Andar lá fora (calçada e rua) e olhar pela janela em horários diferentes; dizer se a névoa está densa demais ou de menos.
+- Custo: +2,2 ms de GPU. Se pesar, dá para trocar o King Wash por cartões (impostores) ou carregá-lo só no final.
+- O carrinho de devolução está vazio (livros decorativos confundiriam com os interativos). Pode virar parte da reposição.
+- Não feito: casas do Meridian ao longe (downloads de 16–20 GB cada estavam lentos; cancelados), árvores secas, revisão
+  profunda dos Blueprints (só auditoria: compilação limpa e assets mortos).

@@ -41,3 +41,8 @@ removidos na limpeza de 2026-10-29 (estão no histórico do git se precisar).
 
 ## Pacotes de terceiros reduzidos (2026-10-30)
 Depois do enriquecimento, os quatro pacotes (`PoliceDepartment`, `JOBSITE`, `SUBURBS`, `House_Decor`) foram **reduzidos aos 116 assets realmente usados pela cena**, de 1,9 GB para ~460 MB. A lista está em [PACK_ASSETS_IN_USE.txt](PACK_ASSETS_IN_USE.txt). Para usar outra peça de um desses pacotes, adicione o pacote de novo pela Fab (Add to Project) e depois apague o que não for usar, **pelo sistema de arquivos com o editor fechado** (veja a armadilha no MCP_WORKFLOW).
+
+## Pacotes da rua (2026-11-27)
+Fora do git, como os outros: `Content/MERIDIAN` (Meridian 1988: King Wash Stripmall VOL 55), `Content/BUILDINGS` (Buildings VOL.13 Sidewalks), `Content/LIGHTING` (Lighting VOL.5 Exterior Lights) e `Content/REALISTIC_MATERIALS` (Realistic Materials VOL.6 Roads & Sidewalks), todos da Dekogon na biblioteca Fab do usuário.
+- **Restaurar:** no Epic Launcher, "Adicionar ao projeto" de cada um num projeto vazio 5.8 (o `library_project` não aceita direto) e copiar as pastas para `Content/` com `robocopy /E`.
+- **Enxugar:** com o editor aberto, `py "Tools/pack_deps.py"` grava `Saved/pack_keep.txt` (o que `/Game/Library` usa); com o editor **fechado**, `powershell -File Tools/pack_trim.ps1` (simulação) e depois com `-Apply`.
