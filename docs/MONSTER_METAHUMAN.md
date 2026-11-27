@@ -82,6 +82,36 @@ A pele do Creator (seções acima) ficou saudável demais. Por cima dela, sem re
   elements changed alongside the size change"); de vazia, cresça **um elemento por chamada** (`lst[:k]`, k = 1..8), com
   `{"refPath": ...}` em cada item.
 
+## Pele com o histórico do jogador (2026-11-26, feita e conferida por foto; falta o teste do usuário)
+Ideia: o monstro é "o leitor que nunca devolveu". Os empréstimos **desta partida** aparecem escritos na pele dele, em tinta
+nova por cima das fichas antigas, e o mais atrasado vira um **carimbo VENCIDO** na testa.
+- **Duas texturas que o jogo desenha** (assets fixos, todos os sustos usam as mesmas; o conteúdo não é salvo, então no
+  editor parado só aparece a tinta velha): `RT_MonsterSkinText` (1024², RGBA8, Wrap, mips automáticos; **R** = letras,
+  **G** = faixa das linhas com tinta nova) e `RT_MonsterStamp` (512×256, Clamp). Criados duplicando um RT do engine
+  (`/Landmass/.../RT1`) e mudando `sizeX/Y`, `renderTargetFormat`, `addressX/Y` (não há tool de criar RT).
+- **Letras sem fonte do Unreal:** `T_MonsterGlyphs` = atlas 16×8 células de 32×64 px da **Courier Prime** (OFL, em
+  `Tools/fonts/CourierPrime`), gerado por `Tools/monster_glyph_atlas.py`. O `SkinCharset` do `BP_ScareManager` tem que ser
+  **a mesma string** do `CHARSET` do script (105 caracteres, com acentos, `º` e `·`); caractere fora dele vira espaço.
+  `T_MonsterStamp` (moldura e "VENCIDO" gastos) vem de `Tools/monster_stamp_texture.py`; a data é escrita por cima em jogo.
+- **Material `M_MonsterPaperSkin`:** tinta = max(`TextTex`.R × `OldTextFade` (0,55) × (1 − `LiveTextTex`.G × `OldTextMask`
+  0,9), `LiveTextTex`.R × `LiveTextStrength` 1), com a mesma UV do `TextTiling`. Carimbo: UV da cabeça → retângulo
+  `StampRect` (x, y, largura, altura; rosto (0,37; 0,175; 0,26; 0,13)), girado `StampAngle` (−4°), cor `StampColor`
+  (0,16; 0,012; 0,01), força `StampStrength` (rosto 1, corpo 0 = sem carimbo).
+- **`BP_ScareManager`:** `WriteSkin` = `SkinBuildLines` → `SkinPaint` → `SkinStamp`. Roda **1,5 s depois do BeginPlay**
+  (timer) e **toda vez que um susto nasce** (fim do `OnSpawned`). `SkinBuildLines` acha o `BP_LibrarySystem` (`Sys`),
+  chama `BuildLoanInfo` e faz 3 passadas (`SkinPass` 0 = vencido e não devolvido, 1 = em aberto, 2 = devolvido), cada linha
+  "Nº n   NOME   Título   · emp. dd/mm · prazo dd/mm   VENCIDO   NÃO DEVOLVIDO"; `SkinWorst` = menor `due` vencido
+  (9999 = nenhum, sem carimbo). Nome pelo `Doc` em `Users` (`SkinName`), em maiúsculas com acento (`SkinUpper`: o
+  `ToUpper` do Unreal não converte á→Á). `SkinPaint`: 2 linhas por registro (mín. 6, máx. 24 das 33 da textura),
+  espalhadas; cada uma desenha a faixa G e 78 caracteres (`SkinDrawLine`, um `DrawTexture` aditivo por letra, com
+  tremida e força aleatórias de máquina de escrever). `SkinStamp`: "PRAZO dd/mm/1996" (`Clock.DateShort`).
+- **Trocar nomes/títulos:** muda sozinho (vem dos dados em jogo). Trocar as frases da tinta velha: `monster_paper_textures.py text`.
+- **Teste (2026-11-26, Simulate, 16:00):** 11 linhas do seed, vencido da Helena primeiro, carimbo "PRAZO 15/07/1996";
+  fotos de perto: "First Contact", "13/07", "prazo 18/0", "EM ABE(RTO)", "OTÁVIO" legíveis. **Não conferido:** à noite, de
+  longe, e o custo do `WriteSkin` no nascimento (~1.600 `DrawTexture` de BP; se der engasgo, escrever só no `NewNight`).
+- Ator de vitrine `TEMP_SkinTest` (`BP_MH_Monster` em (−350, 170, 20)) deixado na cena **a pedido do usuário, sem salvar
+  o mapa**; o texto novo só aparece com Play/Simulate. Tire antes de salvar a `L_Library`.
+
 ## No jogo: aparições (2026-11-05, em andamento)
 Tudo em `/Game/Library/Blueprints/Horror/`. Atores na pasta `Gameplay/` (Director) e `Gameplay/Apparitions` (spots).
 - **`BP_ApparitionDirector`** (1 na cena): só age com `BP_GameClock.GameMinutes` entre 1170 (19:30) e 1340; orçamento

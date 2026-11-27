@@ -311,3 +311,10 @@ Servidor `unreal-mcp` em `http://127.0.0.1:8000/mcp` (configurado em `.mcp.json`
 - Setters de variável de **outra classe** no DSL: `(Class|MHABPCustomer|SetDoorHand valor alvo)` (posicional, valor primeiro). Booleanas sem o `b`: `Variables|Default|SetDoorIn`.
 
 - **`set_pin_value` + `save_assets` pode não gravar (2026-11-26):** a troca de valor de pino não marcou o `BP_CustomerMH` como alterado, então `save_assets` devolveu true sem escrever o arquivo (o PIE usava a versão em memória). Confira a data do `.uasset` ou force com `py unreal.EditorAssetLibrary.save_asset('<caminho>', False)` no console do editor.
+- **Aprendizados da pele com o histórico (2026-11-26):**
+  - **Texto em textura em jogo sem importar fonte:** atlas de letras (Pillow) + `Canvas|DrawTexture` aditivo por letra entre `Rendering|BeginDrawCanvastoRenderTarget` (`bind (cv sz ctx)`) e `EndDrawCanvastoRenderTarget :Context ctx`. `DrawTexture` **sem** `RenderTexture` desenha um retângulo branco (usado para máscara). Não há tool de criar `TextureRenderTarget2D`: duplique um do engine e mude `sizeX/Y`, `renderTargetFormat`, `addressX/Y`.
+  - O `%` do DSL **não** cria nó ("Utilities|Operators|Modulo does not exist"): use `j - floor(j/n)*n`.
+  - `Utilities|String|ToUpper` não converte acentos (á fica á): encadeie `Utilities|String|Replace :SearchCase "CaseSensitive"`.
+  - Função nova do BP é **impura**: um `CallFunction|X` criado com `create_node` só roda se o `execute` estiver na sequência (senão a saída vem vazia, sem erro).
+  - Material: a saída `""` de um `VectorParameter` é **RGB** (3 canais); para `ComponentMask` de B/A use a saída `RGBA`. `CustomRotator` é função de material, não classe: gire a UV na mão (sin/cos com `Period` 2π).
+  - `add_expression` devolve o refPath do nó novo: use **sempre** ele. Montar nomes (`ComponentMask_0`) pega nós que já existiam (aconteceu: religuei um nó do material original por engano e tive de restaurar).
