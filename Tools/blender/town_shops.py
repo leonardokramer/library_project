@@ -51,13 +51,17 @@ def shop(fname, W, D, H, two_floors=True, boarded=True):
     hw = W / 2
     objs = []
     def walls(bm):
-        t = 0.25
-        box(bm, -0.02, 0.0, -hw, hw, 3.6, H)                # frente, parte de cima
-        box(bm, -0.02, 0.0, -hw, -hw + 0.5, 0.0, 3.6)       # frente, pilares do terreo
-        box(bm, -0.02, 0.0, hw - 0.5, hw, 0.0, 3.6)
-        box(bm, -D, 0.0, -hw, -hw + t, 0.0, H)              # laterais
-        box(bm, -D, 0.0, hw - t, hw, 0.0, H)
-        box(bm, -D, -D + t, -hw, hw, 0.0, H)                # fundo
+        # paredes grossas que se sobrepoem nas quinas e entram na laje (sem frestas para o ceu)
+        t = 0.30
+        box(bm, -t, 0.0, -hw - 0.01, hw + 0.01, 3.55, H + 0.05)          # frente, parte de cima
+        box(bm, -t, 0.0, -hw - 0.01, -hw + 0.5, -0.05, 3.62)             # frente, pilares do terreo
+        box(bm, -t, 0.0, hw - 0.5, hw + 0.01, -0.05, 3.62)
+        box(bm, -t, -0.02, -hw + 0.45, hw - 0.45, -0.05, 0.47)           # mureta sob a vitrine
+        box(bm, -D - 0.01, 0.01, -hw - 0.01, -hw + t, -0.05, H + 0.05)   # laterais
+        box(bm, -D - 0.01, 0.01, hw - t, hw + 0.01, -0.05, H + 0.05)
+        box(bm, -D - 0.01, -D + t, -hw - 0.01, hw + 0.01, -0.05, H + 0.05)  # fundo
+        box(bm, -D - 0.05, 0.02, -hw - 0.05, hw + 0.05, H - 0.20, H + 0.06)  # laje do telhado
+        box(bm, -t - 0.02, -0.10, -hw + 0.5, hw - 0.5, 0.40, 3.60)       # fundo escuro atras da vitrine
     objs.append(part('Walls', 'M_Siding', walls))
     def trim(bm):
         box(bm, 0.0, 0.30, -hw - 0.05, hw + 0.05, H - 0.35, H)        # cornija simples

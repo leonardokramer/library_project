@@ -46,7 +46,7 @@ def run():
             tasks.append(t)
         unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks(tasks)
     trim_dark = paint('MI_Town_TrimDark', (0.20, 0.18, 0.15), 0.85, 0.5)
-    siding = find_mat('MI_Board_Wall_01a'); plaster = find_mat('MI_LM_Plaster_Wall_01a')
+    board = find_mat('MI_Board_Wall_01a'); siding = find_mat('MI_Grocery_Wall_01a'); plaster = find_mat('MI_LM_Plaster_Wall_01a')
     ply = find_mat('MI_Plywood_Wall_01a'); glass = find_mat('MI_Glass_01c')
     concrete = unreal.load_asset(MAT_DIR + '/MI_Town_Ground')
     base = {'M_TrimN': trim_dark, 'M_Plywood': ply, 'M_Glass': glass, 'M_Siding': siding}
@@ -83,7 +83,7 @@ def run():
     # chao dos becos (X -150..1048) e cercas de tabua no fundo
     for yc, lab in ((575, 'AlleyN'), (-575, 'AlleyS')):
         put(plane, (450, yc, 9), scale=(12.0, 2.5, 1), label=lab + 'Ground', mat=concrete)
-        put(cube, (-100, yc, 10 + 110), scale=(0.06, 2.5, 2.2), label=lab + 'Fence', mat=siding)
+        put(cube, (-100, yc, 10 + 160), scale=(0.08, 2.8, 3.2), label=lab + 'Fence', mat=board)
     dump = [str(ad.package_name) for ad in unreal.AssetRegistryHelpers.get_asset_registry().get_assets_by_path('/Game/MERIDIAN/VOL55_KingWashStrip/Meshes/NN', recursive=True) if str(ad.asset_name) == 'SM_Dumpster_Large_NN_01a']
     if dump:
         d = unreal.load_asset(dump[0]); b = d.get_bounding_box()
@@ -96,4 +96,6 @@ try:
     run()
 except Exception:
     log(traceback.format_exc())
+
+
 

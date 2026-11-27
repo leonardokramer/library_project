@@ -27,6 +27,7 @@ CURB_X = 1349         # comeco do meio-fio da calcada da livraria
 STREET_X0, STREET_X1 = 1364, 2164
 Y0, Y1 = -3200, 3200  # extensao das calcadas
 STREET_Y0, STREET_Y1 = -8000, 8000
+SEGS = [(Y0, Y1), (4100, 7700)]   # calcadas: antes e depois do cruzamento da Elm Street (Y 3300..4100)
 
 
 def mi(name, parent, scalars):
@@ -70,7 +71,8 @@ def run():
         if a.get_level() == lvl and a.get_actor_label().startswith('ST_'):
             eas.destroy_actor(a)
 
-    m_road = mi('MI_Town_Road', RM + 'MI_Road_01a', {'Texture Coord': 2.0})
+    # asfalto molhado (rugosidade baixa = reflexo das luzes, como em Silent Hill 2)
+    m_road = mi('MI_Town_Road', RM + 'MI_Road_01a', {'Texture Coord': 2.0, 'Roughness Multi': 0.55})
     m_ground = mi('MI_Town_Ground', RM + 'MI_Asphalt_Cracked_01a', {'Texture Coord': 6.0})
 
     n = [0]
@@ -86,12 +88,12 @@ def run():
         return a
 
     # calcada da livraria (yaw 90: a peca ocupa X [x0, x0+largura], Y [y0-400, y0])
-    for y in range(Y0 + 400, Y1 + 1, 400):
+    for y in [v for a, b in SEGS for v in range(a + 400, b + 1, 400)]:
         put(SW + 'SM_GS_Sidewalk_400_04a', (FACADE_X, y, SIDE_Z), 90, label='SideA')
         put(SW + 'SM_GS_Sidewalk_400_01a', (FACADE_X + 201, y, SIDE_Z), 90, label='SideA')
         put(SW + 'SM_GS_Sidewalk_400_05a', (CURB_X, y, SIDE_Z), 90, label='CurbA')
     # calcada do outro lado (yaw -90: X [x0-largura, x0], Y [y0, y0+400])
-    for y in range(Y0, Y1, 400):
+    for y in [v for a, b in SEGS for v in range(a, b, 400)]:
         put(SW + 'SM_GS_Sidewalk_400_05a', (STREET_X1 + 15, y, SIDE_Z), -90, label='CurbB')
         put(SW + 'SM_GS_Sidewalk_400_04a', (STREET_X1 + 15 + 201, y, SIDE_Z), -90, label='SideB')
         put(SW + 'SM_GS_Sidewalk_400_01a', (STREET_X1 + 15 + 201 + 100, y, SIDE_Z), -90, label='SideB')
@@ -100,8 +102,18 @@ def run():
     w = STREET_X1 - STREET_X0
     for y in range(STREET_Y0, STREET_Y1, 800):
         put(PLANE, ((STREET_X0 + STREET_X1) / 2.0, y + 400, STREET_Z), 0, (w / 100.0, 8.0, 1), 'Road', m_road)
+    # faixa dupla amarela no meio da rua (tinta gasta)
+    yellow = unreal.load_asset(MAT_DIR + '/MI_Town_Yellow')
+    if yellow:
+        cx = (STREET_X0 + STREET_X1) / 2.0
+        for dx in (-9, 9):
+            put(PLANE, (cx + dx, 0, STREET_Z + 0.4), 0, (0.10, (STREET_Y1 - STREET_Y0) / 100.0, 1), 'CenterLine', yellow)
     # chao geral (estacionamento, terrenos), um pouco abaixo da rua
     put(PLANE, (6000, 0, STREET_Z - 1), 0, (90.0, 160.0, 1), 'Ground', m_ground)
+    # gramado dos lotes das casas (oeste da Main Street e norte da Elm Street)
+    grass = mi('MI_Town_Grass', FIND.get('MI_Grass_01a', '/Game/BUILDINGS/VOL13_Sidewalks/Materials/MI_Grass_01a'), {'Texture Coord': 8.0})
+    for (gx0, gx1, gy0, gy1) in ((-2400, 1048, 1700, 3300), (-2400, 1048, 4100, 7700), (2480, 8000, 4100, 7700)):
+        put(PLANE, ((gx0 + gx1) / 2.0, (gy0 + gy1) / 2.0, STREET_Z - 0.5), 0, ((gx1 - gx0) / 100.0, (gy1 - gy0) / 100.0, 1), 'Lawn', grass)
 
     les.set_current_level_by_name('L_Library')
     log('spawned', n[0])
@@ -112,6 +124,7 @@ try:
     run()
 except Exception:
     log(traceback.format_exc())
+
 
 
 

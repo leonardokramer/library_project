@@ -161,6 +161,16 @@ Tudo é refeito por scripts idempotentes em `Tools/town_*.py` / `Tools/interior_
 
 **Custo:** +2,2 ms de GPU na vista do balcão (14,2 → 16,5 ms, High).
 
+**Plano da cidade e bairro (2026-11-27, tarde; falta o teste do usuário):** o jogo completo terá saídas da livraria de uso único, cada uma levando a uma parte da cidade, e progresso que fica no mundo (plano aprovado em [docs/TOWN_PLAN.md](docs/TOWN_PLAN.md)). O recorte da demo já tem:
+- o cruzamento da Elm Street com semáforos;
+- 3 casas do Meridian 55 Elm Street e o trailer do 14 Widow Street (subníveis `L_Town_House_A/B/C`, `L_Town_Trailer`);
+- cercas e gramado;
+- a névoa cinza estilo SH2 (`EmissiveDay`).
+
+Custo: 17,4 ms na vista do balcão. Detalhes no SCENE_MAP ("Bairro"). Falta: igreja, bétulas e carregamento por distância.
+
+**Teste de andar lá fora (2026-11-27, ESTADO DE TESTE, tirar antes de testadores):** o ator `WalkOutTest_TEMP` (`/Game/Library/Debug/BP_WalkOutTest`, pasta `Gameplay`) está na `L_Library` salva. Em tempo de execução ele abre a porta (95°), põe `CustomerSpawner.maxCustomers` = 0, marca o `ScareDoor_Calcada` como ocupado (`bDoorBusy`, sem susto da porta nem puxão ao atravessar), acelera o relógio (`Speed` 0,5 s por minuto de jogo, ~3 min de 16:00 a 22:00) e trava o relógio em `StopAt` 1310 (21:50), então o dia não vira. Os sustos já não rodam no dia 1. Nada mais foi alterado na cena; para voltar ao normal basta apagar o ator. ⚠️ No DSL, `(if (Utilities|IsValid x) ...)` não funciona (é macro com saídas de execução) e o `if` some.
+
 Pacotes novos fora do git: `MERIDIAN`, `BUILDINGS`, `LIGHTING`, `REALISTIC_MATERIALS`, `Vehicles`. Fotos antes/depois em `Saved/NightPhotos`. Detalhes e números em [docs/SCENE_MAP.md](docs/SCENE_MAP.md) ("Rua e vilarejo"); o diário da noite está em [docs/NIGHT_2026-11-27_PLAN.md](docs/NIGHT_2026-11-27_PLAN.md); as armadilhas do Python do editor, no MCP_WORKFLOW ("Python do editor pelo console").
 
 **Variante comprida (2026-11-26, guardada, não usada):** braços, dedos e pescoço alongados e ombro torto ficaram em `Variants/ABP_LongMonster_PostProcess` para um monstro futuro; o monstro atual voltou às proporções originais (alongar deslocava os sustos refinados). Detalhes no [docs/MONSTER_METAHUMAN.md](docs/MONSTER_METAHUMAN.md) ("Variante comprida").

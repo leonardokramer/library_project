@@ -434,3 +434,12 @@ Tudo de fora fica em **dois subníveis sempre carregados** da `L_Library`, monta
 - O `VoidMesh` preto na frente da porta é do `ScareDoor_Calcada` e só aparece no editor.
 
 
+
+### Bairro (tarde de 2026-11-27, segue o [TOWN_PLAN.md](TOWN_PLAN.md))
+- **Casas** (cópias do `BUILDING_House55a` do Meridian 55 Elm Street, subníveis com transform, `Tools/town_houses.py`, enxugadas: sem luzes internas, sem móveis, sem sombra): `L_Town_House_A` (−300, 5750) e `_B` (3500, 5750) na Elm Street, frente para a rua (−Y); `_C` (−310, 2510, yaw 90) na Main Street, ao norte da loja fechada, frente para +X. A casa original: X −901…819, Y −1358…1381, frente para −Y.
+- **Trailer** (`L_Town_Trailer`, cópia do `BUILDING_Mobile_Home_14` do 14 Widow Street, frente para −X no original): (−1527, −4050, yaw 180), no terreno cercado ao sul da loja do sul.
+- **Cruzamento da Elm Street** (`Tools/town_traffic.py`, `TR_`): rua transversal Y 3300…4100 (X −2400…8000) com faixa dupla, faixa de parada, dois postes com **cabo fixo** (cilindro; o `CableActor` cedia no jogo e deixava os semáforos no ar) e dois semáforos do Blender (`Tools/blender/traffic_light.py`) com a lente âmbar piscando (`M_Town_Glow`: `Color`, `Intensity`, `BlinkSpeed`, `BlinkAmount`).
+- **Calçadas** continuam depois do cruzamento (Y 4100…7700) e há **gramado** (`MI_Town_Grass`) sob os lotes das casas. **Asfalto molhado** (`MI_Town_Road`, `Roughness Multi` 0,55) e faixa dupla amarela (`MI_Town_Yellow`).
+- **Cercas** (`Tools/town_fences.py`, `FN_`, Fences VOL.4): tapume de tábuas no fundo dos becos (no lugar dos cubos) e cerca baixa nos terrenos vazios ao sul.
+- **Névoa:** `LocalFog` escala (52, 110, 60), extinção radial 0,22 / altura 0,35, albedo cinza-azulado; **`EmissiveDay` 0,3** no `BP_OutsideFog` dá o cinza-claro do Silent Hill 2 de dia e some com a noite (`SetNight`).
+- **Desempenho (vista do balcão, High):** 14,2 ms sem cidade → 16,5 só com a rua e o King Wash → **17,4 ms** com as 3 casas e o trailer. Próximo passo pelo plano: carregar as casas por distância (só quando o jogador está lá fora).

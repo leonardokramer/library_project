@@ -60,6 +60,11 @@ Pedido do usuário (antes de dormir): enriquecer o interior, montar o exterior (
 - Limpeza: downloads cancelados; pacotes novos enxutos de 33 GB para 12 GB (`Tools/pack_deps.py` + `pack_trim.ps1`,
   editor reaberto sem nenhuma referência quebrada); projeto `FabStaging` (34 GB) e cache do Launcher (49 GB) apagados.
 
+## Tarde de 2026-11-27 (usuário saiu de novo)
+Autorizado no fim: commit e push, fechar o Unreal, desligar o PC, **manter o `WalkOutTest_TEMP` na cena** para o teste dele.
+Tarefa: recorte da demo do [TOWN_PLAN.md](TOWN_PLAN.md) (casas da Elm Street, igreja, sul na névoa, viela, cercas, árvores, STOP).
+Feito: 3 casas + trailer, cruzamento com semáforos em cabo fixo, cercas, gramado, calçadas depois do cruzamento, STOP (Blender; o pacote de placas não tem STOP), névoa cinza estilo SH2 (`EmissiveDay` 0,3), asfalto molhado. Não feito: igreja e bétulas (o Fab do editor cancela a fila quando um download termina; baixar um por vez), carregamento por distância. 17,4 ms na vista do balcão. Pacotes novos (55 Elm, 14 Widow, FENCES, SIGNAGE) ficaram inteiros (interiores servem para os puzzles depois).
+
 ## Para o usuário testar / decidir
 - Fotos em `Saved/NightPhotos` (antes/depois da fachada e da entrada, rua de dia e de noite).
 - Andar lá fora (calçada e rua) e olhar pela janela em horários diferentes; dizer se a névoa está densa demais ou de menos.

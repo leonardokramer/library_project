@@ -18,7 +18,7 @@ LAYOUT = {
     'FogSouth': ((3000, -6800, 1250), (72.0, 26.0, 1.0)),
     'FogTop':   ((3000, 0, 2500),     (72.0, 150.0, 1.0)),
     # elipsoide: a borda oeste encosta na fachada (X 1050), as paredes ficam dentro
-    'LocalFog': ((5200, 0, 0),        (52.0, 78.0, 30.0)),
+    'LocalFog': ((5200, 0, 0),        (52.0, 110.0, 60.0)),
 }
 BLOCKS = {
     # caixas que limitam onde o jogador anda la fora: calcadas e a rua ate a calcada da frente
@@ -54,9 +54,10 @@ def run():
             obj.set_editor_property('hidden_in_game', True)
             log('hide Ground (o chao agora e a rua de verdade)')
         if name == 'LocalFog':
-            obj.set_editor_property('radial_fog_extinction', 0.45)
-            obj.set_editor_property('height_fog_extinction', 0.5)
-            obj.set_editor_property('height_fog_falloff', 500.0)
+            obj.set_editor_property('radial_fog_extinction', 0.22)
+            obj.set_editor_property('height_fog_extinction', 0.35)
+            obj.set_editor_property('height_fog_falloff', 700.0)
+            obj.set_editor_property('fog_albedo', unreal.LinearColor(0.62, 0.66, 0.72, 1.0))
             for p in ('radial_fog_extinction', 'height_fog_extinction', 'height_fog_falloff', 'height_fog_offset', 'fog_albedo', 'fog_phase_g'):
                 try:
                     log('  LocalFog', p, obj.get_editor_property(p))
@@ -74,7 +75,7 @@ def run():
                 c.set_editor_property('relative_location', unreal.Vector(*LAYOUT[n][0]))
                 c.set_editor_property('relative_scale3d', unreal.Vector(*LAYOUT[n][1]))
             if isinstance(c, unreal.LocalFogVolumeComponent):
-                c.set_radial_fog_extinction(0.45); c.set_height_fog_extinction(0.5); c.set_height_fog_falloff(500.0)
+                c.set_radial_fog_extinction(0.22); c.set_height_fog_extinction(0.35); c.set_height_fog_falloff(700.0); c.set_fog_albedo(unreal.LinearColor(0.62, 0.66, 0.72, 1.0))
         a.modify()
         log('instance synced', a.get_actor_label())
     unreal.EditorLoadingAndSavingUtils.save_packages([p for p in list(unreal.EditorLoadingAndSavingUtils.get_dirty_content_packages()) + list(unreal.EditorLoadingAndSavingUtils.get_dirty_map_packages()) if p.get_name().startswith('/Game/Library')], True)  # so o que e nosso (nunca Stationer/pacotes)
@@ -84,5 +85,7 @@ try:
     run()
 except Exception:
     log(traceback.format_exc())
+
+
 
 
