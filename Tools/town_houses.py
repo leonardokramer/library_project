@@ -6,15 +6,10 @@ A casa original tem a frente para -Y (caixa de correio em y -1264), X -901..819,
 import unreal, traceback
 LOG = r'C:\Users\krame\OneDrive\Documentos\Unreal Projects\library_project\Saved\town_houses.log'
 HOUSES = {
-    # Elm Street (rua transversal Y 3300..4100), lado norte, frente para a rua (-Y)
-    'L_Town_House_A': ((-300, 5750, 0), 0),
-    'L_Town_House_B': ((3500, 5750, 0), 0),
-    # Main Street, lado oeste, ao norte da loja fechada, frente para a rua (+X)
-    'L_Town_House_C': ((-310, 2510, 0), 90),
-    # trailer (Meridian 14 Widow Street, frente para -X): terreno cercado ao sul da loja do sul, frente para a Main Street
-    'L_Town_Trailer': ((-1527, -4050, 0), 180),
-    # Main Street, lado leste, ao sul do King Wash, frente para a rua (-X); preenche o horizonte da direita
-    'L_Town_House_D': ((3858, -3900, 0), -90),
+    # Elm Street, lado norte, a oeste da Main Street, frente para a rua (-Y). Desde 2026-11-27 (noite, Main Street densa)
+    # as casas C e D e o trailer ficaram fora do mundo (veja town_sublevels.py); os mapas continuam no projeto.
+    'L_Town_House_A': ((-2700, 5750, 0), 0),
+    'L_Town_House_B': ((-4700, 5750, 0), 0),
 }
 KEEP = ('Roof', 'Wall', 'Floor', 'Window', 'Door', 'Glass', 'Siding', 'Trim', 'Gutter', 'Chimney', 'Porch', 'Stair',
         'Foundation', 'Column', 'Railing', 'Building_55a', 'Exterior', 'Fence', 'Mailbox', 'Blinds', 'Curtain')

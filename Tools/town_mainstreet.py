@@ -141,7 +141,7 @@ def materials():
     M['glass'] = make_glass()
     M['winlit'] = [glow('MI_MS_WinLit_Warm', (1.0, 0.6, 0.28), 1.6), glow('MI_MS_WinLit_Dim', (0.9, 0.62, 0.38), 0.6),
                    glow('MI_MS_WinLit_TV', (0.45, 0.6, 1.0), 0.8, 0.5, 9.0)]
-    M['shoplit'] = glow('MI_MS_ShopLit', (1.0, 0.75, 0.45), 1.2)
+    M['shoplit'] = glow('MI_MS_ShopLit', (1.0, 0.66, 0.38), 0.15)
     M['bulb'] = glow('MI_MS_Bulb', (1.0, 0.7, 0.35), 6.0)
     neon = make_neon()
     M['neon_red'] = mi('MI_MS_Neon_Red', neon, {'Seed': 3.0, 'Off': 0.22, 'Speed': 5.0, 'Intensity': 14.0}, {'Color': (1.0, 0.12, 0.08, 1)})
@@ -150,6 +150,9 @@ def materials():
     M['neon_dead'] = paint('MI_MS_NeonDead', (0.12, 0.1, 0.1), 0.3, 0.6)
     M['board'] = find_pack_mat('MI_Plywood_Wall_01a') or paint('MI_MS_Board', (0.3, 0.24, 0.16), 0.95, 0.8)
     M['signboard'] = paint('MI_MS_SignBoard', (0.62, 0.6, 0.55), 0.8, 0.6)
+    M['interior_dim'] = [glow('MI_MS_InteriorDim', (1.0, 0.7, 0.42), 0.05), glow('MI_MS_InteriorDimCold', (0.55, 0.7, 1.0), 0.035)]
+    M['beacon'] = glow('MI_MS_Beacon', (1.0, 0.05, 0.02), 30.0, 1.0, 2.2)
+    M['marquee'] = glow('MI_MS_Marquee', (0.85, 0.9, 1.0), 0.9, 0.08, 0.7)   # quadro de letras do cinema, aceso e tremendo um pouco
 
 DEFAULT_SLOTS = None
 def default_slots():
@@ -203,39 +206,34 @@ def width(name):
 
 # fileiras: (lado, y0, y1, [(malha, opcoes)])  opcoes: sign, awning, neon, blade, fe(escada de incendio: '+'/'-'), corner(lado do mundo +1/-1)
 ROWS = [
-    # ---- oeste (lado da livraria), fachada X 1048, frente +X
-    ('W', -6400, -3725, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_Insurance', brick=6, band=4)),
-                         ('SM_MS_B152_3a', dict(sign='SM_MS_Sign_Furniture', awning=1, brick=1, fe='-'))]),
-    ('W', -3475, -700, [('SM_MS_B114_3a', dict(sign='SM_MS_Sign_Hardware', awning=1, brick=0, fe='+')),
-                        ('SM_MS_B076_4a', dict(blade='SM_MS_Blade_Pawn', sign='SM_MS_Sign_Pawn', brick=2, band=2)),
-                        ('SM_MS_B076_2b', dict(brick=4, band=3))]),
-    ('W', 700, 3100, [('SM_MS_B076_3a', dict(sign='SM_MS_Sign_Barber', awning=2, brick=3, band=1)),
-                      ('SM_MS_C152_2a', dict(corner=+1, sign='SM_MS_Sign_FiveDime', brick=0, band=2, awning=0))]),
-    ('W', 4300, 8000, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_Florist', brick=5, band=1)),
-                       ('SM_MS_B152_4a', dict(brick=1, fe='+')),
-                       ('SM_MS_B076_2a', dict(sign='SM_MS_Sign_Records', brick=7, band=0, neon_open=True))]),
+    # ---- oeste (lado da livraria), fachada X 1048, frente +X; ruas em T nas pontas (cinema Y -5300, hotel Y 7100)
+    ('W', -4500, -2125, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_Insurance', brick=6, band=4)),
+                         ('SM_MS_B114_3a', dict(sign='SM_MS_Sign_Hardware', awning=1, brick=0, fe='+'))]),
+    ('W', -1875, -700, [('SM_MS_B114_3b', dict(brick=4, band=3))]),
+    ('W', 700, 3100, [('SM_MS_B076_4a', dict(sign='SM_MS_Sign_Barber', awning=2, brick=3, band=1)),
+                      ('SM_MS_C152_4a', dict(corner=+1, sign='SM_MS_Sign_FiveDime', brick=0, band=2, awning=0, fe='-'))]),
+    ('W', 4300, 6300, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_Florist', brick=5, band=1)),
+                       ('SM_MS_B076_3a', dict(sign='SM_MS_Sign_Records', brick=7, band=0, neon_open=True))]),
     # ---- leste (em frente), fachada X 2480, frente -X
-    ('E', -6400, -3725, [('SM_MS_C152_4a', dict(corner=-1, sign='SM_MS_Sign_Bank', brick=2, trim=1, band=0)),
-                         ('SM_MS_B114_2a', dict(brick=3, awning=3, sign='SM_MS_Sign_Tailor'))]),
-    ('E', -3475, 1200, [('SM_MS_B152_3a', dict(brick=0, sign='SM_MS_Sign_ShoeRepair', awning=2, fe='-')),
-                        ('SM_MS_B152_2a', dict(brick=6, band=3)),
-                        ('SM_MS_B114_2a', dict(brick=4, band=0, diner=True, trim=2)),
-                        ('SM_MS_B076_3a', dict(brick=1, blade='SM_MS_Blade_Bar', band=2))]),
-    ('E', 1450, 3100, [('SM_MS_C152_2a', dict(corner=+1, sign='SM_MS_Sign_Pharmacy', brick=0, band=1, awning=1, lit=True))]),
-    ('E', 4300, 8000, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_TVRepair', brick=2, band=4)),
-                       ('SM_MS_B076_4a', dict(brick=5)),
-                       ('SM_MS_B152_2a', dict(brick=0, sign='SM_MS_Sign_Bakery', awning=0))]),
+    ('E', -4500, -2125, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_Tailor', brick=3, band=0)),
+                         ('SM_MS_B114_4a', dict(brick=1, fe='-'))]),
+    ('E', -1875, -560, [('SM_MS_B114_4a', dict(brick=2, blade='SM_MS_Blade_Pawn', sign='SM_MS_Sign_Pawn', band=2, awning=3))]),
+    ('E', -560, 560, [('SM_MS_B114_2a', dict(brick=4, band=0, diner=True, trim=2))]),
+    ('E', 560, 3100, [('SM_MS_B076_3a', dict(brick=1, blade='SM_MS_Blade_Bar', band=2)),
+                      ('SM_MS_C152_4a', dict(corner=+1, sign='SM_MS_Sign_Pharmacy', brick=6, band=1, awning=1, lit=True))]),
+    ('E', 4300, 6300, [('SM_MS_C114_3a', dict(corner=-1, sign='SM_MS_Sign_TVRepair', brick=2, band=4)),
+                       ('SM_MS_B076_2a', dict(brick=0, sign='SM_MS_Sign_Bakery', awning=0))]),
 ]
 # predios soltos: (malha, (x, y), yaw, opcoes)  yaw: 0 frente +X, 180 frente -X, 90 frente +Y, -90 frente -Y
 SOLO = [
-    # ponta norte: hotel fechando a rua (rua transversal norte em Y 8000..9000)
-    ('SM_MS_Hotel', (1760, 9050), -90, dict(brick=2, sign='SM_MS_Sign_Hotel', blade='SM_MS_Blade_Hotel', band=0, trim=1)),
-    ('SM_MS_B114_4a', (-420, 9050), -90, dict(brick=1)),
-    ('SM_MS_B152_3a', (3950, 9050), -90, dict(brick=6, band=2)),
-    # ponta sul: cinema fechando a rua (rua transversal sul em Y -7400..-6400)
-    ('SM_MS_Theater', (1760, -7450), 90, dict(brick=1, blade='SM_MS_Blade_State')),
-    ('SM_MS_B114_3b', (190, -7450), 90, dict(brick=7)),
-    ('SM_MS_B152_2a', (3410, -7450), 90, dict(brick=3, band=1)),
+    # ponta norte: hotel fechando a rua (rua transversal norte em Y 6300..7100, so para oeste)
+    ('SM_MS_Hotel', (1760, 7100), -90, dict(brick=2, sign='SM_MS_Sign_Hotel', blade='SM_MS_Blade_Hotel', band=0, trim=1, lit=True)),
+    ('SM_MS_B114_4a', (-420, 7100), -90, dict(brick=1)),
+    ('SM_MS_B076_4a', (3950, 7100), -90, dict(brick=6, band=2)),
+    # ponta sul: cinema fechando a rua (rua transversal sul em Y -5300..-4500)
+    ('SM_MS_Theater', (1760, -5300), 90, dict(brick=1, blade='SM_MS_Blade_State')),
+    ('SM_MS_B114_3b', (190, -5300), 90, dict(brick=7)),
+    ('SM_MS_B152_2a', (3410, -5300), 90, dict(brick=3, band=1)),
     # Elm Street (frentes para a rua transversal)
     ('SM_MS_B152_2a', (-1150, 4300), -90, dict(brick=2, band=1)),
     ('SM_MS_B114_3b', (-1030, 3100), 90, dict(brick=6)),
@@ -245,7 +243,7 @@ SOLO = [
     ('SM_MS_B152_3a', (6750, 3100), 90, dict(brick=7)),
 ]
 LANDMARKS = [
-    ('SM_MS_WaterTower', (-2600, -5200), 20),
+    ('SM_MS_WaterTower', (-900, -3400), 20),
 ]
 
 def run():
@@ -285,6 +283,8 @@ def run():
         override(a, 'Brick', M['brick'][opt.get('brick', 0) % len(M['brick'])])
         override(a, 'Trim', M['trim'][opt.get('trim', rnd.randrange(len(M['trim'])))])
         override(a, 'SignBand', M['band'][opt.get('band', rnd.randrange(len(M['band'])))])
+        if rnd.random() < 0.45:
+            override(a, 'Interior', M['interior_dim'][rnd.randrange(2)])
         if opt.get('lit') or opt.get('diner'):
             override(a, 'WinLit', M['shoplit'])
         else:
@@ -358,7 +358,7 @@ def run():
         elif mesh == 'SM_MS_Theater':
             b = spawn(opt['blade'], pt(0, -500, 560), yaw, (1, 1, 1), 'TheaterBlade')
             override(b, 'Neon', M['neon_dead'])
-            override(a, 'SignBand', M['signboard'])
+            override(a, 'SignBand', M['marquee'])
             override(a, 'Letters', M['frame'])
         elif opt.get('fe'):
             fl = int(mesh.split('_')[3][0])
@@ -369,20 +369,25 @@ def run():
     for (mesh, (x, y), yaw) in LANDMARKS:
         a = spawn(mesh, (x, y, Z0 - 20), yaw, (1, 1, 1), 'Landmark%d' % n)
         a.static_mesh_component.set_cast_shadow(False)
+        if mesh == 'SM_MS_WaterTower':
+            # farol de aviso vermelho piscando no topo (a propria lampada e a luminaria; sem luz de verdade)
+            b = spawn(unreal.load_asset('/Engine/BasicShapes/Sphere'), (x, y, Z0 - 20 + 3175), 0, (0.35, 0.35, 0.35), 'WaterTowerBeacon')
+            b.static_mesh_component.set_material(0, M['beacon'])
+            b.static_mesh_component.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
         n += 1
     # ruas transversais nas pontas (asfalto) e barricadas
     road = unreal.load_asset(MAT_DIR + '/MI_Town_Road')
     plane = unreal.load_asset('/Engine/BasicShapes/Plane')
-    for (yc, lab) in ((8500, 'RoadNorth'), (-6900, 'RoadSouth')):
-        a = spawn(plane, (1764, yc, -11.2), 0, (120.0, 10.0, 1), lab)
+    for (xc, yc, sx, lab) in ((-1300, 6700, 75.0, 'RoadNorth'), (1764, -4900, 120.0, 'RoadSouth')):
+        a = spawn(plane, (xc, yc, -11.2), 0, (sx, 8.0, 1), lab)
         a.static_mesh_component.set_material(0, road)
-    for (x, y, yaw) in ((-1600, 8500, 90), (5200, 8500, 90), (-1800, -6900, 90), (5300, -6900, 90), (1500, -6250, 0), (2000, -6280, 10)):
+    for (x, y, yaw) in ((-1600, 6700, 90), (3700, 6500, 90), (3700, 6900, 90), (-1800, -4900, 90), (5300, -4900, 90), (1350, -5050, 0), (2150, -5080, 10)):
         spawn('SM_MS_Barricade', (x, y, -11), yaw, (1, 1, 1), 'Barricade')
     # chao dos becos ao lado da livraria e cerca de tabua no fundo (refaz o que era NB_)
     concrete = unreal.load_asset(MAT_DIR + '/MI_Town_Ground')
     cube = unreal.load_asset('/Engine/BasicShapes/Cube')
     board = M['board']
-    for yc, lab in ((575, 'AlleyN'), (-575, 'AlleyS'), (-3600, 'AlleySW'), (-3600, 'AlleySE'), (1325, 'AlleyNE')):
+    for yc, lab in ((575, 'AlleyN'), (-575, 'AlleyS'), (-2000, 'AlleySW'), (-2000, 'AlleySE')):
         east = lab.endswith('E')
         x0 = EAST_X if east else -150
         x1 = EAST_X + 1300 if east else WEST_X
@@ -393,11 +398,11 @@ def run():
         f.static_mesh_component.set_material(0, board)
     # limpa arvores e entulho que caem dentro dos predios
     def inside(p):
-        return any(x0 - 50 <= p.x <= x1 + 50 and y0 - 50 <= p.y <= y1 + 50 for (x0, x1, y0, y1) in foot)
+        return any(x0 + 5 <= p.x <= x1 - 5 and y0 <= p.y <= y1 for (x0, x1, y0, y1) in foot)   # sem margem: a calcada encosta na fachada
     killed = 0
     for a in eas.get_all_level_actors():
         lab = a.get_actor_label()
-        if lab.startswith(('TL_', 'CL_', 'CAR_', 'PR_')) and inside(a.get_actor_location()):
+        if lab.startswith(('TL_', 'CL_', 'CAR_', 'PR_', 'WR_')) and inside(a.get_actor_location()):
             log('remove (inside building)', lab, a.get_actor_location())
             eas.destroy_actor(a); killed += 1
     log('removed', killed)

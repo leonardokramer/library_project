@@ -25,9 +25,9 @@ SIDE_Z = -11          # base das placas de calcada (topo = Z 10, na soleira)
 STREET_Z = -11        # superficie do asfalto
 CURB_X = 1349         # comeco do meio-fio da calcada da livraria
 STREET_X0, STREET_X1 = 1364, 2164
-Y0, Y1 = -6400, 3100  # extensao das calcadas (Main Street densa, 2026-11-27 noite)
-STREET_Y0, STREET_Y1 = -8000, 9600
-SEGS = [(Y0, Y1), (4300, 8000)]   # calcadas: antes e depois do cruzamento da Elm Street (Y 3300..4100)
+Y0, Y1 = -4400, 3100  # extensao das calcadas (Main Street densa, 2026-11-27 noite)
+STREET_Y0, STREET_Y1 = -5600, 7200
+SEGS = [(Y0, Y1), (4300, 6300)]   # calcadas: antes e depois do cruzamento da Elm Street (Y 3300..4100)
 
 
 def mi(name, parent, scalars):

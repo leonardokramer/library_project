@@ -1,4 +1,4 @@
-﻿"""Carrinho de devolucao e capacho da entrada (L_Library, pasta Props/Entrance, rotulos 'Prop_Entrance_').
+"""Carrinho de devolucao e capacho da entrada (L_Library, pasta Props/Entrance, rotulos 'Prop_Entrance_').
 Tambem reimporta as letras do letreiro. Rodar: py "<caminho>/interior_props.py" [noimport]
 """
 import unreal, os, sys, traceback

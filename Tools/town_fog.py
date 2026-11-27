@@ -1,4 +1,4 @@
-﻿"""Reposiciona os componentes do BP_OutsideFog para a rua aberta (vilarejo na nevoa).
+"""Reposiciona os componentes do BP_OutsideFog para a rua aberta (vilarejo na nevoa).
 Edita os templates do Blueprint (SCS), compila e salva. Rodar no console: py "<caminho>/town_fog.py"
 Posicoes relativas ao ator (que fica em X 1050, Y 0, Z 0).
 """
@@ -13,7 +13,6 @@ def log(*a):
 # nome: (rel_loc, rel_scale, extra)
 LAYOUT = {
     # paredes e teto de nevoa dentro do volume de nevoa (ate 30 m), para tudo fundir na mesma cor
-    'FogFar':   ((6400, 0, 1250),     (26.0, 150.0, 1.0)),
     'FogNorth': ((3000, 6800, 1250),  (72.0, 26.0, 1.0)),
     'FogSouth': ((3000, -6800, 1250), (72.0, 26.0, 1.0)),
     'FogTop':   ((3000, 0, 2500),     (72.0, 150.0, 1.0)),
@@ -30,19 +29,29 @@ BLOCKS = {
 # Caixa fechada (2026-11-27): o FogFar vira um cubo de dois lados que envolve a cidade inteira
 # (sem frestas por onde o ceu aparecia); as outras paredes e o teto ficam ocultos.
 BOX_LOC, BOX_SCALE = (1450, 0, 1350), (132.0, 184.0, 29.0)
+# Cupula (2026-11-27 noite, 4o teste do usuario): a caixa mostrava quinas e virava "um troco em volta" de longe.
+# Esfera de dois lados (sem arestas) em volta da cidade inteira; o material e o mesmo (cor + emissivo dia/noite).
+DOME_LOC, DOME_SCALE = (450, 1000, 0), (-160.0, 160.0, 160.0)   # centro do mundo (1500, 1000, 0), raio 80 m: tem que ficar DENTRO do SM_Sky_Box do Stationer (raio 100 m na origem), senao as nuvens e passaros pintados nele aparecem; X negativo = esfera do avesso
 
 def apply_box(c, name):
     if name == 'FogFar':
-        c.set_editor_property('static_mesh', unreal.load_asset('/Engine/BasicShapes/Cube'))
-        c.set_editor_property('relative_location', unreal.Vector(*BOX_LOC))
+        c.set_editor_property('static_mesh', unreal.load_asset('/Engine/BasicShapes/Sphere'))
+        c.set_editor_property('relative_location', unreal.Vector(*DOME_LOC))
         c.set_editor_property('relative_rotation', unreal.Rotator(0, 0, 0))
-        c.set_editor_property('relative_scale3d', unreal.Vector(*BOX_SCALE))
+        c.set_editor_property('relative_scale3d', unreal.Vector(*DOME_SCALE))
+        try:
+            c.set_relative_location(unreal.Vector(*DOME_LOC), False, False)   # na instancia o set_editor_property nao pegava
+        except Exception:
+            pass
+        c.set_editor_property('visible', True)
+        c.set_editor_property('hidden_in_game', False)
         c.set_editor_property('cast_shadow', False)
     elif name in ('FogNorth', 'FogSouth', 'FogTop'):
         c.set_editor_property('visible', False)
         c.set_editor_property('hidden_in_game', True)
 
-def run():    open(LOG, 'w').close()
+def run():
+    open(LOG, 'w').close()
     bp = unreal.load_asset(BP)
     sds = unreal.get_engine_subsystem(unreal.SubobjectDataSubsystem)
     handles = sds.k2_gather_subobject_data_for_blueprint(bp)

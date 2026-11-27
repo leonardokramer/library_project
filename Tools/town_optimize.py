@@ -1,4 +1,4 @@
-﻿"""Otimiza a cidade de fora:
+"""Otimiza a cidade de fora:
 1) no L_Town_StripMall, apaga os objetos pequenos de dentro da loja (so se ve a casca pela janela, na nevoa);
 2) tira a sombra de todas as luzes dos subniveis da cidade.
 Rodar: py "<caminho>/town_optimize.py" [dry]

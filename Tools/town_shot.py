@@ -18,14 +18,22 @@ DEFAULT = [
     ('balcao',     (700, 207, 170),   (0, 0)),      # do balcao para a porta
 ]
 
-def run(shots=None, w=960, h=540):
+def run(shots=None, w=960, h=540, delay=0.0):
     shots = shots or DEFAULT
     for f in glob.glob(os.path.join(OUTDIR, 'done.txt')):
         os.remove(f)
     ues = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
-    st = {'i': 0, 'phase': 0, 'wait': 0, 'h': None, 'before': set()}
+    unreal.get_editor_subsystem(unreal.EditorActorSubsystem).select_nothing()
+    try:
+        unreal.get_editor_subsystem(unreal.LevelEditorSubsystem).editor_set_game_view(True)
+    except Exception:
+        pass
+    st = {'i': 0, 'phase': 0, 'wait': 0, 'h': None, 'before': set(), 'delay': delay}
 
     def tick(dt):
+        if st['delay'] > 0:
+            st['delay'] -= dt
+            return
         if st['wait'] > 0:
             st['wait'] -= 1
             return

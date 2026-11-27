@@ -1,4 +1,4 @@
-﻿"""Importa os vizinhos (Saved/TownFBX2) e coloca no L_Library_Street (rotulos 'NB_'), com becos.
+"""Importa os vizinhos (Saved/TownFBX2) e coloca no L_Library_Street (rotulos 'NB_'), com becos.
 Rodar: py "<caminho>/town_shops_ue.py" [noimport]
 """
 import unreal, sys, os, traceback

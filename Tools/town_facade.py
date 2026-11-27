@@ -1,4 +1,4 @@
-﻿"""Importa as pecas da fachada (Saved/TownFBX), cria os materiais de pintura e coloca tudo
+"""Importa as pecas da fachada (Saved/TownFBX), cria os materiais de pintura e coloca tudo
 no subnivel L_Library_Street (rotulos 'FC_'). Idempotente. Rodar: py "<caminho>/town_facade.py" [noimport]
 """
 import unreal, sys, traceback

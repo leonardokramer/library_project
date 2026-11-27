@@ -23,7 +23,7 @@ def run():
     b = sm.get_bounding_box()
     log('pole bounds', b.min, b.max)
     # postes extras para os fios sumirem na nevoa
-    extra = [(1325, -4700, 0), (1325, 4900, 0), (2200, -6300, 180), (2200, 6600, 180)]
+    extra = [(1325, -4300, 0), (1325, 5900, 0), (2200, -4300, 180), (2200, 5900, 180)]   # dentro da Main Street (cinema em Y -5300, hotel em 7100)
     for x, y, yaw in extra:
         a = eas.spawn_actor_from_object(sm, unreal.Vector(x, y, 10 - b.min.z), unreal.Rotator(roll=0, pitch=0, yaw=yaw))
         a.set_actor_label('WR_PoleFar'); a.set_folder_path('Town/Props')

@@ -1,4 +1,4 @@
-﻿"""Luminarias, postes e objetos de calcada no subnivel L_Library_Street (rotulos 'PR_').
+"""Luminarias, postes e objetos de calcada no subnivel L_Library_Street (rotulos 'PR_').
 Idempotente. Rodar: py "<caminho>/town_props.py"
 Cada objeto e apoiado no chao pelo bounding box (z = chao - min.z).
 """
@@ -96,7 +96,7 @@ def run():
         cobra.set_material(i, lens if k.startswith('M_Lens') else unreal.load_asset(MATD + ('MI_Town_TLBody' if k.startswith('M_Head') else 'MI_Town_Metal')))
     unreal.EditorAssetLibrary.save_asset(cobra_path, False)
     # postes em fila dos dois lados (como nas referencias: varios postes e fios sumindo na nevoa)
-    poles = [(1325, y, 0) for y in (-2950, -1500, 100, 1700)] + [(2200, y, 180) for y in (-3000, -1650, -250, 1150, 2500)]
+    poles = [(1325, y, 0) for y in (-2950, -1500, -330, 1700)] + [(2200, y, 180) for y in (-3000, -1650, -250, 1150, 2500)]   # o oeste de Y 100 tapava a vista da porta (2026-11-27 noite)
     for x, y, yaw in poles:
         a, b = put('SM_Electric_Poles_Set_01a', x, y, yaw, label='Pole')
         top = SIDE_TOP + (b.max.z - b.min.z)

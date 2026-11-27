@@ -35,7 +35,7 @@ def _tick(dt):
     try:
         with contextlib.redirect_stdout(buf):
             g = {'__name__': '__main__', '__file__': path}
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, 'r', encoding='utf-8-sig') as f:
                 code = compile(f.read(), path, 'exec')
             exec(code, g)
         status = 'OK'

@@ -1,4 +1,4 @@
-﻿"""Estaciona carros na rua copiando os carros montados (grupos de pecas) do estacionamento do King Wash.
+"""Estaciona carros na rua copiando os carros montados (grupos de pecas) do estacionamento do King Wash.
 Os carros novos vao para o L_Library_Street com rotulo 'CAR_'. Idempotente. Rodar: py "<caminho>/town_cars.py"
 """
 import unreal, math, traceback
